@@ -17,12 +17,15 @@ class Organization extends Model
         'trial_ends_at',
         'subscription_ends_at',
         'settings',
+        'onboarding_token',
+        'onboarding_token_expires_at',
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
         'settings' => 'array',
+        'onboarding_token_expires_at' => 'datetime',
     ];
 
     public function users(): HasMany

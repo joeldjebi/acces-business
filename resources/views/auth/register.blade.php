@@ -342,7 +342,13 @@
             <div class="auth-left">
                 <i class="bi bi-person-plus-fill auth-icon"></i>
                 <h1>Créez votre compte</h1>
-                <p>Créez l'espace de votre organisation et gérez vos événements, invitations et accès dans un environnement isolé.</p>
+                <p>
+                    @isset($clientOrganization)
+                        Activez l'espace {{ $clientOrganization->name }} et créez le premier administrateur client.
+                    @else
+                        Créez l'espace de votre organisation et gérez vos événements, invitations et accès dans un environnement isolé.
+                    @endisset
+                </p>
                 <span class="badge-super-admin">
                     <i class="bi bi-building-check me-1"></i>
                     Espace SaaS dédié
@@ -353,7 +359,13 @@
             <div class="auth-right">
                 <div class="auth-header">
                     <h2>Inscription</h2>
-                    <p>Votre organisation sera créée automatiquement avec un essai de 14 jours.</p>
+                    <p>
+                        @isset($clientOrganization)
+                            Finalisez l'accès administrateur de votre organisation.
+                        @else
+                            Votre organisation sera créée automatiquement avec un essai de 14 jours.
+                        @endisset
+                    </p>
                 </div>
 
                 @if($errors->any())
@@ -370,6 +382,10 @@
                 <form method="POST" action="{{ route('register') }}">
                     @csrf
 
+                    @isset($clientOrganization)
+                        <input type="hidden" name="onboarding_token" value="{{ $onboardingToken }}">
+                    @endisset
+
                     <div class="form-group">
                         <label for="organization_name" class="form-label">
                             <i class="bi bi-building"></i>
@@ -379,8 +395,8 @@
                                class="form-control @error('organization_name') is-invalid @enderror"
                                id="organization_name"
                                name="organization_name"
-                               value="{{ old('organization_name') }}"
-                               required
+                               value="{{ old('organization_name', $clientOrganization->name ?? '') }}"
+                               {{ isset($clientOrganization) ? 'readonly' : 'required' }}
                                autofocus
                                placeholder="Nom de votre entreprise">
                         @error('organization_name')

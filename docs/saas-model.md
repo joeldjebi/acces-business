@@ -23,6 +23,15 @@ Le role `platform_admin` est separe des admins d'organisation.
 - les routes tenant restent protegees par `tenant`
 - un `platform_admin` sans organisation ne peut pas ouvrir les ecrans tenant
 
+Le super admin plateforme peut aussi :
+
+- creer un client depuis `/platform/organizations`
+- generer un lien register client securise via `/client/register/{token}`
+- fournir au client le lien login standard `/login?organization={slug}`
+- modifier les roles des utilisateurs d'une organisation : `super_admin`, `admin`, `manager`, `moderateur`
+
+Le lien register client sert uniquement a creer le premier administrateur principal de l'organisation. Il expire et il est supprime apres activation.
+
 ## Donnees rattachees a une organisation
 
 Les donnees suivantes portent un `organization_id` :

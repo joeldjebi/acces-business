@@ -25,12 +25,16 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:4,1');
+Route::get('/client/register/{token}', [AuthController::class, 'showClientRegisterForm'])->name('client.register');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('platform.')->group(function () {
     Route::get('/dashboard', [PlatformAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/organizations', [PlatformAdminController::class, 'organizations'])->name('organizations');
+    Route::post('/organizations', [PlatformAdminController::class, 'storeOrganization'])->name('organizations.store');
     Route::put('/organizations/{organization}', [PlatformAdminController::class, 'updateOrganization'])->name('organizations.update');
+    Route::post('/organizations/{organization}/onboarding-link', [PlatformAdminController::class, 'regenerateOnboardingLink'])->name('organizations.onboarding-link');
+    Route::put('/organizations/{organization}/users/{user}/role', [PlatformAdminController::class, 'updateUserRole'])->name('organizations.users.role');
 });
 
 // Routes protégées

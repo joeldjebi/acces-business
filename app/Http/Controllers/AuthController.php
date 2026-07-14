@@ -57,11 +57,30 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
+    public function showClientRegisterForm(string $token)
+    {
+        $organization = Organization::where('onboarding_token', $token)
+            ->where(function ($query) {
+                $query->whereNull('onboarding_token_expires_at')
+                    ->orWhere('onboarding_token_expires_at', '>=', now());
+            })
+            ->firstOrFail();
+
+        return view('auth.register', [
+            'clientOrganization' => $organization,
+            'onboardingToken' => $token,
+        ]);
+    }
+
     /**
      * Traite l'inscription
      */
     public function register(Request $request)
     {
+        if ($request->filled('onboarding_token')) {
+            return $this->registerClientAdmin($request);
+        }
+
         $validated = $request->validate([
             'organization_name' => 'required|string|max:255',
             'name' => 'required|string|max:255',
@@ -90,6 +109,48 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return redirect('/dashboard')->with('success', 'Bienvenue ! Votre espace SaaS est prêt.');
+    }
+
+    private function registerClientAdmin(Request $request)
+    {
+        $validated = $request->validate([
+            'onboarding_token' => 'required|string',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $organization = Organization::where('onboarding_token', $validated['onboarding_token'])
+            ->where(function ($query) {
+                $query->whereNull('onboarding_token_expires_at')
+                    ->orWhere('onboarding_token_expires_at', '>=', now());
+            })
+            ->firstOrFail();
+
+        if ($organization->users()->where('role', 'super_admin')->exists()) {
+            throw ValidationException::withMessages([
+                'email' => 'Cette organisation possède déjà un administrateur principal.',
+            ]);
+        }
+
+        $user = User::create([
+            'organization_id' => $organization->id,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'super_admin',
+        ]);
+
+        $organization->update([
+            'status' => 'active',
+            'onboarding_token' => null,
+            'onboarding_token_expires_at' => null,
+        ]);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect('/dashboard')->with('success', 'Compte client activé. Bienvenue dans votre espace.');
     }
 
     private function uniqueOrganizationSlug(string $name): string
