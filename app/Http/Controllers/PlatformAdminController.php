@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\BillingInvoice;
+use App\Models\Category;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\Devise;
 use App\Models\Event;
+use App\Models\EventAccessLink;
 use App\Models\EventRegistration;
 use App\Models\Organization;
 use App\Models\SubscriptionPlan;
@@ -36,8 +41,7 @@ class PlatformAdminController extends Controller
 
     public function organizations(Request $request)
     {
-        $query = Organization::with(['users' => fn ($query) => $query->orderBy('created_at')])
-            ->withCount(['users', 'events'])
+        $query = Organization::withCount(['users', 'events'])
             ->latest();
 
         if ($request->filled('search')) {
@@ -55,6 +59,34 @@ class PlatformAdminController extends Controller
         return view('platform.organizations', [
             'organizations' => $query->paginate(15)->withQueryString(),
             'plans' => SaasPlans::all(),
+        ]);
+    }
+
+    public function showOrganization(Organization $organization)
+    {
+        $organization->loadCount(['users', 'events']);
+
+        $events = Event::forOrganization($organization->id)
+            ->with(['category', 'devise', 'visibilite'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('platform.organization-show', [
+            'organization' => $organization,
+            'plan' => SaasPlans::get($organization->plan),
+            'events' => $events,
+            'eventsCount' => $organization->events_count,
+            'users' => User::where('organization_id', $organization->id)->latest()->get(),
+            'categories' => Category::forOrganization($organization->id)->orderBy('libelle')->get(),
+            'devises' => Devise::forOrganization($organization->id)->orderBy('libelle')->get(),
+            'countries' => Country::forOrganization($organization->id)->withCount('cities')->orderBy('nom')->get(),
+            'citiesCount' => City::forOrganization($organization->id)->count(),
+            'registrationsCount' => EventRegistration::forOrganization($organization->id)->count(),
+            'invoices' => BillingInvoice::forOrganization($organization->id)->latest()->take(8)->get(),
+            'accessLinksCount' => EventAccessLink::forOrganization($organization->id)->count(),
+            'publishedEvents' => Event::forOrganization($organization->id)->where('statut', 'publie')->count(),
+            'draftEvents' => Event::forOrganization($organization->id)->where('statut', 'brouillon')->count(),
         ]);
     }
 
