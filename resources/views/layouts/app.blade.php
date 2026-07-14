@@ -401,15 +401,26 @@
 </head>
 <body>
     @auth
+    @php
+        $currentOrganization = auth()->user()->organization;
+        $organizationSettings = $currentOrganization?->settings ?? [];
+        $organizationBranding = $organizationSettings['branding'] ?? [];
+        $brandName = $organizationBranding['brand_name'] ?? $currentOrganization?->name ?? 'EventOps';
+        $brandLogo = $currentOrganization?->logo ? \Illuminate\Support\Facades\Storage::url($currentOrganization->logo) : null;
+    @endphp
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
-                <div class="sidebar-logo-icon">
-                    <i class="bi bi-shield-check"></i>
-                </div>
-                <div class="sidebar-logo-text">EventOps</div>
+                @if($brandLogo)
+                    <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="sidebar-logo-icon" style="object-fit: cover;">
+                @else
+                    <div class="sidebar-logo-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                @endif
+                <div class="sidebar-logo-text">{{ $brandName }}</div>
             </div>
-            <div class="sidebar-subtitle">Console de pilotage</div>
+            <div class="sidebar-subtitle">{{ ucfirst($currentOrganization?->plan ?? 'starter') }} · Console SaaS</div>
         </div>
 
         <ul class="sidebar-menu">
@@ -450,6 +461,24 @@
                 <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
                     <i class="bi bi-people"></i>
                     <span>Utilisateurs</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('saas.plans') }}" class="{{ request()->routeIs('saas.plans') ? 'active' : '' }}">
+                    <i class="bi bi-gem"></i>
+                    <span>Plans SaaS</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('saas.billing') }}" class="{{ request()->routeIs('saas.billing') ? 'active' : '' }}">
+                    <i class="bi bi-receipt"></i>
+                    <span>Facturation</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('saas.branding') }}" class="{{ request()->routeIs('saas.branding') ? 'active' : '' }}">
+                    <i class="bi bi-palette"></i>
+                    <span>Branding</span>
                 </a>
             </li>
             @endif

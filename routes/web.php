@@ -7,6 +7,7 @@ use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\EventOtpController;
 use App\Http\Controllers\EventAccessController;
 use App\Http\Controllers\ReferenceDataController;
+use App\Http\Controllers\SaasSettingsController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques
@@ -34,6 +35,13 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     // Gestion des utilisateurs (seulement pour super admin)
     Route::middleware('role:super_admin')->group(function () {
         Route::resource('users', UserController::class);
+
+        Route::get('/saas/plans', [SaasSettingsController::class, 'plans'])->name('saas.plans');
+        Route::post('/saas/plans', [SaasSettingsController::class, 'updatePlan'])->name('saas.plans.update');
+        Route::get('/saas/facturation', [SaasSettingsController::class, 'billing'])->name('saas.billing');
+        Route::put('/saas/facturation', [SaasSettingsController::class, 'updateBilling'])->name('saas.billing.update');
+        Route::get('/saas/branding', [SaasSettingsController::class, 'branding'])->name('saas.branding');
+        Route::put('/saas/branding', [SaasSettingsController::class, 'updateBranding'])->name('saas.branding.update');
     });
 
     // Routes d'accès (admin) - Doit être avant la route resource pour éviter les conflits

@@ -34,4 +34,9 @@ class Organization extends Model
     {
         return $this->hasMany(Event::class);
     }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(BillingInvoice::class);
+    }
 }

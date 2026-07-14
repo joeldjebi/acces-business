@@ -6,6 +6,12 @@
     $user = auth()->user();
     $roleLabel = ucfirst(str_replace('_', ' ', $user->role));
     $organizationId = $user->organization_id;
+    $organization = $user->organization;
+    $organizationSettings = $organization?->settings ?? [];
+    $branding = $organizationSettings['branding'] ?? [];
+    $brandName = $branding['brand_name'] ?? $organization?->name ?? 'Accès Business';
+    $plan = \App\Support\SaasPlans::get($organization?->plan);
+    $billingCycle = $organizationSettings['billing_cycle'] ?? 'monthly';
 
     $eventsCount = \App\Models\Event::forOrganization($organizationId)->count();
     $publishedEvents = \App\Models\Event::forOrganization($organizationId)->where('statut', 'publie')->count();
@@ -24,6 +30,12 @@
     $confirmationRate = $registrationsCount > 0 ? round(($confirmedRegistrations / $registrationsCount) * 100) : 0;
     $cardDeliveryRate = $registrationsCount > 0 ? round(($cardsSent / $registrationsCount) * 100) : 0;
     $publicationRate = $eventsCount > 0 ? round(($publishedEvents / $eventsCount) * 100) : 0;
+    $eventLimit = $plan['limits']['events'];
+    $userLimit = $plan['limits']['users'];
+    $invitationLimit = $plan['limits']['invitations'];
+    $eventUsage = $eventLimit ? min(100, round(($eventsCount / $eventLimit) * 100)) : 100;
+    $userUsage = $userLimit ? min(100, round(($usersCount / $userLimit) * 100)) : 100;
+    $invitationUsage = $invitationLimit ? min(100, round(($registrationsCount / $invitationLimit) * 100)) : 100;
 
     $recentEvents = \App\Models\Event::forOrganization($organizationId)
         ->with(['category', 'visibilite'])
@@ -576,6 +588,59 @@
         padding: 16px;
     }
 
+    .subscription-body {
+        padding: 20px;
+    }
+
+    .subscription-top {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .subscription-plan {
+        color: var(--ink);
+        font-size: 1.45rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .subscription-cycle {
+        background: rgba(185, 137, 67, 0.14);
+        border-radius: 999px;
+        color: #8a6128;
+        font-size: 0.74rem;
+        font-weight: 600;
+        padding: 7px 10px;
+        white-space: nowrap;
+    }
+
+    .usage-stack {
+        display: grid;
+        gap: 13px;
+    }
+
+    .usage-row {
+        display: grid;
+        gap: 7px;
+    }
+
+    .usage-meta {
+        align-items: center;
+        color: var(--muted);
+        display: flex;
+        font-size: 0.82rem;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .usage-meta strong {
+        color: var(--ink);
+        font-weight: 600;
+    }
+
     .action-panel {
         border-color: rgba(185, 137, 67, 0.46);
         box-shadow: 0 20px 52px rgba(126, 89, 36, 0.13);
@@ -852,10 +917,10 @@
 <div class="dash">
     <div class="dash-topbar">
         <div>
-            <div class="dash-kicker">Console événementielle · {{ $todayLabel }}</div>
-            <h1 class="dash-title">Pilotage opérationnel</h1>
+            <div class="dash-kicker">{{ $brandName }} · {{ $plan['name'] }} · {{ $todayLabel }}</div>
+            <h1 class="dash-title">Pilotage SaaS & événements</h1>
             <p class="dash-subtitle">
-                Vue consolidée des événements, invitations, réponses et permissions pour décider vite, sans interface décorative inutile.
+                Vue consolidée des événements, invitations, réponses, permissions et abonnement de votre organisation.
             </p>
         </div>
 
@@ -908,11 +973,11 @@
 
         <article class="kpi-card" style="--accent: var(--red);">
             <div class="kpi-head">
-                <span class="kpi-label">Équipe</span>
-                <span class="kpi-icon"><i class="bi bi-shield-lock"></i></span>
+                <span class="kpi-label">Plan SaaS</span>
+                <span class="kpi-icon"><i class="bi bi-gem"></i></span>
             </div>
-            <div class="kpi-value">{{ $operatorsCount }}</div>
-            <div class="kpi-note">{{ $usersCount }} utilisateur(s) dans l'espace</div>
+            <div class="kpi-value">{{ $plan['name'] }}</div>
+            <div class="kpi-note">{{ $billingCycle === 'yearly' ? 'Cycle annuel' : 'Cycle mensuel' }} · {{ $usersCount }} utilisateur(s)</div>
         </article>
     </section>
 
@@ -978,6 +1043,56 @@
         </main>
 
         <aside class="side-stack">
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="panel-title">Abonnement</h2>
+                        <p class="panel-caption">Usage de l'organisation et limites du plan.</p>
+                    </div>
+                    @if($user->isSuperAdmin())
+                        <a href="{{ route('saas.plans') }}" class="panel-link">Changer le plan</a>
+                    @endif
+                </div>
+
+                <div class="subscription-body">
+                    <div class="subscription-top">
+                        <div>
+                            <div class="muted-label">Plan actif</div>
+                            <div class="subscription-plan">{{ $plan['name'] }}</div>
+                        </div>
+                        <span class="subscription-cycle">{{ $billingCycle === 'yearly' ? 'Annuel' : 'Mensuel' }}</span>
+                    </div>
+
+                    <div class="usage-stack">
+                        <div class="usage-row" style="--accent: var(--gold);">
+                            <div class="usage-meta">
+                                <strong>Événements</strong>
+                                <span>{{ $eventsCount }} / {{ $eventLimit ?: '∞' }}</span>
+                            </div>
+                            <div class="premium-progress"><span style="width: {{ $eventUsage }}%;"></span></div>
+                        </div>
+                        <div class="usage-row" style="--accent: var(--green);">
+                            <div class="usage-meta">
+                                <strong>Utilisateurs</strong>
+                                <span>{{ $usersCount }} / {{ $userLimit ?: '∞' }}</span>
+                            </div>
+                            <div class="premium-progress"><span style="width: {{ $userUsage }}%;"></span></div>
+                        </div>
+                        <div class="usage-row" style="--accent: var(--blue);">
+                            <div class="usage-meta">
+                                <strong>Invitations</strong>
+                                <span>{{ $registrationsCount }} / {{ $invitationLimit ? number_format($invitationLimit, 0, ',', ' ') : '∞' }}</span>
+                            </div>
+                            <div class="premium-progress"><span style="width: {{ $invitationUsage }}%;"></span></div>
+                        </div>
+                    </div>
+
+                    <p class="kpi-note mb-0 mt-3">
+                        Échéance: {{ optional($organization?->subscription_ends_at)->format('d/m/Y') ?: 'à définir' }}
+                    </p>
+                </div>
+            </section>
+
             <section class="panel">
                 <div class="panel-head">
                     <div>
@@ -1047,6 +1162,22 @@
                             <span>
                                 <strong>Gérer les accès</strong>
                                 <span>Contrôler les rôles et les permissions.</span>
+                            </span>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <a href="{{ route('saas.billing') }}" class="action-row">
+                            <span class="action-icon"><i class="bi bi-receipt"></i></span>
+                            <span>
+                                <strong>Suivre la facturation</strong>
+                                <span>Mettre à jour les informations et factures.</span>
+                            </span>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <a href="{{ route('saas.branding') }}" class="action-row">
+                            <span class="action-icon"><i class="bi bi-palette"></i></span>
+                            <span>
+                                <strong>Ajuster le branding</strong>
+                                <span>Logo, nom affiché et couleurs de l'espace.</span>
                             </span>
                             <i class="bi bi-chevron-right"></i>
                         </a>
