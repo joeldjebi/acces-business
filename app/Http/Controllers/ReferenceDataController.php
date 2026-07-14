@@ -14,7 +14,8 @@ class ReferenceDataController extends Controller
 {
     public function categories()
     {
-        $categories = Category::withCount('events')
+        $categories = Category::forOrganization()
+            ->withCount('events')
             ->orderByDesc('statut')
             ->orderBy('libelle')
             ->get();
@@ -25,10 +26,17 @@ class ReferenceDataController extends Controller
     public function storeCategory(Request $request)
     {
         $validated = $request->validate([
-            'libelle' => ['required', 'string', 'max:100', Rule::unique('categories', 'libelle')],
+            'libelle' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('categories', 'libelle')
+                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id)),
+            ],
         ]);
 
         Category::create([
+            'organization_id' => auth()->user()->organization_id,
             'libelle' => trim($validated['libelle']),
             'statut' => 1,
         ]);
@@ -40,7 +48,14 @@ class ReferenceDataController extends Controller
     public function updateCategory(Request $request, Category $category)
     {
         $validated = $request->validate([
-            'libelle' => ['required', 'string', 'max:100', Rule::unique('categories', 'libelle')->ignore($category->id)],
+            'libelle' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('categories', 'libelle')
+                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))
+                    ->ignore($category->id),
+            ],
             'statut' => ['nullable', 'boolean'],
         ]);
 
@@ -68,7 +83,8 @@ class ReferenceDataController extends Controller
 
     public function devises()
     {
-        $devises = Devise::withCount('events')
+        $devises = Devise::forOrganization()
+            ->withCount('events')
             ->orderByDesc('statut')
             ->orderBy('libelle')
             ->get();
@@ -79,10 +95,17 @@ class ReferenceDataController extends Controller
     public function storeDevise(Request $request)
     {
         $validated = $request->validate([
-            'libelle' => ['required', 'string', 'max:100', Rule::unique('devises', 'libelle')],
+            'libelle' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('devises', 'libelle')
+                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id)),
+            ],
         ]);
 
         Devise::create([
+            'organization_id' => auth()->user()->organization_id,
             'libelle' => strtoupper(trim($validated['libelle'])),
             'statut' => 1,
         ]);
@@ -94,7 +117,14 @@ class ReferenceDataController extends Controller
     public function updateDevise(Request $request, Devise $devise)
     {
         $validated = $request->validate([
-            'libelle' => ['required', 'string', 'max:100', Rule::unique('devises', 'libelle')->ignore($devise->id)],
+            'libelle' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('devises', 'libelle')
+                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))
+                    ->ignore($devise->id),
+            ],
             'statut' => ['nullable', 'boolean'],
         ]);
 
@@ -122,12 +152,14 @@ class ReferenceDataController extends Controller
 
     public function localisations()
     {
-        $countries = Country::withCount('cities')
+        $countries = Country::forOrganization()
+            ->withCount('cities')
             ->orderByDesc('statut')
             ->orderBy('nom')
             ->get();
 
-        $cities = City::with('country')
+        $cities = City::forOrganization()
+            ->with('country')
             ->orderByDesc('statut')
             ->orderBy('nom')
             ->get();
@@ -138,13 +170,20 @@ class ReferenceDataController extends Controller
     public function storeCountry(Request $request)
     {
         $validated = $request->validate([
-            'nom' => ['required', 'string', 'max:120', Rule::unique('countries', 'nom')],
+            'nom' => [
+                'required',
+                'string',
+                'max:120',
+                Rule::unique('countries', 'nom')
+                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id)),
+            ],
             'indicatif' => ['nullable', 'string', 'max:12'],
             'currency' => ['nullable', 'string', 'max:12'],
             'flag' => ['nullable', 'string', 'max:16'],
         ]);
 
         Country::create([
+            'organization_id' => auth()->user()->organization_id,
             'nom' => trim($validated['nom']),
             'indicatif' => $this->normalizeDialCode($validated['indicatif'] ?? null),
             'currency' => strtoupper(trim($validated['currency'] ?? '')),
@@ -159,7 +198,14 @@ class ReferenceDataController extends Controller
     public function updateCountry(Request $request, Country $country)
     {
         $validated = $request->validate([
-            'nom' => ['required', 'string', 'max:120', Rule::unique('countries', 'nom')->ignore($country->id)],
+            'nom' => [
+                'required',
+                'string',
+                'max:120',
+                Rule::unique('countries', 'nom')
+                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))
+                    ->ignore($country->id),
+            ],
             'indicatif' => ['nullable', 'string', 'max:12'],
             'currency' => ['nullable', 'string', 'max:12'],
             'flag' => ['nullable', 'string', 'max:16'],
@@ -180,7 +226,7 @@ class ReferenceDataController extends Controller
 
     public function destroyCountry(Country $country)
     {
-        if ($country->cities()->exists() || Event::where('pays', $country->nom)->exists()) {
+        if ($country->cities()->exists() || Event::forOrganization()->where('pays', $country->nom)->exists()) {
             return redirect()->route('localisations.index')
                 ->with('error', 'Impossible de supprimer un pays utilisé par des villes ou des événements.');
         }
@@ -194,16 +240,20 @@ class ReferenceDataController extends Controller
     public function storeCity(Request $request)
     {
         $validated = $request->validate([
-            'country_id' => ['required', 'exists:countries,id'],
+            'country_id' => ['required', Rule::exists('countries', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'nom' => [
                 'required',
                 'string',
                 'max:120',
-                Rule::unique('cities', 'nom')->where(fn ($query) => $query->where('country_id', $request->country_id)),
+                Rule::unique('cities', 'nom')
+                    ->where(fn ($query) => $query
+                        ->where('organization_id', auth()->user()->organization_id)
+                        ->where('country_id', $request->country_id)),
             ],
         ]);
 
         City::create([
+            'organization_id' => auth()->user()->organization_id,
             'country_id' => $validated['country_id'],
             'nom' => trim($validated['nom']),
             'statut' => 1,
@@ -216,13 +266,15 @@ class ReferenceDataController extends Controller
     public function updateCity(Request $request, City $city)
     {
         $validated = $request->validate([
-            'country_id' => ['required', 'exists:countries,id'],
+            'country_id' => ['required', Rule::exists('countries', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'nom' => [
                 'required',
                 'string',
                 'max:120',
                 Rule::unique('cities', 'nom')
-                    ->where(fn ($query) => $query->where('country_id', $request->country_id))
+                    ->where(fn ($query) => $query
+                        ->where('organization_id', auth()->user()->organization_id)
+                        ->where('country_id', $request->country_id))
                     ->ignore($city->id),
             ],
             'statut' => ['nullable', 'boolean'],
@@ -240,7 +292,7 @@ class ReferenceDataController extends Controller
 
     public function destroyCity(City $city)
     {
-        if (Event::where('ville', $city->nom)->exists()) {
+        if (Event::forOrganization()->where('ville', $city->nom)->exists()) {
             return redirect()->route('localisations.index')
                 ->with('error', 'Impossible de supprimer une ville utilisée par des événements.');
         }

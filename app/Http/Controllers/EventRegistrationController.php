@@ -37,6 +37,7 @@ class EventRegistrationController extends Controller
 
         // Vérifier si l'email n'est pas déjà inscrit pour cet événement
         $existingRegistration = EventRegistration::where('event_id', $event->id)
+            ->forOrganization($event->organization_id)
             ->where('email', $validated['email'])
             ->first();
 
@@ -46,6 +47,7 @@ class EventRegistrationController extends Controller
 
         // Créer l'inscription
         $registration = EventRegistration::create([
+            'organization_id' => $event->organization_id,
             'event_id' => $event->id,
             'email' => $validated['email'],
             'nom' => $validated['nom'],
@@ -101,7 +103,8 @@ class EventRegistrationController extends Controller
         if (!$otpVerified || !$verifiedEmail) {
             // Essayer de trouver un lien d'accès pour rediriger vers la page de vérification
             $accessLink = \App\Models\EventAccessLink::where('event_id', $event->id)
-                ->where('email', $request->input('email'))
+                ->forOrganization($event->organization_id)
+                ->where('email_destinataire', $request->input('email'))
                 ->latest()
                 ->first();
 
@@ -139,7 +142,8 @@ class EventRegistrationController extends Controller
         if (!$otpVerified || !$verifiedEmail) {
             // Rediriger vers la page d'accès avec le token si disponible
             $accessLink = \App\Models\EventAccessLink::where('event_id', $event->id)
-                ->where('email', $request->input('email'))
+                ->forOrganization($event->organization_id)
+                ->where('email_destinataire', $request->input('email'))
                 ->latest()
                 ->first();
 
@@ -155,6 +159,7 @@ class EventRegistrationController extends Controller
         // Chercher ou créer l'inscription
         $registration = EventRegistration::firstOrCreate(
             [
+                'organization_id' => $event->organization_id,
                 'event_id' => $event->id,
                 'email' => $verifiedEmail,
             ],
@@ -257,6 +262,7 @@ class EventRegistrationController extends Controller
     public function index(Request $request, Event $event)
     {
         $registrations = EventRegistration::where('event_id', $event->id)
+            ->forOrganization($event->organization_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 // Routes publiques
 Route::get('/', function () {
     // Si aucun utilisateur n'existe, rediriger vers l'inscription
-    if (\App\Models\User::count() === 0) {
+    if (\Illuminate\Support\Facades\Schema::hasTable('users') && \App\Models\User::count() === 0) {
         return redirect('/register');
     }
     return redirect('/login');

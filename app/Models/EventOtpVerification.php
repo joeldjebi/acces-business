@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -9,7 +10,10 @@ use Carbon\Carbon;
 
 class EventOtpVerification extends Model
 {
+    use BelongsToOrganization;
+
     protected $fillable = [
+        'organization_id',
         'event_id',
         'email',
         'otp_code',
@@ -30,8 +34,11 @@ class EventOtpVerification extends Model
      */
     public static function generateOtp(int $eventId, string $email, ?string $ipAddress = null): self
     {
+        $organizationId = Event::whereKey($eventId)->value('organization_id');
+
         // Invalider les anciens OTP non vérifiés pour cet email et cet événement
         self::where('event_id', $eventId)
+            ->when($organizationId, fn ($query) => $query->where('organization_id', $organizationId))
             ->where('email', $email)
             ->where('is_verified', false)
             ->where('expires_at', '>', now())
@@ -41,6 +48,7 @@ class EventOtpVerification extends Model
         $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         return self::create([
+            'organization_id' => $organizationId,
             'event_id' => $eventId,
             'email' => $email,
             'otp_code' => $otpCode,

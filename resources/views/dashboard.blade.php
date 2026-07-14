@@ -5,32 +5,35 @@
 @php
     $user = auth()->user();
     $roleLabel = ucfirst(str_replace('_', ' ', $user->role));
+    $organizationId = $user->organization_id;
 
-    $eventsCount = \App\Models\Event::count();
-    $publishedEvents = \App\Models\Event::where('statut', 'publie')->count();
-    $draftEvents = \App\Models\Event::where('statut', 'brouillon')->count();
-    $upcomingEvents = \App\Models\Event::whereDate('date_debut', '>=', now()->toDateString())->count();
+    $eventsCount = \App\Models\Event::forOrganization($organizationId)->count();
+    $publishedEvents = \App\Models\Event::forOrganization($organizationId)->where('statut', 'publie')->count();
+    $draftEvents = \App\Models\Event::forOrganization($organizationId)->where('statut', 'brouillon')->count();
+    $upcomingEvents = \App\Models\Event::forOrganization($organizationId)->whereDate('date_debut', '>=', now()->toDateString())->count();
 
-    $registrationsCount = \App\Models\EventRegistration::count();
-    $confirmedRegistrations = \App\Models\EventRegistration::whereIn('statut_reponse', ['present', 'peut_etre'])->count();
-    $pendingRegistrations = \App\Models\EventRegistration::where('statut_reponse', 'en_attente')->count();
-    $absentRegistrations = \App\Models\EventRegistration::where('statut_reponse', 'absent')->count();
-    $cardsSent = \App\Models\EventRegistration::where('carte_envoyee', true)->count();
+    $registrationsCount = \App\Models\EventRegistration::forOrganization($organizationId)->count();
+    $confirmedRegistrations = \App\Models\EventRegistration::forOrganization($organizationId)->whereIn('statut_reponse', ['present', 'peut_etre'])->count();
+    $pendingRegistrations = \App\Models\EventRegistration::forOrganization($organizationId)->where('statut_reponse', 'en_attente')->count();
+    $absentRegistrations = \App\Models\EventRegistration::forOrganization($organizationId)->where('statut_reponse', 'absent')->count();
+    $cardsSent = \App\Models\EventRegistration::forOrganization($organizationId)->where('carte_envoyee', true)->count();
 
-    $usersCount = \App\Models\User::count();
-    $operatorsCount = \App\Models\User::whereIn('role', ['super_admin', 'admin', 'manager'])->count();
+    $usersCount = \App\Models\User::where('organization_id', $organizationId)->count();
+    $operatorsCount = \App\Models\User::where('organization_id', $organizationId)->whereIn('role', ['super_admin', 'admin', 'manager'])->count();
 
     $confirmationRate = $registrationsCount > 0 ? round(($confirmedRegistrations / $registrationsCount) * 100) : 0;
     $cardDeliveryRate = $registrationsCount > 0 ? round(($cardsSent / $registrationsCount) * 100) : 0;
     $publicationRate = $eventsCount > 0 ? round(($publishedEvents / $eventsCount) * 100) : 0;
 
-    $recentEvents = \App\Models\Event::with(['category', 'visibilite'])
+    $recentEvents = \App\Models\Event::forOrganization($organizationId)
+        ->with(['category', 'visibilite'])
         ->orderByRaw('date_debut is null')
         ->orderBy('date_debut')
         ->take(6)
         ->get();
 
-    $recentRegistrations = \App\Models\EventRegistration::with('event')
+    $recentRegistrations = \App\Models\EventRegistration::forOrganization($organizationId)
+        ->with('event')
         ->latest('date_inscription')
         ->take(6)
         ->get();

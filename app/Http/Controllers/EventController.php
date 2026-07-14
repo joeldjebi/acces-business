@@ -9,6 +9,7 @@ use App\Models\Country;
 use App\Models\Devise;
 use App\Models\EventRegistration;
 use App\Models\TypeTarification;
+use App\Models\User;
 use App\Models\Visibilite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,8 @@ class EventController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Event::with(['category', 'user', 'visibilite', 'typeTarification', 'devise']);
+        $query = Event::with(['category', 'user', 'visibilite', 'typeTarification', 'devise'])
+            ->forOrganization();
 
         // Filtre par recherche (titre)
         if ($request->filled('search')) {
@@ -66,9 +68,9 @@ class EventController extends Controller
             ->withQueryString();
 
         // Récupérer les données pour les filtres
-        $categories = Category::active()->get();
+        $categories = Category::forOrganization()->active()->get();
         $visibilites = Visibilite::active()->get();
-        $users = \App\Models\User::all();
+        $users = User::where('organization_id', auth()->user()->organization_id)->get();
 
         return view('events.index', compact('events', 'categories', 'visibilites', 'users'));
     }
@@ -78,12 +80,12 @@ class EventController extends Controller
      */
     public function create()
     {
-        $categories = Category::active()->get();
-        $devises = Devise::active()->get();
+        $categories = Category::forOrganization()->active()->get();
+        $devises = Devise::forOrganization()->active()->get();
         $typeTarifications = TypeTarification::active()->get();
         $visibilites = Visibilite::active()->get();
-        $countries = Country::active()->orderBy('nom')->get();
-        $cities = City::active()->with('country')->orderBy('nom')->get();
+        $countries = Country::forOrganization()->active()->orderBy('nom')->get();
+        $cities = City::forOrganization()->active()->with('country')->orderBy('nom')->get();
 
         return view('events.create', compact('categories', 'devises', 'typeTarifications', 'visibilites', 'countries', 'cities'));
     }
@@ -132,6 +134,7 @@ class EventController extends Controller
         $draft = null;
         if ($request->filled('draft_event_id')) {
             $draft = Event::where('id', $request->draft_event_id)
+                ->forOrganization()
                 ->where('user_id', auth()->id())
                 ->where('statut', 'brouillon')
                 ->first();
@@ -152,6 +155,7 @@ class EventController extends Controller
         }
 
         // Ajout de l'utilisateur créateur
+        $validated['organization_id'] = auth()->user()->organization_id;
         $validated['user_id'] = auth()->id();
 
         if ($draft) {
@@ -205,6 +209,7 @@ class EventController extends Controller
         $draft = null;
         if ($request->filled('draft_event_id')) {
             $draft = Event::where('id', $request->draft_event_id)
+                ->forOrganization()
                 ->where('user_id', auth()->id())
                 ->where('statut', 'brouillon')
                 ->first();
@@ -240,7 +245,7 @@ class EventController extends Controller
             ? $validated[$key]
             : $fallback;
 
-        $categoryId = $value('category_id', $draft?->category_id) ?? Category::active()->value('id');
+        $categoryId = $value('category_id', $draft?->category_id) ?? Category::forOrganization()->active()->value('id');
         $visibiliteId = $value('visibilite_id', $draft?->visibilite_id) ?? Visibilite::active()->value('id');
         $typeTarificationId = $value('type_tarification_id', $draft?->type_tarification_id) ?? TypeTarification::active()->value('id');
 
@@ -255,6 +260,7 @@ class EventController extends Controller
         $dateFin = $validated['date_fin'] ?? $draft?->date_fin?->toDateString() ?? $dateDebut;
 
         $payload = [
+            'organization_id' => auth()->user()->organization_id,
             'titre' => $title,
             'description' => $value('description', $draft?->description),
             'category_id' => $categoryId,
@@ -336,6 +342,7 @@ class EventController extends Controller
 
             // Vérifier si l'utilisateur a un lien d'accès valide
             $hasAccess = \App\Models\EventAccessLink::where('event_id', $event->id)
+                ->forOrganization($event->organization_id)
                 ->where('email_destinataire', $user->email)
                 ->exists();
 
@@ -354,12 +361,12 @@ class EventController extends Controller
      */
     public function edit(Event $event)
     {
-        $categories = Category::active()->get();
-        $devises = Devise::active()->get();
+        $categories = Category::forOrganization()->active()->get();
+        $devises = Devise::forOrganization()->active()->get();
         $typeTarifications = TypeTarification::active()->get();
         $visibilites = Visibilite::active()->get();
-        $countries = Country::active()->orderBy('nom')->get();
-        $cities = City::active()->with('country')->orderBy('nom')->get();
+        $countries = Country::forOrganization()->active()->orderBy('nom')->get();
+        $cities = City::forOrganization()->active()->with('country')->orderBy('nom')->get();
 
         return view('events.edit', compact('event', 'categories', 'devises', 'typeTarifications', 'visibilites', 'countries', 'cities'));
     }
@@ -444,7 +451,7 @@ class EventController extends Controller
     {
         abort_unless(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin(), 403);
 
-        $eventIds = Event::withTrashed()->pluck('id');
+        $eventIds = Event::withTrashed()->forOrganization()->pluck('id');
 
         if ($eventIds->isEmpty()) {
             return redirect()->route('events.index')
@@ -452,6 +459,7 @@ class EventController extends Controller
         }
 
         $imagePaths = Event::withTrashed()
+            ->forOrganization()
             ->whereNotNull('image')
             ->pluck('image')
             ->filter()
@@ -465,6 +473,7 @@ class EventController extends Controller
 
         DB::transaction(function () use ($eventIds) {
             Event::withTrashed()
+                ->forOrganization()
                 ->whereIn('id', $eventIds)
                 ->forceDelete();
         });

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -76,8 +78,20 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        $organizationName = config('app.name') === 'Laravel'
+            ? 'Accès Business'
+            : config('app.name', 'Accès Business');
+
+        $organization = Organization::create([
+            'name' => $organizationName,
+            'slug' => Str::slug($organizationName) ?: 'acces-business',
+            'plan' => 'starter',
+            'status' => 'active',
+        ]);
+
         // Le premier utilisateur devient automatiquement super_admin
         $user = User::create([
+            'organization_id' => $organization->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),

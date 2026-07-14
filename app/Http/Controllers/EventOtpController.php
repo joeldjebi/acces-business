@@ -105,6 +105,7 @@ class EventOtpController extends Controller
 
         // Trouver le code OTP le plus récent et non vérifié
         $otp = EventOtpVerification::where('event_id', $event->id)
+            ->forOrganization($event->organization_id)
             ->where('email', $validated['email'])
             ->where('is_verified', false)
             ->orderBy('created_at', 'desc')

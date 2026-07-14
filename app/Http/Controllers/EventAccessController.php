@@ -31,7 +31,8 @@ class EventAccessController extends Controller
                 ->with('error', 'Cet événement ne nécessite pas de lien d\'accès.');
         }
 
-        $query = EventAccessLink::where('event_id', $event->id);
+        $query = EventAccessLink::forOrganization($event->organization_id)
+            ->where('event_id', $event->id);
 
         // Filtre par statut
         if ($request->filled('statut')) {
@@ -102,6 +103,7 @@ class EventAccessController extends Controller
             try {
                 // Créer le lien d'accès
                 $accessLink = EventAccessLink::create([
+                    'organization_id' => $event->organization_id,
                     'event_id' => $event->id,
                     'email_destinataire' => $email,
                     'envoye_par' => auth()->id(),

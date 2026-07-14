@@ -16,7 +16,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::orderBy('created_at', 'desc')->get();
+        $users = User::where('organization_id', auth()->user()->organization_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('users.index', compact('users'));
     }
 
@@ -41,6 +43,7 @@ class UserController extends Controller
         ]);
 
         User::create([
+            'organization_id' => auth()->user()->organization_id,
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),

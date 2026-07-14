@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SuperAdminSeeder extends Seeder
 {
@@ -18,7 +20,21 @@ class SuperAdminSeeder extends Seeder
         $existingSuperAdmin = User::where('role', 'super_admin')->first();
         
         if (!$existingSuperAdmin) {
+            $organizationName = config('app.name') === 'Laravel'
+                ? 'Accès Business'
+                : config('app.name', 'Accès Business');
+
+            $organization = Organization::firstOrCreate(
+                ['slug' => Str::slug($organizationName) ?: 'acces-business'],
+                [
+                    'name' => $organizationName,
+                    'plan' => 'starter',
+                    'status' => 'active',
+                ]
+            );
+
             User::create([
+                'organization_id' => $organization->id,
                 'name' => 'Super Administrateur',
                 'email' => 'admin@example.com',
                 'password' => Hash::make('password'),
