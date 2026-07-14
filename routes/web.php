@@ -39,6 +39,7 @@ Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('pl
     Route::get('/organizations', [PlatformAdminController::class, 'organizations'])->name('organizations');
     Route::post('/organizations', [PlatformAdminController::class, 'storeOrganization'])->name('organizations.store');
     Route::delete('/organizations/purge', [PlatformAdminController::class, 'purgeOrganizations'])->name('organizations.purge');
+    Route::get('/organizations/{organization}/events/{event}', [PlatformAdminController::class, 'showOrganizationEvent'])->name('organizations.events.show');
     Route::get('/organizations/{organization}', [PlatformAdminController::class, 'showOrganization'])->name('organizations.show');
     Route::put('/organizations/{organization}', [PlatformAdminController::class, 'updateOrganization'])->name('organizations.update');
     Route::post('/organizations/{organization}/onboarding-link', [PlatformAdminController::class, 'regenerateOnboardingLink'])->name('organizations.onboarding-link');

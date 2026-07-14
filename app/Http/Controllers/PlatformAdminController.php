@@ -93,6 +93,36 @@ class PlatformAdminController extends Controller
         ]);
     }
 
+    public function showOrganizationEvent(Organization $organization, Event $event)
+    {
+        abort_unless((int) $event->organization_id === (int) $organization->id, 404);
+
+        $event->load(['category', 'devise', 'visibilite', 'typeTarification', 'user']);
+
+        return view('platform.event-show', [
+            'organization' => $organization,
+            'event' => $event,
+            'registrations' => EventRegistration::forOrganization($organization->id)
+                ->where('event_id', $event->id)
+                ->latest()
+                ->take(20)
+                ->get(),
+            'accessLinks' => EventAccessLink::forOrganization($organization->id)
+                ->where('event_id', $event->id)
+                ->latest()
+                ->take(20)
+                ->get(),
+            'otpVerifications' => EventOtpVerification::forOrganization($organization->id)
+                ->where('event_id', $event->id)
+                ->latest()
+                ->take(20)
+                ->get(),
+            'registrationsCount' => EventRegistration::forOrganization($organization->id)->where('event_id', $event->id)->count(),
+            'accessLinksCount' => EventAccessLink::forOrganization($organization->id)->where('event_id', $event->id)->count(),
+            'otpCount' => EventOtpVerification::forOrganization($organization->id)->where('event_id', $event->id)->count(),
+        ]);
+    }
+
     public function plans()
     {
         return view('platform.plans', [

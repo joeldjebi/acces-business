@@ -14,7 +14,7 @@
         --gold: #b98943;
         --green: #2e7b65;
         --red: #a4514a;
-        --shadow: 0 18px 45px rgba(39, 33, 25, 0.08);
+        --shadow: 0 18px 45px rgba(39, 33, 25, 0.055);
         color: var(--text);
         max-width: 1180px;
         margin: 0 auto;
@@ -62,7 +62,7 @@
     .ref-card {
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 18px;
         box-shadow: var(--shadow);
         overflow: hidden;
     }
@@ -100,9 +100,9 @@
     }
 
     .ref-input {
-        background: #fff;
+        background: #fffaf6;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 14px;
         color: var(--ink);
         min-height: 42px;
         padding: 10px 12px;
@@ -112,7 +112,7 @@
     .ref-btn {
         align-items: center;
         border: 1px solid transparent;
-        border-radius: 8px;
+        border-radius: 14px;
         display: inline-flex;
         gap: 8px;
         justify-content: center;
@@ -146,7 +146,7 @@
     }
 
     .ref-list-head {
-        background: var(--panel-soft);
+        background: rgba(248, 244, 236, 0.72);
         color: var(--muted);
         font-size: 0.72rem;
         font-weight: 600;
@@ -182,9 +182,9 @@
 
     .icon-btn {
         align-items: center;
-        background: #fff;
+        background: #fffaf6;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 12px;
         color: var(--ink);
         display: inline-flex;
         height: 36px;

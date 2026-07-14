@@ -30,7 +30,7 @@
         --green: #2e7b65;
         --blue: #315f83;
         --red: #a4514a;
-        --shadow: 0 18px 45px rgba(39, 33, 25, 0.08);
+        --shadow: 0 18px 45px rgba(39, 33, 25, 0.055);
         color: var(--text);
         max-width: 1480px;
         margin: 0 auto;
@@ -53,7 +53,7 @@
     .ops-kicker {
         color: var(--gold);
         font-size: 0.74rem;
-        font-weight: 850;
+        font-weight: 600;
         letter-spacing: 0.14em;
         text-transform: uppercase;
     }
@@ -61,7 +61,7 @@
     .ops-title {
         color: var(--ink);
         font-size: clamp(1.7rem, 2.5vw, 2.6rem);
-        font-weight: 850;
+        font-weight: 600;
         line-height: 1.08;
         margin: 6px 0 0;
     }
@@ -83,10 +83,10 @@
 
     .ops-btn {
         align-items: center;
-        border-radius: 8px;
+        border-radius: 14px;
         display: inline-flex;
         font-size: 0.88rem;
-        font-weight: 850;
+        font-weight: 600;
         gap: 8px;
         min-height: 44px;
         padding: 0 15px;
@@ -116,7 +116,7 @@
     .role-card {
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 14px;
         box-shadow: var(--shadow);
         padding: 17px;
     }
@@ -125,7 +125,7 @@
         color: var(--muted);
         display: block;
         font-size: 0.72rem;
-        font-weight: 850;
+        font-weight: 600;
         letter-spacing: 0.1em;
         text-transform: uppercase;
     }
@@ -134,7 +134,7 @@
         color: var(--ink);
         display: block;
         font-size: 1.8rem;
-        font-weight: 850;
+        font-weight: 600;
         line-height: 1;
         margin-top: 12px;
     }
@@ -142,7 +142,7 @@
     .users-panel {
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 14px;
         box-shadow: var(--shadow);
         overflow: hidden;
     }
@@ -159,7 +159,7 @@
     .panel-head h2 {
         color: var(--ink);
         font-size: 1rem;
-        font-weight: 850;
+        font-weight: 600;
         margin: 0;
     }
 
@@ -179,10 +179,10 @@
     }
 
     .user-row.user-head {
-        background: var(--panel-soft);
+        background: rgba(248, 244, 236, 0.72);
         color: var(--muted);
         font-size: 0.72rem;
-        font-weight: 850;
+        font-weight: 600;
         letter-spacing: 0.08em;
         text-transform: uppercase;
     }
@@ -194,10 +194,10 @@
     .avatar {
         align-items: center;
         background: var(--ink);
-        border-radius: 8px;
+        border-radius: 14px;
         color: #d8b978;
         display: flex;
-        font-weight: 850;
+        font-weight: 600;
         height: 42px;
         justify-content: center;
         width: 42px;
@@ -206,7 +206,7 @@
     .user-name {
         color: var(--ink);
         display: block;
-        font-weight: 850;
+        font-weight: 600;
         line-height: 1.35;
         overflow-wrap: anywhere;
     }
@@ -225,7 +225,7 @@
         border-radius: 999px;
         display: inline-flex;
         font-size: 0.74rem;
-        font-weight: 850;
+        font-weight: 600;
         gap: 6px;
         justify-content: center;
         min-height: 30px;
@@ -261,9 +261,9 @@
 
     .btn-action {
         align-items: center;
-        background: #fff;
+        background: #fffaf6;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 12px;
         color: var(--ink);
         display: inline-flex;
         height: 36px;

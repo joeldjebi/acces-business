@@ -164,6 +164,7 @@
                                 <th>Date</th>
                                 <th>Statut</th>
                                 <th>Prix</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -177,9 +178,14 @@
                                     <td>{{ optional($event->date_debut)->format('d/m/Y') ?: '-' }}</td>
                                     <td><span class="status-pill status-{{ $event->statut }}">{{ ucfirst($event->statut) }}</span></td>
                                     <td>{{ $event->prix ? number_format((float) $event->prix, 0, ',', ' ') . ' ' . optional($event->devise)->libelle : 'Gratuit' }}</td>
+                                    <td>
+                                        <a href="{{ route('platform.organizations.events.show', [$organization, $event]) }}" class="btn btn-outline-dark btn-sm">
+                                            <i class="bi bi-eye me-1"></i> Détail
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="muted text-center py-4">Aucun événement.</td></tr>
+                                <tr><td colspan="6" class="muted text-center py-4">Aucun événement.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
