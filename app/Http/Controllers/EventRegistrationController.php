@@ -276,7 +276,7 @@ class EventRegistrationController extends Controller
     {
         try {
             $registration = EventRegistration::where('token_unique', $token)
-                ->with('event')
+                ->with('event.organization')
                 ->first();
 
             if (!$registration) {

@@ -96,10 +96,10 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'draft_event_id' => 'nullable|exists:events,id',
+            'draft_event_id' => ['nullable', Rule::exists('events', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'date_debut' => 'required|date',
             'heure_debut' => 'required',
             'date_fin' => 'required|date|after_or_equal:date_debut',
@@ -125,7 +125,7 @@ class EventController extends Controller
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'required|exists:type_de_tarifications,id',
             'prix' => 'nullable|numeric|min:0',
-            'devise_id' => 'nullable|exists:devises,id',
+            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -171,10 +171,10 @@ class EventController extends Controller
     public function saveDraft(Request $request)
     {
         $validated = $request->validate([
-            'draft_event_id' => 'nullable|exists:events,id',
+            'draft_event_id' => ['nullable', Rule::exists('events', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'titre' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => ['nullable', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'date_debut' => 'nullable|date',
             'heure_debut' => 'nullable',
             'date_fin' => 'nullable|date',
@@ -200,7 +200,7 @@ class EventController extends Controller
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'nullable|exists:type_de_tarifications,id',
             'prix' => 'nullable|numeric|min:0',
-            'devise_id' => 'nullable|exists:devises,id',
+            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -379,7 +379,7 @@ class EventController extends Controller
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'date_debut' => 'required|date',
             'heure_debut' => 'required',
             'date_fin' => 'required|date|after_or_equal:date_debut',
@@ -405,7 +405,7 @@ class EventController extends Controller
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'required|exists:type_de_tarifications,id',
             'prix' => 'nullable|numeric|min:0',
-            'devise_id' => 'nullable|exists:devises,id',
+            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

@@ -163,7 +163,8 @@ class EventAccessController extends Controller
     public function showAccessForm(Event $event, string $token)
     {
         // Trouver le lien d'accès
-        $accessLink = EventAccessLink::where('event_id', $event->id)
+        $accessLink = EventAccessLink::forOrganization($event->organization_id)
+            ->where('event_id', $event->id)
             ->where('token_unique', $token)
             ->first();
 

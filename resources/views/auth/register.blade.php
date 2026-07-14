@@ -342,10 +342,10 @@
             <div class="auth-left">
                 <i class="bi bi-person-plus-fill auth-icon"></i>
                 <h1>Créez votre compte</h1>
-                <p>Devenez le super administrateur et prenez le contrôle total de votre système.</p>
+                <p>Créez l'espace de votre organisation et gérez vos événements, invitations et accès dans un environnement isolé.</p>
                 <span class="badge-super-admin">
-                    <i class="bi bi-star-fill me-1"></i>
-                    Super Administrateur
+                    <i class="bi bi-building-check me-1"></i>
+                    Espace SaaS dédié
                 </span>
             </div>
 
@@ -353,7 +353,7 @@
             <div class="auth-right">
                 <div class="auth-header">
                     <h2>Inscription</h2>
-                    <p>Remplissez le formulaire pour créer votre compte</p>
+                    <p>Votre organisation sera créée automatiquement avec un essai de 14 jours.</p>
                 </div>
 
                 @if($errors->any())
@@ -371,6 +371,24 @@
                     @csrf
 
                     <div class="form-group">
+                        <label for="organization_name" class="form-label">
+                            <i class="bi bi-building"></i>
+                            Organisation
+                        </label>
+                        <input type="text"
+                               class="form-control @error('organization_name') is-invalid @enderror"
+                               id="organization_name"
+                               name="organization_name"
+                               value="{{ old('organization_name') }}"
+                               required
+                               autofocus
+                               placeholder="Nom de votre entreprise">
+                        @error('organization_name')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
                         <label for="name" class="form-label">
                             <i class="bi bi-person"></i>
                             Nom complet
@@ -381,7 +399,6 @@
                                name="name"
                                value="{{ old('name') }}"
                                required
-                               autofocus
                                placeholder="Votre nom complet">
                         @error('name')
                             <div class="invalid-feedback d-block">{{ $message }}</div>

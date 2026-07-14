@@ -49,14 +49,6 @@ class AuthController extends Controller
      */
     public function showRegisterForm()
     {
-        // Vérifier si un utilisateur existe déjà
-        $hasUsers = User::count() > 0;
-        
-        if ($hasUsers) {
-            // Si des utilisateurs existent, rediriger vers la page de connexion
-            return redirect('/login')->with('error', 'L\'inscription n\'est plus disponible. Veuillez contacter un administrateur.');
-        }
-        
         return view('auth.register');
     }
 
@@ -65,44 +57,48 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        // Vérifier si un utilisateur existe déjà
-        $hasUsers = User::count() > 0;
-        
-        if ($hasUsers) {
-            return redirect('/login')->with('error', 'L\'inscription n\'est plus disponible.');
-        }
-
         $validated = $request->validate([
+            'organization_name' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $organizationName = config('app.name') === 'Laravel'
-            ? 'Accès Business'
-            : config('app.name', 'Accès Business');
-
         $organization = Organization::create([
-            'name' => $organizationName,
-            'slug' => Str::slug($organizationName) ?: 'acces-business',
+            'name' => $validated['organization_name'],
+            'slug' => $this->uniqueOrganizationSlug($validated['organization_name']),
             'plan' => 'starter',
             'status' => 'active',
+            'trial_ends_at' => now()->addDays(14),
         ]);
 
-        // Le premier utilisateur devient automatiquement super_admin
         $user = User::create([
             'organization_id' => $organization->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'super_admin', // Premier utilisateur = super admin
+            'role' => 'super_admin',
         ]);
 
         // Connecter automatiquement l'utilisateur
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect('/dashboard')->with('success', 'Bienvenue ! Vous êtes maintenant le super administrateur.');
+        return redirect('/dashboard')->with('success', 'Bienvenue ! Votre espace SaaS est prêt.');
+    }
+
+    private function uniqueOrganizationSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'organisation';
+        $slug = $base;
+        $suffix = 2;
+
+        while (Organization::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     /**
