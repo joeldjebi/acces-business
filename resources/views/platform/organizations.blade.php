@@ -9,6 +9,8 @@
     .muted { color:var(--muted); }
     .form-control,.form-select { border:1px solid var(--line); border-radius:10px; min-height:42px; }
     .btn-dark { background:#171713; border:0; border-radius:10px; }
+    .btn-danger-soft { background:rgba(164,81,74,.1); border:1px solid rgba(164,81,74,.28); border-radius:10px; color:#a4514a; }
+    .btn-danger-soft:hover { background:#a4514a; color:#fff; }
     .platform-table { border-collapse:separate; border-spacing:0; width:100%; }
     .platform-table th { color:var(--muted); font-size:.72rem; font-weight:600; letter-spacing:.08em; padding:0 12px 12px; text-transform:uppercase; white-space:nowrap; }
     .platform-table td { border-top:1px solid var(--line); padding:14px 12px; vertical-align:middle; }
@@ -31,6 +33,9 @@
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('platform.dashboard') }}" class="btn btn-outline-dark">Dashboard</a>
+            <button type="button" class="btn btn-danger-soft" data-bs-toggle="modal" data-bs-target="#purgeOrganizationsModal">
+                <i class="bi bi-trash3 me-2"></i> Vider
+            </button>
             <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#createOrganizationModal">
                 <i class="bi bi-plus-lg me-2"></i> Créer un client
             </button>
@@ -106,6 +111,37 @@
             {{ $organizations->links() }}
         </div>
     </section>
+</div>
+
+<div class="modal fade" id="purgeOrganizationsModal" tabindex="-1" aria-labelledby="purgeOrganizationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="text-uppercase" style="color:#a4514a;font-size:.72rem;font-weight:600;letter-spacing:.12em;">Action définitive</div>
+                    <h2 class="modal-title h5" id="purgeOrganizationsModalLabel" style="font-weight:600;">Vider les organisations</h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <form method="POST" action="{{ route('platform.organizations.purge') }}">
+                @csrf
+                @method('DELETE')
+                <div class="modal-body">
+                    <p class="muted">
+                        Cette action supprime toutes les organisations clientes et leurs données liées:
+                        événements, invitations, inscriptions, OTP, catégories, devises, pays, villes, utilisateurs, factures et branding.
+                    </p>
+                    <p class="mb-3" style="color:#a4514a;font-weight:600;">Les comptes super-admin plateforme ne seront pas supprimés.</p>
+                    <label class="form-label">Tapez VIDER pour confirmer</label>
+                    <input class="form-control" name="confirmation" autocomplete="off" required placeholder="VIDER">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-danger" type="submit"><i class="bi bi-trash3 me-2"></i> Supprimer définitivement</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="createOrganizationModal" tabindex="-1" aria-labelledby="createOrganizationModalLabel" aria-hidden="true">

@@ -9,12 +9,15 @@ use App\Models\Country;
 use App\Models\Devise;
 use App\Models\Event;
 use App\Models\EventAccessLink;
+use App\Models\EventOtpVerification;
 use App\Models\EventRegistration;
 use App\Models\Organization;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Support\SaasPlans;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -137,6 +140,82 @@ class PlatformAdminController extends Controller
 
         return redirect()->route('platform.organizations')
             ->with('success', 'Client créé. Lien register: ' . route('client.register', $organization->onboarding_token));
+    }
+
+    public function purgeOrganizations(Request $request)
+    {
+        $request->validate([
+            'confirmation' => ['required', Rule::in(['VIDER'])],
+        ], [
+            'confirmation.in' => 'Tapez VIDER pour confirmer la suppression des organisations.',
+        ]);
+
+        $organizationIds = Organization::pluck('id');
+
+        if ($organizationIds->isEmpty()) {
+            return back()->with('success', 'Aucune organisation à supprimer.');
+        }
+
+        $eventIds = Event::withTrashed()
+            ->whereIn('organization_id', $organizationIds)
+            ->pluck('id');
+
+        $userEmails = User::whereIn('organization_id', $organizationIds)
+            ->pluck('email')
+            ->filter()
+            ->values();
+
+        $userIds = User::whereIn('organization_id', $organizationIds)->pluck('id');
+
+        $filesToDelete = Event::withTrashed()
+            ->whereIn('organization_id', $organizationIds)
+            ->whereNotNull('image')
+            ->pluck('image')
+            ->merge(
+                EventRegistration::whereIn('organization_id', $organizationIds)
+                    ->whereNotNull('qr_code_path')
+                    ->pluck('qr_code_path')
+            )
+            ->filter()
+            ->unique()
+            ->values();
+
+        $stats = [
+            'organizations' => $organizationIds->count(),
+            'events' => $eventIds->count(),
+            'users' => $userIds->count(),
+        ];
+
+        DB::transaction(function () use ($organizationIds, $userIds, $userEmails) {
+            EventAccessLink::whereIn('organization_id', $organizationIds)->delete();
+            EventRegistration::whereIn('organization_id', $organizationIds)->delete();
+            EventOtpVerification::whereIn('organization_id', $organizationIds)->delete();
+            Event::withTrashed()->whereIn('organization_id', $organizationIds)->forceDelete();
+
+            City::whereIn('organization_id', $organizationIds)->delete();
+            Country::whereIn('organization_id', $organizationIds)->delete();
+            Devise::whereIn('organization_id', $organizationIds)->delete();
+            Category::whereIn('organization_id', $organizationIds)->delete();
+            BillingInvoice::whereIn('organization_id', $organizationIds)->delete();
+
+            if ($userIds->isNotEmpty()) {
+                DB::table('sessions')->whereIn('user_id', $userIds)->delete();
+            }
+
+            if ($userEmails->isNotEmpty()) {
+                DB::table('password_reset_tokens')->whereIn('email', $userEmails)->delete();
+            }
+
+            User::whereIn('organization_id', $organizationIds)->delete();
+            Organization::whereIn('id', $organizationIds)->delete();
+        });
+
+        if ($filesToDelete->isNotEmpty()) {
+            Storage::disk('public')->delete($filesToDelete->all());
+        }
+
+        return redirect()->route('platform.organizations')
+            ->with('success', "{$stats['organizations']} organisation(s), {$stats['events']} événement(s) et {$stats['users']} utilisateur(s) supprimés.");
     }
 
     public function updateOrganization(Request $request, Organization $organization)
