@@ -407,6 +407,7 @@
         $organizationBranding = $organizationSettings['branding'] ?? [];
         $brandName = $organizationBranding['brand_name'] ?? $currentOrganization?->name ?? 'EventOps';
         $brandLogo = $currentOrganization?->logo ? \Illuminate\Support\Facades\Storage::url($currentOrganization->logo) : null;
+        $isPlatformAdmin = auth()->user()->isPlatformAdmin();
     @endphp
     <div class="sidebar">
         <div class="sidebar-header">
@@ -420,10 +421,24 @@
                 @endif
                 <div class="sidebar-logo-text">{{ $brandName }}</div>
             </div>
-            <div class="sidebar-subtitle">{{ ucfirst($currentOrganization?->plan ?? 'starter') }} · Console SaaS</div>
+            <div class="sidebar-subtitle">{{ $isPlatformAdmin ? 'Plateforme · Supervision' : ucfirst($currentOrganization?->plan ?? 'starter') . ' · Console SaaS' }}</div>
         </div>
 
         <ul class="sidebar-menu">
+            @if($isPlatformAdmin)
+            <li>
+                <a href="{{ route('platform.dashboard') }}" class="{{ request()->routeIs('platform.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>Vue plateforme</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('platform.organizations') }}" class="{{ request()->routeIs('platform.organizations') ? 'active' : '' }}">
+                    <i class="bi bi-buildings"></i>
+                    <span>Organisations</span>
+                </a>
+            </li>
+            @else
             <li>
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2"></i>
@@ -481,6 +496,7 @@
                     <span>Branding</span>
                 </a>
             </li>
+            @endif
             @endif
         </ul>
 

@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Supprimer la table si elle existe partiellement
-        Schema::dropIfExists('events');
+        if (Schema::hasTable('events')) {
+            return;
+        }
         
         Schema::create('events', function (Blueprint $table) {
             $table->id();

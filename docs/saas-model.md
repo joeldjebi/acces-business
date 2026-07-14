@@ -14,6 +14,15 @@ Le tenant est une `organization`.
 
 Une organisation represente une entreprise, agence ou equipe qui gere ses propres evenements.
 
+## Administration plateforme
+
+Le role `platform_admin` est separe des admins d'organisation.
+
+- `platform_admin` supervise la plateforme via `/platform/*`
+- `super_admin` administre uniquement son organisation
+- les routes tenant restent protegees par `tenant`
+- un `platform_admin` sans organisation ne peut pas ouvrir les ecrans tenant
+
 ## Donnees rattachees a une organisation
 
 Les donnees suivantes portent un `organization_id` :
@@ -44,6 +53,10 @@ Les routes protegees utilisent aussi le middleware `tenant`. Il bloque les acces
 
 Les validations des formulaires tenant-aware refusent aussi les IDs de referentiels rattaches a une autre organisation.
 
+Les organisations dont le statut n'est pas `active` ou `trialing` sont bloquees sur les routes tenant.
+
+Les reponses HTTP passent par un middleware de headers de securite : anti-clickjacking, MIME sniffing, referrer policy, permissions policy et HSTS lorsque la requete est en HTTPS.
+
 ## Onboarding SaaS
 
 La page d'inscription cree maintenant :
@@ -66,3 +79,16 @@ Cette phase pose la fondation SaaS :
 - middleware tenant sur les routes privees
 
 Les prochaines etapes seront les plans/quotas, la facturation, puis une vraie console platform admin separee des admins d'organisation.
+
+## Etat roadmap
+
+- Modele SaaS multi-tenant : implemente
+- Organisation et isolation des donnees : implemente
+- Onboarding SaaS : implemente
+- Dashboard adapte SaaS : implemente
+- Plans SaaS : implemente en configuration applicative
+- Facturation : preparee en mode manuel avec factures internes
+- Branding par organisation : implemente pour la console
+- Super admin plateforme : implemente
+- Infrastructure : preparee via variables d'environnement, config SaaS et documentation
+- Paiement en ligne : a brancher sur un PSP lorsque le choix Stripe/PayPal/CinetPay est valide

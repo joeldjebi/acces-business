@@ -13,8 +13,16 @@ class EnsureTenantAccess
     {
         $user = $request->user();
 
+        if ($user?->isPlatformAdmin()) {
+            abort(403, 'Utilisez la console plateforme.');
+        }
+
         if (!$user || !$user->organization_id) {
             abort(403, 'Organisation manquante.');
+        }
+
+        if (!$user->organization || !in_array($user->organization->status, ['active', 'trialing'], true)) {
+            abort(403, 'Organisation suspendue ou inactive.');
         }
 
         foreach ($request->route()?->parameters() ?? [] as $parameter) {

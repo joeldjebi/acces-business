@@ -16,6 +16,21 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
+        $platformEmail = config('saas.platform_admin.email');
+
+        if ($platformEmail && !User::where('role', 'platform_admin')->exists()) {
+            User::create([
+                'organization_id' => null,
+                'name' => config('saas.platform_admin.name', 'Platform Admin'),
+                'email' => $platformEmail,
+                'password' => Hash::make(env('PLATFORM_ADMIN_PASSWORD', Str::random(24))),
+                'role' => 'platform_admin',
+            ]);
+
+            $this->command->info('Super admin plateforme créé.');
+            $this->command->info('Email: ' . $platformEmail);
+        }
+
         // Vérifier si un super admin existe déjà
         $existingSuperAdmin = User::where('role', 'super_admin')->first();
         

@@ -21,12 +21,23 @@ class CheckRole
 
         $user = auth()->user();
 
-        // Le super admin a accès à tout
-        if ($user->isSuperAdmin()) {
+        if ($user->isPlatformAdmin() && in_array('platform_admin', $roles, true)) {
+            return $next($request);
+        }
+
+        if ($user->isPlatformAdmin()) {
+            abort(403, 'Accès réservé aux espaces plateforme.');
+        }
+
+        if ($user->isSuperAdmin() && in_array('super_admin', $roles, true)) {
             return $next($request);
         }
 
         foreach ($roles as $role) {
+            if ($role === 'super_admin' && $user->isSuperAdmin()) {
+                return $next($request);
+            }
+
             if ($role === 'admin' && $user->isAdmin()) {
                 return $next($request);
             }

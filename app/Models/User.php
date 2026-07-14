@@ -51,6 +51,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Vérifie si l'utilisateur administre la plateforme
+     */
+    public function isPlatformAdmin(): bool
+    {
+        return $this->role === 'platform_admin';
+    }
+
+    /**
      * Vérifie si l'utilisateur est super admin
      */
     public function isSuperAdmin(): bool
@@ -87,7 +95,7 @@ class User extends Authenticatable
      */
     public function canCreateUsers(): bool
     {
-        return $this->isSuperAdmin();
+        return $this->isSuperAdmin() || $this->isPlatformAdmin();
     }
 
     public function organization(): BelongsTo

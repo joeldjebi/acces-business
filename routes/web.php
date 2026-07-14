@@ -8,6 +8,7 @@ use App\Http\Controllers\EventOtpController;
 use App\Http\Controllers\EventAccessController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SaasSettingsController;
+use App\Http\Controllers\PlatformAdminController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques
@@ -21,10 +22,16 @@ Route::get('/', function () {
 
 // Routes d'authentification
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:4,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('platform.')->group(function () {
+    Route::get('/dashboard', [PlatformAdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/organizations', [PlatformAdminController::class, 'organizations'])->name('organizations');
+    Route::put('/organizations/{organization}', [PlatformAdminController::class, 'updateOrganization'])->name('organizations.update');
+});
 
 // Routes protégées
 Route::middleware(['auth', 'tenant'])->group(function () {
