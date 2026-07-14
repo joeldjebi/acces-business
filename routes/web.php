@@ -17,16 +17,19 @@ Route::get('/', function () {
     if (\Illuminate\Support\Facades\Schema::hasTable('users') && \App\Models\User::count() === 0) {
         return redirect('/register');
     }
-    return redirect('/login');
+    return redirect()->route('client.login');
 });
 
 // Routes d'authentification
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
+Route::post('/login', [AuthController::class, 'clientLogin'])->middleware('throttle:6,1');
+Route::get('/platform/login', [AuthController::class, 'showPlatformLoginForm'])->name('platform.login');
+Route::post('/platform/login', [AuthController::class, 'platformLogin'])->name('platform.login.store')->middleware('throttle:6,1');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:4,1');
 Route::get('/client/login', [AuthController::class, 'showClientLoginForm'])->name('client.login');
 Route::get('/client/login/{organization:slug}', [AuthController::class, 'showClientLoginForm'])->name('client.login.organization');
+Route::post('/client/login', [AuthController::class, 'clientLogin'])->name('client.login.store')->middleware('throttle:6,1');
 Route::get('/client/register', [AuthController::class, 'showRegisterForm'])->name('client.register.self');
 Route::get('/client/register/{token}', [AuthController::class, 'showClientRegisterForm'])->name('client.register');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

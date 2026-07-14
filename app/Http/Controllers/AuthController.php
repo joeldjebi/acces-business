@@ -17,8 +17,15 @@ class AuthController extends Controller
      */
     public function showLoginForm()
     {
-        $hasUsers = User::count() > 0;
-        return view('auth.login', compact('hasUsers'));
+        return redirect()->route('client.login');
+    }
+
+    public function showPlatformLoginForm()
+    {
+        return view('auth.login', [
+            'hasUsers' => User::count() > 0,
+            'authContext' => 'platform',
+        ]);
     }
 
     public function showClientLoginForm(?Organization $organization = null)
@@ -28,6 +35,7 @@ class AuthController extends Controller
         return view('auth.login', [
             'hasUsers' => $hasUsers,
             'clientOrganization' => $organization,
+            'authContext' => 'client',
         ]);
     }
 
@@ -35,6 +43,21 @@ class AuthController extends Controller
      * Traite la connexion
      */
     public function login(Request $request)
+    {
+        return $this->attemptLogin($request, 'client');
+    }
+
+    public function platformLogin(Request $request)
+    {
+        return $this->attemptLogin($request, 'platform');
+    }
+
+    public function clientLogin(Request $request)
+    {
+        return $this->attemptLogin($request, 'client');
+    }
+
+    private function attemptLogin(Request $request, string $context)
     {
         $request->validate([
             'email' => 'required|email',
@@ -48,7 +71,27 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             if (Auth::user()->isPlatformAdmin()) {
+                if ($context !== 'platform') {
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    throw ValidationException::withMessages([
+                        'email' => ['Utilisez la route de connexion SA plateforme.'],
+                    ]);
+                }
+
                 return redirect()->intended(route('platform.dashboard'));
+            }
+
+            if ($context === 'platform') {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                throw ValidationException::withMessages([
+                    'email' => ['Ce compte n’est pas un compte SA plateforme.'],
+                ]);
             }
 
             if (!Auth::user()->organization || !in_array(Auth::user()->organization->status, ['active', 'trialing'], true)) {

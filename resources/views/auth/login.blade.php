@@ -418,14 +418,16 @@
             </div>
 
             <div class="brand-copy">
-                <div class="eyebrow">{{ isset($clientOrganization) ? 'Espace client' : 'Console privée' }}</div>
-                <h1>{{ isset($clientOrganization) ? $clientOrganization->name : 'Un espace réservé aux équipes autorisées.' }}</h1>
+                <div class="eyebrow">{{ ($authContext ?? 'client') === 'platform' ? 'SA plateforme' : (isset($clientOrganization) ? 'Espace client' : 'Console client') }}</div>
+                <h1>{{ ($authContext ?? 'client') === 'platform' ? 'Pilotage global Accès Business.' : (isset($clientOrganization) ? $clientOrganization->name : 'Votre espace événementiel.') }}</h1>
                 <p>
-                    @isset($clientOrganization)
+                    @if(($authContext ?? 'client') === 'platform')
+                        Connectez-vous à la console de supervision des organisations, plans et accès clients.
+                    @elseif(isset($clientOrganization))
                         Connectez-vous à l'espace de votre organisation pour gérer vos événements, invitations et accès.
                     @else
-                        Pilotez les événements, les accès et les invitations depuis une interface protégée, conçue pour rester calme même quand l'opérationnel accélère.
-                    @endisset
+                        Connectez-vous à votre espace client ou créez une organisation pour démarrer.
+                    @endif
                 </p>
             </div>
 
@@ -450,7 +452,7 @@
 
             <div class="auth-header">
                 <h2>Connexion</h2>
-                <p>{{ isset($clientOrganization) ? 'Accès client sécurisé.' : 'Renseignez vos identifiants pour ouvrir votre espace d’administration.' }}</p>
+                <p>{{ ($authContext ?? 'client') === 'platform' ? 'Accès réservé au super admin plateforme.' : 'Accès client sécurisé.' }}</p>
             </div>
 
             @if($errors->any())
@@ -460,7 +462,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}">
+            <form method="POST" action="{{ ($authContext ?? 'client') === 'platform' ? route('platform.login.store') : route('client.login.store') }}">
                 @csrf
 
                 <div class="form-group">
@@ -510,9 +512,9 @@
                     </label>
                 </div>
 
-                <button type="submit" class="btn btn-login">
+            <button type="submit" class="btn btn-login">
                     <i class="bi bi-arrow-right-circle me-2"></i>
-                    Accéder au tableau de bord
+                    {{ ($authContext ?? 'client') === 'platform' ? 'Accéder à la plateforme' : 'Accéder à mon espace client' }}
                 </button>
             </form>
 
@@ -526,13 +528,23 @@
             </a>
             @endif
 
-            <div class="divider">
-                <span>Client</span>
-            </div>
-            <a href="{{ route('client.register.self') }}" class="btn btn-register">
-                <i class="bi bi-building-add me-2"></i>
-                Créer mon espace client
-            </a>
+            @if(($authContext ?? 'client') === 'platform')
+                <div class="divider">
+                    <span>Client</span>
+                </div>
+                <a href="{{ route('client.login') }}" class="btn btn-register">
+                    <i class="bi bi-building me-2"></i>
+                    Connexion client
+                </a>
+            @else
+                <div class="divider">
+                    <span>Client</span>
+                </div>
+                <a href="{{ route('client.register.self') }}" class="btn btn-register">
+                    <i class="bi bi-building-add me-2"></i>
+                    Créer mon espace client
+                </a>
+            @endif
         </section>
     </main>
 
