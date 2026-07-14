@@ -38,8 +38,7 @@
             font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--ink);
             background:
-                linear-gradient(120deg, rgba(255, 252, 246, 0.94), rgba(245, 241, 233, 0.9)),
-                radial-gradient(circle at 18% 12%, rgba(185, 137, 67, 0.18), transparent 30%),
+                linear-gradient(120deg, rgba(255, 252, 246, 0.96), rgba(245, 241, 233, 0.92)),
                 #ede6da;
             display: flex;
             align-items: center;
@@ -53,6 +52,7 @@
             display: grid;
             grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.68fr);
             border: 1px solid var(--line);
+            border-radius: 30px;
             background: rgba(255, 252, 246, 0.78);
             box-shadow: 0 28px 80px rgba(24, 23, 19, 0.16);
             overflow: hidden;
@@ -63,7 +63,7 @@
             min-height: 640px;
             padding: 52px;
             background:
-                linear-gradient(rgba(24, 23, 19, 0.72), rgba(24, 23, 19, 0.88)),
+                linear-gradient(135deg, rgba(24, 23, 19, 0.64), rgba(24, 23, 19, 0.9)),
                 url('https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1400&q=80') center/cover;
             color: #fffaf1;
             display: flex;
@@ -76,6 +76,7 @@
             position: absolute;
             inset: 22px;
             border: 1px solid rgba(255, 250, 241, 0.18);
+            border-radius: 24px;
             pointer-events: none;
         }
 
@@ -106,6 +107,7 @@
             background: var(--gold);
             color: var(--ink);
             font-size: 1.25rem;
+            border-radius: 14px;
         }
 
         .brand-copy {
@@ -147,6 +149,7 @@
 
         .status-item {
             border-top: 1px solid rgba(255, 250, 241, 0.22);
+            border-radius: 12px;
             padding-top: 14px;
         }
 
@@ -177,6 +180,7 @@
             margin-bottom: 28px;
             padding: 8px 12px;
             border: 1px solid rgba(185, 137, 67, 0.35);
+            border-radius: 999px;
             color: var(--gold-deep);
             background: rgba(185, 137, 67, 0.08);
             font-size: 0.74rem;
@@ -227,7 +231,7 @@
         .form-control {
             min-height: 52px;
             border: 1px solid var(--line);
-            border-radius: 0;
+            border-radius: 16px;
             padding: 14px 44px 14px 15px;
             color: var(--ink);
             background: #fffaf2;
@@ -273,7 +277,7 @@
             height: 18px;
             margin: 0;
             border-color: rgba(24, 23, 19, 0.24);
-            border-radius: 0;
+            border-radius: 6px;
             box-shadow: none;
         }
 
@@ -286,7 +290,7 @@
         .btn-register {
             min-height: 54px;
             width: 100%;
-            border-radius: 0;
+            border-radius: 16px;
             font-weight: 800;
             letter-spacing: 0.02em;
             transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
@@ -342,7 +346,7 @@
         .alert {
             margin-bottom: 24px;
             border: 1px solid rgba(167, 59, 53, 0.24);
-            border-radius: 0;
+            border-radius: 16px;
             background: rgba(167, 59, 53, 0.08);
             color: var(--danger);
             padding: 14px 16px;

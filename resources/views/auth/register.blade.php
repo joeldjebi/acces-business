@@ -23,13 +23,14 @@
                 #f5f3ee;
             color: #2c2a25;
             font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            min-height: 100vh;
+            min-height: 100svh;
+            overflow: hidden;
         }
 
         .register-shell {
             display: grid;
             grid-template-columns: minmax(0, .92fr) minmax(420px, .72fr);
-            min-height: 100vh;
+            height: 100svh;
         }
 
         .register-story {
@@ -40,7 +41,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: clamp(32px, 5vw, 70px);
+            padding: clamp(24px, 4vw, 54px);
         }
 
         .brand-mark {
@@ -71,12 +72,12 @@
             font-size: .78rem;
             font-weight: 600;
             letter-spacing: .13em;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
             text-transform: uppercase;
         }
 
         .story-copy h1 {
-            font-size: clamp(2.2rem, 5vw, 4.9rem);
+            font-size: clamp(2rem, 4.4vw, 4.2rem);
             font-weight: 600;
             letter-spacing: 0;
             line-height: .98;
@@ -86,9 +87,9 @@
 
         .story-copy p {
             color: rgba(255,250,241,.74);
-            font-size: 1.04rem;
-            line-height: 1.7;
-            margin: 22px 0 0;
+            font-size: .98rem;
+            line-height: 1.55;
+            margin: 16px 0 0;
             max-width: 620px;
         }
 
@@ -100,7 +101,7 @@
 
         .story-stat {
             border-top: 1px solid rgba(216,185,120,.42);
-            padding-top: 14px;
+            padding-top: 10px;
         }
 
         .story-stat strong,
@@ -123,17 +124,18 @@
         .register-panel {
             align-items: center;
             display: flex;
-            padding: clamp(24px, 4vw, 58px);
+            padding: clamp(16px, 2.7vw, 34px);
         }
 
         .form-card {
             background: #fffefa;
             border: 1px solid #dfd7cb;
-            border-radius: 22px;
-            box-shadow: 0 22px 58px rgba(39,33,25,.08);
+            border-radius: 18px;
+            box-shadow: 0 18px 46px rgba(39,33,25,.075);
             margin: 0 auto;
-            max-width: 560px;
-            padding: clamp(24px, 4vw, 38px);
+            max-height: calc(100svh - 34px);
+            max-width: 540px;
+            padding: clamp(18px, 2.4vw, 28px);
             width: 100%;
         }
 
@@ -142,32 +144,33 @@
             font-size: .74rem;
             font-weight: 600;
             letter-spacing: .12em;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             text-transform: uppercase;
         }
 
         .form-card h2 {
             color: #171713;
-            font-size: 1.72rem;
+            font-size: 1.48rem;
             font-weight: 600;
-            margin: 0 0 8px;
+            margin: 0 0 6px;
         }
 
         .form-card .intro {
             color: #746f65;
-            line-height: 1.55;
-            margin-bottom: 24px;
+            font-size: .92rem;
+            line-height: 1.42;
+            margin-bottom: 14px;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
 
         .form-label {
             color: #343028;
-            font-size: .84rem;
+            font-size: .78rem;
             font-weight: 600;
-            margin-bottom: 7px;
+            margin-bottom: 5px;
         }
 
         .field-wrap {
@@ -177,10 +180,10 @@
         .form-control {
             background: #fbf8f1;
             border: 1px solid #dfd7cb;
-            border-radius: 12px;
+            border-radius: 11px;
             color: #171713;
-            min-height: 48px;
-            padding: 12px 42px 12px 14px;
+            min-height: 42px;
+            padding: 9px 40px 9px 13px;
         }
 
         .form-control:focus {
@@ -201,13 +204,13 @@
             align-items: center;
             background: #171713;
             border: 0;
-            border-radius: 12px;
+            border-radius: 11px;
             color: #fff;
             display: inline-flex;
             font-weight: 600;
             gap: 8px;
             justify-content: center;
-            min-height: 48px;
+            min-height: 42px;
             width: 100%;
         }
 
@@ -219,13 +222,13 @@
         .secondary-link {
             align-items: center;
             border: 1px solid #dfd7cb;
-            border-radius: 12px;
+            border-radius: 11px;
             color: #171713;
             display: inline-flex;
             font-weight: 600;
             gap: 8px;
             justify-content: center;
-            min-height: 46px;
+            min-height: 40px;
             text-decoration: none;
             width: 100%;
         }
@@ -239,9 +242,9 @@
             align-items: center;
             color: #9b8f7c;
             display: flex;
-            font-size: .85rem;
+            font-size: .78rem;
             gap: 12px;
-            margin: 18px 0;
+            margin: 12px 0;
         }
 
         .divider::before,
@@ -254,17 +257,86 @@
 
         .password-strength {
             color: #746f65;
-            font-size: .82rem;
-            margin-top: 7px;
+            font-size: .76rem;
+            margin-top: 5px;
         }
 
         .alert {
-            border-radius: 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+        }
+
+        @media (min-width: 993px) and (max-height: 760px) {
+            .register-story {
+                padding: 24px 36px;
+            }
+
+            .story-strip {
+                gap: 8px;
+            }
+
+            .story-copy h1 {
+                font-size: clamp(1.85rem, 4vw, 3.6rem);
+            }
+
+            .story-copy p {
+                font-size: .9rem;
+                line-height: 1.42;
+                margin-top: 12px;
+            }
+
+            .register-panel {
+                padding: 12px 22px;
+            }
+
+            .form-card {
+                max-height: calc(100svh - 24px);
+                padding: 16px 22px;
+            }
+
+            .form-card .intro,
+            .password-strength {
+                display: none;
+            }
+
+            .form-card h2 {
+                font-size: 1.32rem;
+                margin-bottom: 10px;
+            }
+
+            .form-group {
+                margin-bottom: 7px;
+            }
+
+            .form-label {
+                font-size: .72rem;
+                margin-bottom: 4px;
+            }
+
+            .form-control,
+            .btn-register {
+                min-height: 38px;
+            }
+
+            .secondary-link {
+                min-height: 36px;
+            }
+
+            .divider {
+                margin: 8px 0;
+            }
         }
 
         @media (max-width: 992px) {
+            body {
+                overflow: auto;
+            }
+
             .register-shell {
                 grid-template-columns: 1fr;
+                height: auto;
+                min-height: 100svh;
             }
 
             .register-story {
@@ -274,6 +346,10 @@
 
             .story-strip {
                 grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                max-height: none;
             }
         }
     </style>
