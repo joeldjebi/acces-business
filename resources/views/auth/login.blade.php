@@ -418,9 +418,15 @@
             </div>
 
             <div class="brand-copy">
-                <div class="eyebrow">Console privée</div>
-                <h1>Un espace réservé aux équipes autorisées.</h1>
-                <p>Pilotez les événements, les accès et les invitations depuis une interface protégée, conçue pour rester calme même quand l'opérationnel accélère.</p>
+                <div class="eyebrow">{{ isset($clientOrganization) ? 'Espace client' : 'Console privée' }}</div>
+                <h1>{{ isset($clientOrganization) ? $clientOrganization->name : 'Un espace réservé aux équipes autorisées.' }}</h1>
+                <p>
+                    @isset($clientOrganization)
+                        Connectez-vous à l'espace de votre organisation pour gérer vos événements, invitations et accès.
+                    @else
+                        Pilotez les événements, les accès et les invitations depuis une interface protégée, conçue pour rester calme même quand l'opérationnel accélère.
+                    @endisset
+                </p>
             </div>
 
             <div class="brand-status" aria-label="Garanties d'accès">
@@ -444,7 +450,7 @@
 
             <div class="auth-header">
                 <h2>Connexion</h2>
-                <p>Renseignez vos identifiants pour ouvrir votre espace d'administration.</p>
+                <p>{{ isset($clientOrganization) ? 'Accès client sécurisé.' : 'Renseignez vos identifiants pour ouvrir votre espace d’administration.' }}</p>
             </div>
 
             @if($errors->any())
@@ -519,6 +525,14 @@
                 Créer le compte Super Admin
             </a>
             @endif
+
+            <div class="divider">
+                <span>Client</span>
+            </div>
+            <a href="{{ route('client.register.self') }}" class="btn btn-register">
+                <i class="bi bi-building-add me-2"></i>
+                Créer mon espace client
+            </a>
         </section>
     </main>
 

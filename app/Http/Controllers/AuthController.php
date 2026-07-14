@@ -21,6 +21,16 @@ class AuthController extends Controller
         return view('auth.login', compact('hasUsers'));
     }
 
+    public function showClientLoginForm(?Organization $organization = null)
+    {
+        $hasUsers = User::count() > 0;
+
+        return view('auth.login', [
+            'hasUsers' => $hasUsers,
+            'clientOrganization' => $organization,
+        ]);
+    }
+
     /**
      * Traite la connexion
      */
@@ -39,6 +49,16 @@ class AuthController extends Controller
 
             if (Auth::user()->isPlatformAdmin()) {
                 return redirect()->intended(route('platform.dashboard'));
+            }
+
+            if (!Auth::user()->organization || !in_array(Auth::user()->organization->status, ['active', 'trialing'], true)) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                throw ValidationException::withMessages([
+                    'email' => ['Votre organisation est suspendue ou inactive.'],
+                ]);
             }
 
             return redirect()->intended('/dashboard');

@@ -27,10 +27,12 @@ Le super admin plateforme peut aussi :
 
 - creer un client depuis `/platform/organizations`
 - generer un lien register client securise via `/client/register/{token}`
-- fournir au client le lien login standard `/login?organization={slug}`
+- fournir au client le lien login dedie `/client/login/{slug}`
 - modifier les roles des utilisateurs d'une organisation : `super_admin`, `admin`, `manager`, `moderateur`
 
 Le lien register client sert uniquement a creer le premier administrateur principal de l'organisation. Il expire et il est supprime apres activation.
+
+Les clients peuvent aussi s'inscrire eux-memes sans passer par le SA via `/client/register`, puis se connecter via `/client/login`.
 
 ## Donnees rattachees a une organisation
 

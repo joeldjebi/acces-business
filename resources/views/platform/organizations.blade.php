@@ -133,7 +133,7 @@
                     </div>
                     <div class="col-lg-5">
                         <label class="form-label">Lien login client</label>
-                        <div class="link-box">{{ route('login', ['organization' => $organization->slug]) }}</div>
+                        <div class="link-box">{{ route('client.login.organization', $organization) }}</div>
                     </div>
                     <div class="col-lg-1 d-flex align-items-end">
                         <form method="POST" action="{{ route('platform.organizations.onboarding-link', $organization) }}" class="w-100">

@@ -25,6 +25,9 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:4,1');
+Route::get('/client/login', [AuthController::class, 'showClientLoginForm'])->name('client.login');
+Route::get('/client/login/{organization:slug}', [AuthController::class, 'showClientLoginForm'])->name('client.login.organization');
+Route::get('/client/register', [AuthController::class, 'showRegisterForm'])->name('client.register.self');
 Route::get('/client/register/{token}', [AuthController::class, 'showClientRegisterForm'])->name('client.register');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
