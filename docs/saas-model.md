@@ -18,8 +18,10 @@ Une organisation represente une entreprise, agence ou equipe qui gere ses propre
 
 Le role `platform_admin` est separe des admins d'organisation.
 
+- proprietaire plateforme par defaut : `jo.djebi@gmail.com`
 - `platform_admin` supervise la plateforme via `/platform/*`
 - connexion SA plateforme : `/platform/login`
+- aucun abonnement, quota ou restriction tenant ne s'applique a ce role
 - `super_admin` administre uniquement son organisation
 - les routes tenant restent protegees par `tenant`
 - un `platform_admin` sans organisation ne peut pas ouvrir les ecrans tenant

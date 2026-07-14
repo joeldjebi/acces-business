@@ -41,6 +41,9 @@ Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('pl
     Route::put('/organizations/{organization}', [PlatformAdminController::class, 'updateOrganization'])->name('organizations.update');
     Route::post('/organizations/{organization}/onboarding-link', [PlatformAdminController::class, 'regenerateOnboardingLink'])->name('organizations.onboarding-link');
     Route::put('/organizations/{organization}/users/{user}/role', [PlatformAdminController::class, 'updateUserRole'])->name('organizations.users.role');
+    Route::get('/plans', [PlatformAdminController::class, 'plans'])->name('plans');
+    Route::post('/plans', [PlatformAdminController::class, 'storePlan'])->name('plans.store');
+    Route::put('/plans/{plan}', [PlatformAdminController::class, 'updatePlan'])->name('plans.update');
 });
 
 // Routes protégées

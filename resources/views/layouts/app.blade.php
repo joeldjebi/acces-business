@@ -438,6 +438,12 @@
                     <span>Organisations</span>
                 </a>
             </li>
+            <li>
+                <a href="{{ route('platform.plans') }}" class="{{ request()->routeIs('platform.plans') ? 'active' : '' }}">
+                    <i class="bi bi-gem"></i>
+                    <span>Plans abonnement</span>
+                </a>
+            </li>
             @else
             <li>
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">

@@ -6,6 +6,7 @@ use App\Models\BillingInvoice;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Organization;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Support\SaasPlans;
 use Illuminate\Http\Request;
@@ -55,6 +56,31 @@ class PlatformAdminController extends Controller
             'organizations' => $query->paginate(15)->withQueryString(),
             'plans' => SaasPlans::all(),
         ]);
+    }
+
+    public function plans()
+    {
+        return view('platform.plans', [
+            'plans' => SubscriptionPlan::orderBy('sort_order')->orderBy('monthly_price')->get(),
+        ]);
+    }
+
+    public function storePlan(Request $request)
+    {
+        $validated = $this->validatePlan($request);
+
+        SubscriptionPlan::create($validated);
+
+        return back()->with('success', 'Plan créé.');
+    }
+
+    public function updatePlan(Request $request, SubscriptionPlan $plan)
+    {
+        $validated = $this->validatePlan($request, $plan);
+
+        $plan->update($validated);
+
+        return back()->with('success', 'Plan mis à jour.');
     }
 
     public function storeOrganization(Request $request)
@@ -131,5 +157,36 @@ class PlatformAdminController extends Controller
         }
 
         return $slug;
+    }
+
+    private function validatePlan(Request $request, ?SubscriptionPlan $plan = null): array
+    {
+        $validated = $request->validate([
+            'slug' => ['required', 'alpha_dash', 'max:120', Rule::unique('subscription_plans', 'slug')->ignore($plan?->id)],
+            'name' => 'required|string|max:120',
+            'tagline' => 'nullable|string|max:255',
+            'monthly_price' => 'required|integer|min:0',
+            'yearly_price' => 'required|integer|min:0',
+            'currency' => 'required|string|max:8',
+            'events_limit' => 'nullable|integer|min:1',
+            'users_limit' => 'nullable|integer|min:1',
+            'invitations_limit' => 'nullable|integer|min:1',
+            'features_text' => 'nullable|string|max:2000',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer|min:0|max:65535',
+        ]);
+
+        $validated['features'] = collect(preg_split('/\R/', $validated['features_text'] ?? ''))
+            ->map(fn ($feature) => trim($feature))
+            ->filter()
+            ->values()
+            ->all();
+
+        $validated['is_active'] = (bool) ($validated['is_active'] ?? false);
+        $validated['sort_order'] = (int) ($validated['sort_order'] ?? 0);
+
+        unset($validated['features_text']);
+
+        return $validated;
     }
 }

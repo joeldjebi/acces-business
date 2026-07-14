@@ -2,8 +2,8 @@
 
 return [
     'platform_admin' => [
-        'email' => env('PLATFORM_ADMIN_EMAIL'),
-        'name' => env('PLATFORM_ADMIN_NAME', 'Platform Admin'),
+        'email' => env('PLATFORM_ADMIN_EMAIL', 'jo.djebi@gmail.com'),
+        'name' => env('PLATFORM_ADMIN_NAME', 'Jo Djebi'),
     ],
 
     'security' => [
