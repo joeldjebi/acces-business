@@ -19,7 +19,7 @@ class PlatformAdminController extends Controller
     {
         $organizations = Organization::withCount(['users', 'events'])
             ->latest()
-            ->take(8)
+            ->take(10)
             ->get();
 
         return view('platform.dashboard', [
