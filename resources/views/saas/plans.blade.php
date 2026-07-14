@@ -20,6 +20,15 @@
         color: #2c2a25;
     }
 
+    .subscription-modal {
+        --ink: #171713;
+        --muted: #746f65;
+        --line: #dfd7cb;
+        --panel: #fffefa;
+        --soft: #f8f4ec;
+        --gold: #b98943;
+    }
+
     .saas-header {
         align-items: end;
         display: flex;
@@ -146,6 +155,32 @@
         width: 100%;
     }
 
+    .modal-content {
+        border: 0;
+        border-radius: 18px;
+    }
+
+    .modal-header,
+    .modal-footer {
+        border-color: var(--line);
+    }
+
+    .payment-summary {
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        display: grid;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 14px;
+    }
+
+    .payment-summary strong {
+        color: var(--ink);
+        font-size: 1.35rem;
+        font-weight: 600;
+    }
+
     .saas-btn {
         align-items: center;
         background: var(--ink);
@@ -215,20 +250,111 @@
                     @endforeach
                 </ul>
 
-                <form method="POST" action="{{ route('saas.plans.update') }}" class="plan-form">
-                    @csrf
-                    <input type="hidden" name="plan" value="{{ $key }}">
-                    <select name="billing_cycle" class="cycle-select">
-                        <option value="monthly" {{ $cycle === 'monthly' ? 'selected' : '' }}>Mensuel · {{ \App\Support\SaasPlans::formatPrice($plan['monthly_price'], $plan['currency']) }}</option>
-                        <option value="yearly" {{ $cycle === 'yearly' ? 'selected' : '' }}>Annuel · {{ \App\Support\SaasPlans::formatPrice($plan['yearly_price'], $plan['currency']) }}</option>
-                    </select>
-                    <button type="submit" class="saas-btn">
+                <div class="plan-form">
+                    <button type="button" class="saas-btn" data-bs-toggle="modal" data-bs-target="#planPaymentModal{{ $loop->index }}">
                         <i class="bi bi-arrow-right-circle"></i>
                         {{ $currentPlan === $key ? 'Renouveler ce plan' : 'Choisir ce plan' }}
                     </button>
-                </form>
+                </div>
             </article>
         @endforeach
     </div>
 </div>
+
+@foreach($plans as $key => $plan)
+    @php
+        $defaultAmount = \App\Support\SaasPlans::price($plan, $cycle);
+    @endphp
+    <div class="modal fade subscription-modal" id="planPaymentModal{{ $loop->index }}" tabindex="-1" aria-labelledby="planPaymentModalLabel{{ $loop->index }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('saas.plans.update') }}" class="subscription-payment-form">
+                    @csrf
+                    <input type="hidden" name="plan" value="{{ $key }}">
+
+                    <div class="modal-header">
+                        <div>
+                            <div class="saas-kicker">{{ $currentPlan === $key ? 'Renouvellement' : 'Souscription' }}</div>
+                            <h2 class="modal-title h5 mb-0" id="planPaymentModalLabel{{ $loop->index }}" style="font-weight:600;">{{ $plan['name'] }}</h2>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="payment-summary">
+                            <span class="muted">Montant à valider</span>
+                            <strong class="payment-amount-label">{{ \App\Support\SaasPlans::formatPrice($defaultAmount, $plan['currency']) }}</strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Cycle</label>
+                            <select name="billing_cycle" class="form-select payment-cycle-select">
+                                <option value="monthly"
+                                        data-amount="{{ $plan['monthly_price'] }}"
+                                        data-label="{{ \App\Support\SaasPlans::formatPrice($plan['monthly_price'], $plan['currency']) }}"
+                                        {{ $cycle === 'monthly' ? 'selected' : '' }}>
+                                    Mensuel · {{ \App\Support\SaasPlans::formatPrice($plan['monthly_price'], $plan['currency']) }}
+                                </option>
+                                <option value="yearly"
+                                        data-amount="{{ $plan['yearly_price'] }}"
+                                        data-label="{{ \App\Support\SaasPlans::formatPrice($plan['yearly_price'], $plan['currency']) }}"
+                                        {{ $cycle === 'yearly' ? 'selected' : '' }}>
+                                    Annuel · {{ \App\Support\SaasPlans::formatPrice($plan['yearly_price'], $plan['currency']) }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Opérateur</label>
+                            <select name="payment_operator" class="form-select" required>
+                                <option value="">Sélectionner un opérateur</option>
+                                @foreach($paymentOperators as $operatorKey => $operatorLabel)
+                                    <option value="{{ $operatorKey }}">{{ $operatorLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Numéro de paiement</label>
+                            <input class="form-control" name="payment_phone" placeholder="Ex: +225 07 00 00 00 00" required>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Montant</label>
+                            <input type="number" class="form-control payment-amount-input" name="amount" value="{{ $defaultAmount }}" min="1" required>
+                            <div class="form-text">Le montant doit correspondre au prix du cycle sélectionné.</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="saas-btn" style="width:auto;">
+                            <i class="bi bi-check2-circle"></i>
+                            Valider
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
+
+@push('scripts')
+<script>
+    document.querySelectorAll('.subscription-payment-form').forEach((form) => {
+        const cycleSelect = form.querySelector('.payment-cycle-select');
+        const amountInput = form.querySelector('.payment-amount-input');
+        const amountLabel = form.querySelector('.payment-amount-label');
+
+        const syncAmount = () => {
+            const selectedOption = cycleSelect.options[cycleSelect.selectedIndex];
+            amountInput.value = selectedOption.dataset.amount;
+            amountLabel.textContent = selectedOption.dataset.label;
+        };
+
+        cycleSelect.addEventListener('change', syncAmount);
+        syncAmount();
+    });
+</script>
+@endpush
 @endsection

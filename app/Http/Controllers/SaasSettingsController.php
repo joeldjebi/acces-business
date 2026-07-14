@@ -20,6 +20,7 @@ class SaasSettingsController extends Controller
             'organization' => $organization,
             'plans' => SaasPlans::all(),
             'cycle' => $cycle,
+            'paymentOperators' => $this->paymentOperators(),
         ]);
     }
 
@@ -28,39 +29,68 @@ class SaasSettingsController extends Controller
         $validated = $request->validate([
             'plan' => ['required', Rule::in(SaasPlans::keys())],
             'billing_cycle' => ['required', Rule::in(['monthly', 'yearly'])],
+            'payment_operator' => ['required', Rule::in(array_keys($this->paymentOperators()))],
+            'payment_phone' => ['required', 'string', 'max:30'],
+            'amount' => ['required', 'integer', 'min:1'],
         ]);
 
         $organization = auth()->user()->organization;
+        $plan = SaasPlans::get($validated['plan']);
+        $expectedAmount = SaasPlans::price($plan, $validated['billing_cycle']);
+
+        if ((int) $validated['amount'] !== $expectedAmount) {
+            return back()
+                ->withErrors(['amount' => 'Le montant validé doit correspondre au prix du plan sélectionné.'])
+                ->withInput();
+        }
+
         $settings = $organization->settings ?? [];
         $settings['billing_cycle'] = $validated['billing_cycle'];
+        $isRenewal = $organization->plan === $validated['plan'];
+
+        $startsAt = $organization->subscription_ends_at && $organization->subscription_ends_at->isFuture()
+            ? $organization->subscription_ends_at->copy()
+            : now();
+
+        $endsAt = $validated['billing_cycle'] === 'yearly'
+            ? $startsAt->copy()->addYear()
+            : $startsAt->copy()->addMonth();
 
         $organization->update([
             'plan' => $validated['plan'],
             'status' => 'active',
-            'subscription_ends_at' => $validated['billing_cycle'] === 'yearly'
-                ? now()->addYear()
-                : now()->addMonth(),
+            'subscription_ends_at' => $endsAt,
             'settings' => $settings,
         ]);
 
-        $plan = SaasPlans::get($validated['plan']);
+        $operators = $this->paymentOperators();
 
         BillingInvoice::create([
             'organization_id' => $organization->id,
-            'reference' => 'INV-' . now()->format('YmdHis') . '-' . $organization->id,
-            'description' => 'Abonnement ' . $plan['name'] . ' - cycle ' . ($validated['billing_cycle'] === 'yearly' ? 'annuel' : 'mensuel'),
-            'amount' => SaasPlans::price($plan, $validated['billing_cycle']),
+            'reference' => 'SUB-' . now()->format('YmdHis') . '-' . $organization->id,
+            'description' => ($isRenewal ? 'Renouvellement ' : 'Souscription ') . $plan['name'] . ' - cycle ' . ($validated['billing_cycle'] === 'yearly' ? 'annuel' : 'mensuel'),
+            'amount' => $expectedAmount,
             'currency' => $plan['currency'],
-            'status' => 'pending',
-            'period_start' => now()->toDateString(),
-            'period_end' => $validated['billing_cycle'] === 'yearly'
-                ? now()->addYear()->toDateString()
-                : now()->addMonth()->toDateString(),
-            'due_at' => now()->addDays(7),
+            'status' => 'paid',
+            'period_start' => $startsAt->toDateString(),
+            'period_end' => $endsAt->toDateString(),
+            'due_at' => now(),
+            'paid_at' => now(),
+            'metadata' => [
+                'type' => 'subscription',
+                'plan' => $validated['plan'],
+                'plan_name' => $plan['name'],
+                'billing_cycle' => $validated['billing_cycle'],
+                'payment_operator' => $validated['payment_operator'],
+                'payment_operator_label' => $operators[$validated['payment_operator']],
+                'payment_phone' => $validated['payment_phone'],
+                'amount_confirmed' => (int) $validated['amount'],
+                'action' => $isRenewal ? 'renewal' : 'subscription',
+            ],
         ]);
 
         return redirect()->route('saas.billing')
-            ->with('success', 'Plan mis à jour. Une facture brouillon a été générée.');
+            ->with('success', 'Abonnement validé. Le paiement a été ajouté à votre historique.');
     }
 
     public function billing()
@@ -144,5 +174,17 @@ class SaasSettingsController extends Controller
         $organization->save();
 
         return back()->with('success', 'Branding mis à jour.');
+    }
+
+    private function paymentOperators(): array
+    {
+        return [
+            'orange_money' => 'Orange Money',
+            'mtn_money' => 'MTN Money',
+            'moov_money' => 'Moov Money',
+            'wave' => 'Wave',
+            'card' => 'Carte bancaire',
+            'bank_transfer' => 'Virement bancaire',
+        ];
     }
 }

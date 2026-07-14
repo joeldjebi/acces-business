@@ -5,121 +5,128 @@
 @push('styles')
 <style>
     .billing-page { --ink:#171713; --muted:#746f65; --line:#dfd7cb; --panel:#fffefa; --soft:#f8f4ec; --gold:#b98943; max-width:1320px; margin:0 auto; color:#2c2a25; }
-    .billing-grid { display:grid; grid-template-columns:minmax(0, .9fr) minmax(0, 1.25fr); gap:18px; align-items:start; }
+    .billing-header { align-items:end; display:flex; justify-content:space-between; gap:20px; margin-bottom:22px; }
+    .billing-kicker { color:var(--gold); font-size:.76rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
+    .billing-title { color:var(--ink); font-size:clamp(1.7rem,2.5vw,2.45rem); font-weight:600; margin:6px 0; }
+    .billing-copy,.muted { color:var(--muted); }
+    .summary-grid { display:grid; gap:16px; grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:18px; }
     .billing-card { background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:0 18px 42px rgba(39,33,25,.055); padding:22px; }
-    .billing-title { color:var(--ink); font-size:clamp(1.7rem,2.5vw,2.45rem); font-weight:600; margin:0 0 8px; }
-    .billing-copy, .muted { color:var(--muted); }
-    .plan-line { align-items:center; display:flex; justify-content:space-between; gap:16px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:18px; }
-    .plan-line strong { color:var(--ink); display:block; font-size:1.2rem; font-weight:600; }
-    .badge-soft { background:rgba(185,137,67,.12); border-radius:999px; color:#8a6128; font-weight:600; padding:7px 11px; }
-    .form-stack { display:grid; gap:14px; }
-    .form-label { color:var(--ink); font-weight:600; font-size:.86rem; }
-    .form-control, .form-select { border:1px solid var(--line); border-radius:10px; min-height:44px; }
-    .btn-saas { background:var(--ink); border:0; border-radius:10px; color:white; font-weight:600; min-height:44px; padding:0 16px; }
-    .invoice-table { width:100%; }
-    .invoice-row { align-items:center; border-bottom:1px solid var(--line); display:grid; gap:14px; grid-template-columns:1fr 120px 110px 100px; padding:14px 0; }
-    .invoice-row:last-child { border-bottom:0; }
-    .invoice-ref { color:var(--ink); font-weight:600; }
-    .status-pill { border-radius:999px; display:inline-flex; justify-content:center; font-size:.78rem; font-weight:600; padding:6px 10px; }
-    .status-pending { background:rgba(185,137,67,.14); color:#8a6128; }
+    .metric-label { color:var(--muted); display:block; font-size:.76rem; font-weight:600; letter-spacing:.09em; text-transform:uppercase; }
+    .metric-value { color:var(--ink); display:block; font-size:1.55rem; font-weight:600; margin-top:8px; }
+    .btn-saas { align-items:center; background:var(--ink); border:0; border-radius:10px; color:white; display:inline-flex; font-weight:600; gap:8px; justify-content:center; min-height:44px; padding:0 16px; text-decoration:none; }
+    .btn-saas.secondary { background:var(--soft); border:1px solid var(--line); color:var(--ink); }
+    .history-table { border-collapse:separate; border-spacing:0; width:100%; }
+    .history-table th { color:var(--muted); font-size:.72rem; font-weight:600; letter-spacing:.08em; padding:0 12px 12px; text-transform:uppercase; white-space:nowrap; }
+    .history-table td { border-top:1px solid var(--line); padding:14px 12px; vertical-align:middle; }
+    .history-ref { color:var(--ink); font-weight:600; }
+    .status-pill { border-radius:999px; display:inline-flex; justify-content:center; font-size:.78rem; font-weight:600; padding:6px 10px; white-space:nowrap; }
     .status-paid { background:rgba(46,123,101,.12); color:#2e7b65; }
+    .status-pending { background:rgba(185,137,67,.14); color:#8a6128; }
     .status-draft { background:#f0ebe2; color:#746f65; }
-    @media (max-width: 1000px) { .billing-grid, .invoice-row { grid-template-columns:1fr; } }
+    .empty-state { align-items:center; background:var(--soft); border:1px dashed var(--line); border-radius:16px; display:grid; gap:10px; justify-items:center; padding:42px 20px; text-align:center; }
+    .empty-state i { color:var(--gold); font-size:2rem; }
+    @media (max-width: 1000px) { .billing-header,.summary-grid { grid-template-columns:1fr; display:grid; } .history-table { min-width:860px; } }
 </style>
 @endpush
 
 @section('content')
 <div class="billing-page">
-    <div class="mb-4">
-        <div class="text-uppercase" style="color:#b98943;font-size:.76rem;font-weight:600;letter-spacing:.12em;">{{ $organization->name }} · abonnement</div>
-        <h1 class="billing-title">Facturation</h1>
-        <p class="billing-copy mb-0">Centralisez les informations de facturation et le suivi des factures de votre organisation.</p>
+    <div class="billing-header">
+        <div>
+            <div class="billing-kicker">{{ $organization->name }} · abonnements</div>
+            <h1 class="billing-title">Historique des abonnements</h1>
+            <p class="billing-copy mb-0">Retrouvez les souscriptions et renouvellements validés pour votre organisation.</p>
+        </div>
+        <a href="{{ route('saas.plans') }}" class="btn-saas secondary">
+            <i class="bi bi-gem"></i>
+            Choisir ou renouveler
+        </a>
     </div>
 
-    <div class="billing-grid">
-        <section class="billing-card">
-            <div class="plan-line">
-                <div>
-                    <span class="muted">Plan actuel</span>
-                    <strong>{{ $plan['name'] }}</strong>
-                </div>
-                <span class="badge-soft">{{ $cycle === 'yearly' ? 'Annuel' : 'Mensuel' }}</span>
+    <section class="summary-grid">
+        <article class="billing-card">
+            <span class="metric-label">Plan actuel</span>
+            <strong class="metric-value">{{ $plan['name'] }}</strong>
+            <div class="muted mt-2">{{ $cycle === 'yearly' ? 'Cycle annuel' : 'Cycle mensuel' }}</div>
+        </article>
+        <article class="billing-card">
+            <span class="metric-label">Échéance</span>
+            <strong class="metric-value">{{ optional($organization->subscription_ends_at)->format('d/m/Y') ?: 'Non définie' }}</strong>
+            <div class="muted mt-2">Date de fin de la période active</div>
+        </article>
+        <article class="billing-card">
+            <span class="metric-label">Paiements</span>
+            <strong class="metric-value">{{ $invoices->count() }}</strong>
+            <div class="muted mt-2">Dernières opérations enregistrées</div>
+        </article>
+    </section>
+
+    <section class="billing-card">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+                <h2 class="h5 mb-1" style="font-weight:600;">Journal des abonnements</h2>
+                <p class="muted mb-0">Chaque ligne correspond à un choix ou renouvellement de plan validé.</p>
             </div>
-            <p class="muted mb-3">
-                Prochaine échéance:
-                <strong style="color:#171713;">{{ optional($organization->subscription_ends_at)->format('d/m/Y') ?: 'Non définie' }}</strong>
-            </p>
-            <a href="{{ route('saas.plans') }}" class="btn btn-outline-dark w-100">
-                <i class="bi bi-gem me-2"></i> Modifier le plan
-            </a>
-        </section>
+        </div>
 
-        <section class="billing-card">
-            <h2 class="h5 mb-3" style="font-weight:600;">Informations de facturation</h2>
-            <form method="POST" action="{{ route('saas.billing.update') }}" class="form-stack">
-                @csrf
-                @method('PUT')
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Nom facturation</label>
-                        <input class="form-control" name="billing_name" value="{{ old('billing_name', $billing['billing_name'] ?? $organization->name) }}" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Email facturation</label>
-                        <input type="email" class="form-control" name="billing_email" value="{{ old('billing_email', $billing['billing_email'] ?? auth()->user()->email) }}" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Adresse</label>
-                        <input class="form-control" name="billing_address" value="{{ old('billing_address', $billing['billing_address'] ?? '') }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Ville</label>
-                        <input class="form-control" name="billing_city" value="{{ old('billing_city', $billing['billing_city'] ?? '') }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Pays</label>
-                        <input class="form-control" name="billing_country" value="{{ old('billing_country', $billing['billing_country'] ?? '') }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Devise</label>
-                        <select class="form-select" name="currency">
-                            @foreach(['XOF', 'EUR', 'USD'] as $currency)
-                                <option value="{{ $currency }}" {{ old('currency', $billing['currency'] ?? 'XOF') === $currency ? 'selected' : '' }}>{{ $currency }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">N° fiscal / RCCM</label>
-                        <input class="form-control" name="tax_number" value="{{ old('tax_number', $billing['tax_number'] ?? '') }}">
-                    </div>
+        @if($invoices->isNotEmpty())
+            <div class="table-responsive">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Plan</th>
+                            <th>Cycle</th>
+                            <th>Période</th>
+                            <th>Opérateur</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($invoices as $invoice)
+                            @php($metadata = $invoice->metadata ?? [])
+                            <tr>
+                                <td>
+                                    <div class="history-ref">{{ $invoice->reference }}</div>
+                                    <div class="muted">{{ optional($invoice->paid_at ?? $invoice->created_at)->format('d/m/Y H:i') }}</div>
+                                </td>
+                                <td>
+                                    <strong>{{ $metadata['plan_name'] ?? $invoice->description }}</strong>
+                                    <div class="muted">{{ ($metadata['action'] ?? null) === 'renewal' ? 'Renouvellement' : 'Souscription' }}</div>
+                                </td>
+                                <td>{{ ($metadata['billing_cycle'] ?? $cycle) === 'yearly' ? 'Annuel' : 'Mensuel' }}</td>
+                                <td>
+                                    {{ optional($invoice->period_start)->format('d/m/Y') ?: '-' }}
+                                    <span class="muted">→</span>
+                                    {{ optional($invoice->period_end)->format('d/m/Y') ?: '-' }}
+                                </td>
+                                <td>
+                                    {{ $metadata['payment_operator_label'] ?? '-' }}
+                                    @if(!empty($metadata['payment_phone']))
+                                        <div class="muted">{{ $metadata['payment_phone'] }}</div>
+                                    @endif
+                                </td>
+                                <td>{{ \App\Support\SaasPlans::formatPrice($invoice->amount, $invoice->currency) }}</td>
+                                <td><span class="status-pill status-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="empty-state">
+                <i class="bi bi-receipt"></i>
+                <div>
+                    <strong>Aucun abonnement enregistré</strong>
+                    <div class="muted">Choisissez un plan pour créer la première ligne d’historique.</div>
                 </div>
-                <button class="btn-saas mt-2" type="submit">
-                    <i class="bi bi-save me-2"></i> Enregistrer
-                </button>
-            </form>
-        </section>
-
-        <section class="billing-card" style="grid-column:1 / -1;">
-            <h2 class="h5 mb-1" style="font-weight:600;">Historique des factures</h2>
-            <p class="muted mb-3">Les factures générées lors des changements de plan apparaissent ici.</p>
-            @if($invoices->isNotEmpty())
-                <div class="invoice-table">
-                    @foreach($invoices as $invoice)
-                        <div class="invoice-row">
-                            <div>
-                                <div class="invoice-ref">{{ $invoice->reference }}</div>
-                                <div class="muted">{{ $invoice->description }}</div>
-                            </div>
-                            <div>{{ \App\Support\SaasPlans::formatPrice($invoice->amount, $invoice->currency) }}</div>
-                            <div class="muted">{{ optional($invoice->due_at)->format('d/m/Y') ?: '-' }}</div>
-                            <div><span class="status-pill status-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span></div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="muted">Aucune facture générée pour le moment.</div>
-            @endif
-        </section>
-    </div>
+                <a href="{{ route('saas.plans') }}" class="btn-saas">
+                    <i class="bi bi-arrow-right-circle"></i>
+                    Voir les plans
+                </a>
+            </div>
+        @endif
+    </section>
 </div>
 @endsection
