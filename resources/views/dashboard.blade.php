@@ -289,7 +289,7 @@
     .work-grid {
         display: grid;
         gap: 18px;
-        grid-template-columns: minmax(0, 1.8fr) minmax(340px, 0.9fr);
+        grid-template-columns: minmax(0, 1fr);
         align-items: start;
     }
 
@@ -494,6 +494,12 @@
     .side-stack {
         display: grid;
         gap: 18px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    .side-stack > .panel {
+        min-width: 0;
     }
 
     .quality-panel {
@@ -809,22 +815,12 @@
         border-radius: 12px;
     }
 
-    @media (max-width: 1280px) {
-        .work-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .side-stack {
+    @media (max-width: 1024px) {
+        .kpi-strip {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        .work-grid > .panel:last-child {
-            grid-column: 1 / -1;
-        }
-    }
-
-    @media (max-width: 1024px) {
-        .kpi-strip {
+        .side-stack {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
@@ -1135,7 +1131,7 @@
                 <div class="panel-head">
                     <div>
                         <h2 class="panel-title">Actions prioritaires</h2>
-                        <p class="panel-caption">Raccourcis utiles, sans surcharge.</p>
+                        <p class="panel-caption">Raccourcis utiles.</p>
                     </div>
                 </div>
 
