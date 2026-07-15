@@ -410,7 +410,6 @@
                 <div class="avatar">{{ strtoupper(substr($account->name, 0, 1)) }}</div>
                 <div>
                     <span class="user-name">{{ $account->name }}</span>
-                    <span class="user-meta">ID {{ $account->id }}</span>
                 </div>
                 <div>
                     <span class="user-name" style="font-size: .92rem;">{{ $account->email }}</span>
