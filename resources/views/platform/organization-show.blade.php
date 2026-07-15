@@ -30,6 +30,10 @@
     .quick-nav a { align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:999px; color:var(--ink); display:inline-flex; font-size:.84rem; gap:6px; padding:8px 12px; text-decoration:none; }
     .quick-nav a:hover { border-color:#b98943; color:#8a6128; }
     .role-form { display:grid; gap:8px; grid-template-columns:minmax(0,1fr) 160px 42px; margin-bottom:10px; }
+    .logo-preview { align-items:center; background:var(--soft); border:1px solid var(--line); border-radius:14px; display:flex; height:58px; justify-content:center; overflow:hidden; width:58px; }
+    .logo-preview img { height:100%; object-fit:cover; width:100%; }
+    .permission-box { background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .permission-box .form-check-input { border-color:#b98943; }
     @media (max-width:1100px){ .metrics,.main-grid,.module-grid{grid-template-columns:1fr;} .role-form{grid-template-columns:1fr;} }
 </style>
 @endpush
@@ -64,6 +68,7 @@
         <a href="#plan"><i class="bi bi-gem"></i> Plan SaaS</a>
         <a href="#billing"><i class="bi bi-receipt"></i> Facturation</a>
         <a href="#branding"><i class="bi bi-palette"></i> Branding</a>
+        <a href="#invitation-card"><i class="bi bi-postcard"></i> Carte invitation</a>
     </nav>
 
     <div class="grid main-grid">
@@ -262,6 +267,60 @@
                 <p class="muted mb-2">Nom affiché: <strong>{{ $branding['brand_name'] ?? $organization->name }}</strong></p>
                 <p class="muted mb-2">Couleur principale: {{ $branding['primary_color'] ?? '#171713' }}</p>
                 <p class="muted mb-0">Couleur accent: {{ $branding['accent_color'] ?? '#b98943' }}</p>
+            </section>
+
+            <section class="panel" id="invitation-card">
+                @php
+                    $invitationCard = ($organization->settings ?? [])['invitation_card'] ?? [];
+                    $signatureLogo = !empty($invitationCard['signature_logo']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($invitationCard['signature_logo']) : null;
+                    $organizationLogo = $organization->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($organization->logo) : null;
+                @endphp
+                <h2 class="section-title">Carte d’invitation</h2>
+                <p class="muted">Signature plateforme et autorisation d’affichage du logo organisateur.</p>
+
+                <form method="POST" action="{{ route('platform.organizations.invitation-card.update', $organization) }}" enctype="multipart/form-data" class="grid">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="permission-box">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="allow_organization_logo" name="allow_organization_logo" value="1" {{ !empty($invitationCard['allow_organization_logo']) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="allow_organization_logo">Autoriser le logo organisateur sur la carte</label>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="logo-preview">
+                                @if($organizationLogo)
+                                    <img src="{{ $organizationLogo }}" alt="{{ $organization->name }}">
+                                @else
+                                    <i class="bi bi-building"></i>
+                                @endif
+                            </div>
+                            <div class="muted">
+                                {{ $organizationLogo ? 'Logo disponible dans le branding client.' : 'Aucun logo organisation enregistré.' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Texte de signature SA</label>
+                        <textarea class="form-control" name="signature_text" rows="3" placeholder="Ex: Validé par Accès Business">{{ old('signature_text', $invitationCard['signature_text'] ?? '') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Logo de signature SA</label>
+                        <input type="file" class="form-control" name="signature_logo" accept="image/png,image/jpeg,image/jpg,image/webp">
+                        @if($signatureLogo)
+                            <div class="d-flex align-items-center gap-3 mt-3">
+                                <div class="logo-preview"><img src="{{ $signatureLogo }}" alt="Signature plateforme"></div>
+                                <span class="muted">Logo de signature actuellement utilisé.</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <button class="btn btn-dark" type="submit">
+                        <i class="bi bi-save me-2"></i> Enregistrer la carte
+                    </button>
+                </form>
             </section>
         </aside>
     </div>

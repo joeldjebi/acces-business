@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    @php
+        $design = $cardDesign ?? [];
+        $primary = $design['primary_color'] ?? '#171713';
+        $accent = $design['accent_color'] ?? '#b98943';
+        $brandName = $design['brand_name'] ?? 'Accès Business';
+        $organizationLogo = $design['organization_logo'] ?? null;
+        $signatureText = $design['signature_text'] ?? '';
+        $signatureLogo = $design['signature_logo'] ?? null;
+    @endphp
     <meta charset="UTF-8">
     <title>Carte d'Invitation - {{ $event->titre }}</title>
     <style>
         @page {
-            margin: 10mm;
+            margin: 7mm;
             size: A4 portrait;
         }
 
@@ -18,40 +27,71 @@
             background: #f5f3ee;
             color: #171713;
             font-family: DejaVu Sans, Arial, sans-serif;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .card {
-            height: 277mm;
+            height: 281mm;
             background: #fffefa;
             border: 1px solid #ded6c8;
-            border-radius: 18px;
+            border-radius: 16px;
             overflow: hidden;
         }
 
         .header {
-            background: #171713;
+            background: {{ $primary }};
             color: #fff;
-            padding: 16mm 17mm 14mm;
+            padding: 11mm 13mm 10mm;
+        }
+
+        .brand-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 8mm;
+        }
+
+        .brand-cell,
+        .logo-cell {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .brand-cell {
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .logo-cell {
+            text-align: right;
+            width: 44mm;
+        }
+
+        .org-logo {
+            background: #fff;
+            border-radius: 10px;
+            display: inline-block;
+            max-height: 18mm;
+            max-width: 38mm;
+            padding: 3mm;
         }
 
         .kicker {
-            color: #d8b476;
+            color: {{ $accent }};
             font-size: 9px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 7mm;
+            margin-bottom: 4mm;
         }
 
         .title {
-            font-size: 25px;
+            font-size: 23px;
             font-weight: normal;
             line-height: 1.16;
             margin: 0;
         }
 
         .body {
-            padding: 13mm 17mm 10mm;
+            padding: 10mm 13mm 8mm;
         }
 
         .guest {
@@ -59,29 +99,29 @@
             font-size: 11px;
             letter-spacing: 1px;
             text-transform: uppercase;
-            margin-bottom: 3mm;
+            margin-bottom: 2mm;
         }
 
         .name {
-            font-size: 18px;
-            margin-bottom: 2mm;
+            font-size: 17px;
+            margin-bottom: 1.5mm;
         }
 
         .guest-meta {
             color: #746f65;
             font-size: 11px;
-            margin-bottom: 8mm;
+            margin-bottom: 6mm;
         }
 
         .details {
             border: 1px solid #e5ded2;
-            border-radius: 14px;
-            padding: 9mm;
-            margin-bottom: 10mm;
+            border-radius: 12px;
+            padding: 7mm;
+            margin-bottom: 7mm;
         }
 
         .detail {
-            margin-bottom: 4mm;
+            margin-bottom: 3mm;
             line-height: 1.45;
         }
 
@@ -101,7 +141,7 @@
         .qr-row {
             display: table;
             width: 100%;
-            margin-bottom: 9mm;
+            margin-bottom: 6mm;
         }
 
         .qr-box,
@@ -111,26 +151,26 @@
         }
 
         .qr-box {
-            width: 62mm;
+            width: 54mm;
             text-align: center;
         }
 
         .qr-frame {
             display: inline-block;
             border: 1px solid #ded6c8;
-            border-radius: 14px;
-            padding: 5mm;
+            border-radius: 12px;
+            padding: 4mm;
             background: #fff;
         }
 
         .qr-frame img {
-            width: 39mm;
-            height: 39mm;
+            width: 35mm;
+            height: 35mm;
             display: block;
         }
 
         .code-box {
-            padding-left: 10mm;
+            padding-left: 8mm;
         }
 
         .code-label {
@@ -143,13 +183,43 @@
 
         .code {
             background: #f8f4ec;
-            border-radius: 12px;
+            border-radius: 10px;
             color: #171713;
             font-family: Courier, monospace;
             font-size: 10px;
             line-height: 1.5;
-            padding: 5mm;
+            padding: 4mm;
             word-break: break-all;
+        }
+
+        .signature {
+            border-top: 1px solid #e5ded2;
+            display: table;
+            margin-top: 5mm;
+            padding-top: 5mm;
+            width: 100%;
+        }
+
+        .signature-text,
+        .signature-mark {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .signature-text {
+            color: #746f65;
+            font-size: 10px;
+            line-height: 1.55;
+        }
+
+        .signature-mark {
+            text-align: right;
+            width: 42mm;
+        }
+
+        .signature-mark img {
+            max-height: 16mm;
+            max-width: 38mm;
         }
 
         .notice {
@@ -157,7 +227,7 @@
             color: #746f65;
             font-size: 10px;
             line-height: 1.6;
-            padding-top: 7mm;
+            padding-top: 5mm;
             text-align: center;
         }
     </style>
@@ -165,6 +235,14 @@
 <body>
     <div class="card">
         <div class="header">
+            <div class="brand-row">
+                <div class="brand-cell">{{ $brandName }}</div>
+                <div class="logo-cell">
+                    @if($organizationLogo)
+                        <img class="org-logo" src="{{ $organizationLogo }}" alt="{{ $brandName }}">
+                    @endif
+                </div>
+            </div>
             <div class="kicker">Carte d'invitation</div>
             <h1 class="title">{{ $event->titre }}</h1>
         </div>
@@ -214,6 +292,17 @@
                 Présentez cette carte ou le QR code à l’entrée de l’événement.<br>
                 Carte personnelle et non transférable.
             </div>
+
+            @if($signatureText || $signatureLogo)
+                <div class="signature">
+                    <div class="signature-text">{{ $signatureText }}</div>
+                    <div class="signature-mark">
+                        @if($signatureLogo)
+                            <img src="{{ $signatureLogo }}" alt="Signature">
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </body>

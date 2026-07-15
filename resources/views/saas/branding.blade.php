@@ -65,7 +65,7 @@
                 <div class="col-12">
                     <label class="form-label">Logo</label>
                     <input type="file" class="form-control" name="logo" accept="image/png,image/jpeg,image/jpg,image/webp">
-                    <div class="muted mt-2">Format conseillé: carré, PNG ou WebP, moins de 2 Mo.</div>
+                    <div class="muted mt-2">Format conseillé: carré, PNG ou WebP, moins de 2 Mo. L’affichage sur les cartes d’invitation dépend de l’autorisation du super admin plateforme.</div>
                 </div>
                 <div class="col-12">
                     <button type="submit" class="btn-brand">

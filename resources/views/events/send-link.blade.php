@@ -214,10 +214,144 @@
         text-align: center;
     }
 
+    .card-preview-grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        margin-bottom: 18px;
+    }
+
+    .invitation-preview {
+        background: #fffefa;
+        border: 1px solid rgba(222, 214, 200, .78);
+        border-radius: 22px;
+        box-shadow: 0 18px 46px rgba(39, 33, 25, .06);
+        overflow: hidden;
+    }
+
+    .preview-cover {
+        background: var(--preview-primary, var(--ink));
+        color: #fff;
+        padding: 24px;
+    }
+
+    .preview-brand {
+        align-items: center;
+        display: flex;
+        gap: 14px;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .preview-brand-name {
+        font-size: .9rem;
+        opacity: .9;
+    }
+
+    .preview-logo {
+        align-items: center;
+        background: #fff;
+        border-radius: 12px;
+        display: flex;
+        height: 48px;
+        justify-content: center;
+        overflow: hidden;
+        width: 86px;
+    }
+
+    .preview-logo img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+        padding: 7px;
+    }
+
+    .preview-kicker {
+        color: var(--preview-accent, var(--gold));
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    .preview-title {
+        font-size: 1.35rem;
+        font-weight: 500;
+        line-height: 1.18;
+        margin: 8px 0 0;
+    }
+
+    .preview-body {
+        padding: 22px 24px;
+    }
+
+    .preview-detail {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .preview-detail span {
+        color: var(--muted);
+        display: block;
+        font-size: .72rem;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .preview-qr {
+        align-items: center;
+        display: flex;
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .preview-qr-box {
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        color: var(--muted);
+        display: flex;
+        flex: 0 0 86px;
+        height: 86px;
+        justify-content: center;
+    }
+
+    .preview-signature {
+        align-items: center;
+        border-top: 1px solid var(--line);
+        display: flex;
+        gap: 14px;
+        justify-content: space-between;
+        margin-top: 16px;
+        padding-top: 14px;
+    }
+
+    .preview-signature img {
+        max-height: 42px;
+        max-width: 120px;
+    }
+
+    .approval-note {
+        background: rgba(185, 137, 67, .1);
+        border: 1px solid rgba(185, 137, 67, .28);
+        border-radius: 18px;
+        color: #7a5727;
+        padding: 16px;
+    }
+
     @media (max-width: 860px) {
         .invite-head {
             align-items: flex-start;
             flex-direction: column;
+        }
+
+        .card-preview-grid {
+            grid-template-columns: 1fr;
         }
 
         .link-row,
@@ -257,6 +391,79 @@
             </div>
         @endif
     @endforeach
+
+    <section class="card-preview-grid">
+        <article class="invitation-preview" style="--preview-primary: {{ $cardDesign['primary_color'] ?? '#171713' }}; --preview-accent: {{ $cardDesign['accent_color'] ?? '#b98943' }};">
+            <div class="preview-cover">
+                <div class="preview-brand">
+                    <div class="preview-brand-name">{{ $cardDesign['brand_name'] ?? 'Accès Business' }}</div>
+                    @if(!empty($cardDesign['organization_logo']))
+                        <div class="preview-logo">
+                            <img src="{{ $cardDesign['organization_logo'] }}" alt="{{ $cardDesign['brand_name'] ?? 'Logo organisation' }}">
+                        </div>
+                    @endif
+                </div>
+                <div class="preview-kicker">Modèle carte d’invitation</div>
+                <h2 class="preview-title">{{ $event->titre }}</h2>
+            </div>
+            <div class="preview-body">
+                <div class="preview-detail">
+                    <div>
+                        <span>Invité</span>
+                        Exemple Invité · Fonction · Entreprise
+                    </div>
+                    <div>
+                        <span>Date & heure</span>
+                        {{ optional($event->date_debut)->format('d/m/Y') }} · {{ $event->heure_debut }}{{ $event->heure_fin ? ' - ' . $event->heure_fin : '' }}
+                    </div>
+                    <div>
+                        <span>Lieu</span>
+                        {{ $event->lieu ?: $event->ville ?: 'Lieu à confirmer' }}
+                    </div>
+                </div>
+                <div class="preview-qr">
+                    <div class="preview-qr-box"><i class="bi bi-qr-code" style="font-size:2.4rem;"></i></div>
+                    <div>
+                        <span class="muted-cell d-block mb-1">Code d’accès</span>
+                        <strong>INVITATION-EXEMPLE</strong>
+                    </div>
+                </div>
+                @if(!empty($cardDesign['signature_text']) || !empty($cardDesign['signature_logo']))
+                    <div class="preview-signature">
+                        <span class="muted-cell">{{ $cardDesign['signature_text'] }}</span>
+                        @if(!empty($cardDesign['signature_logo']))
+                            <img src="{{ $cardDesign['signature_logo'] }}" alt="Signature plateforme">
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </article>
+
+        <aside class="invite-panel">
+            <div class="panel-head">
+                <h2>Contrôle du modèle</h2>
+                <p>Ce visuel sera utilisé après confirmation de présence.</p>
+            </div>
+            <div class="panel-body">
+                @if(!empty($cardDesign['allow_organization_logo']))
+                    <div class="approval-note mb-3" style="background:rgba(46,123,101,.1);border-color:rgba(46,123,101,.22);color:#2e7b65;">
+                        <i class="bi bi-check2-circle me-1"></i> Logo organisation autorisé par le SA.
+                    </div>
+                @elseif(!empty($cardDesign['organization_logo_blocked']))
+                    <div class="approval-note mb-3">
+                        <i class="bi bi-shield-lock me-1"></i> Le logo organisation existe, mais il n’est pas encore autorisé par le SA.
+                    </div>
+                @else
+                    <div class="approval-note mb-3">
+                        <i class="bi bi-info-circle me-1"></i> Aucun logo organisation n’est disponible pour cette carte.
+                    </div>
+                @endif
+                <p class="muted-cell mb-0">
+                    Les couleurs viennent du branding de l’organisation. La signature et l’autorisation du logo sont contrôlées par le super admin plateforme.
+                </p>
+            </div>
+        </aside>
+    </section>
 
     <div class="invite-panel">
             <div class="panel-head">

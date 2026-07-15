@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    @php
+        $design = $cardDesign ?? [];
+        $primary = $design['primary_color'] ?? '#171713';
+        $accent = $design['accent_color'] ?? '#b98943';
+        $brandName = $design['brand_name'] ?? 'Accès Business';
+        $organizationLogo = $design['organization_logo'] ?? null;
+        $signatureText = $design['signature_text'] ?? '';
+        $signatureLogo = $design['signature_logo'] ?? null;
+    @endphp
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Votre carte d'invitation</title>
@@ -11,8 +20,18 @@
             <td align="center">
                 <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%; background:#fffefa; border:1px solid #ded6c8; border-radius:22px; overflow:hidden;">
                     <tr>
-                        <td style="background:#171713; padding:34px;">
-                            <p style="margin:0 0 12px; color:#d8b476; font-size:12px; letter-spacing:2px; text-transform:uppercase; font-weight:bold;">Carte d’invitation</p>
+                        <td style="background:{{ $primary }}; padding:30px 34px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
+                                <tr>
+                                    <td style="color:#ffffff; font-size:13px;">{{ $brandName }}</td>
+                                    <td align="right">
+                                        @if($organizationLogo)
+                                            <img src="{{ $organizationLogo }}" alt="{{ $brandName }}" style="max-width:120px; max-height:48px; background:#ffffff; border-radius:12px; padding:8px;">
+                                        @endif
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin:0 0 12px; color:{{ $accent }}; font-size:12px; letter-spacing:2px; text-transform:uppercase; font-weight:bold;">Carte d’invitation</p>
                             <h1 style="margin:0; color:#ffffff; font-size:30px; line-height:1.12; font-weight:500;">{{ $event->titre }}</h1>
                         </td>
                     </tr>
@@ -55,10 +74,26 @@
                             </div>
 
                             <div style="text-align:center; margin:28px 0 0;">
-                                <a href="{{ route('invitation.download', ['token' => $registration->token_unique]) }}" style="display:inline-block; background:#171713; color:#ffffff; text-decoration:none; padding:14px 24px; border-radius:999px; font-weight:bold;">Télécharger la carte PDF</a>
+                                <a href="{{ route('invitation.download', ['token' => $registration->token_unique]) }}" style="display:inline-block; background:{{ $primary }}; color:#ffffff; text-decoration:none; padding:14px 24px; border-radius:999px; font-weight:bold;">Télécharger la carte PDF</a>
                             </div>
                         </td>
                     </tr>
+                    @if($signatureText || $signatureLogo)
+                        <tr>
+                            <td style="background:#fffefa; border-top:1px solid #e5ded2; padding:18px 34px;">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                        <td style="color:#746f65; font-size:13px; line-height:1.6;">{{ $signatureText }}</td>
+                                        <td align="right" style="width:150px;">
+                                            @if($signatureLogo)
+                                                <img src="{{ $signatureLogo }}" alt="Signature" style="max-width:130px; max-height:50px;">
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    @endif
                     <tr>
                         <td style="background:#f8f4ec; padding:22px 34px; color:#746f65; font-size:13px; line-height:1.6; text-align:center;">
                             Cette invitation est personnelle et non transférable.

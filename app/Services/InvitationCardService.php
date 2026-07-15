@@ -80,6 +80,7 @@ class InvitationCardService
     {
         $event = $registration->event;
         $qrCodeUrl = $this->generateQrCode($registration);
+        $cardDesign = $this->cardDesignForEvent($event);
 
         // Générer une URL pour le QR code (on utilisera une API simple pour l'instant)
         $qrCodeImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($qrCodeUrl);
@@ -89,6 +90,7 @@ class InvitationCardService
             'event' => $event,
             'qrCodeImageUrl' => $qrCodeImageUrl,
             'qrCodeUrl' => $qrCodeUrl,
+            'cardDesign' => $cardDesign,
         ])->render();
 
         return $html;
@@ -100,6 +102,7 @@ class InvitationCardService
     public function generateInvitationCardText(EventRegistration $registration): string
     {
         $event = $registration->event;
+        $cardDesign = $this->cardDesignForEvent($event);
 
         $text = "INVITATION\n\n";
         $text .= "Bonjour " . $registration->nom_complet . ",\n\n";
@@ -117,6 +120,9 @@ class InvitationCardService
         }
 
         $text .= "\nCode d'accès : " . $registration->token_unique . "\n";
+        if (!empty($cardDesign['signature_text'])) {
+            $text .= "\n" . $cardDesign['signature_text'] . "\n";
+        }
         $text .= "\nCette carte est personnelle et non transférable.\n";
 
         return $text;
@@ -134,6 +140,7 @@ class InvitationCardService
 
         $event = $registration->event;
         $qrCodeUrl = $this->generateQrCode($registration);
+        $cardDesign = $this->cardDesignForEvent($event, true);
 
         // Générer l'URL du QR code image
         $qrCodeImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($qrCodeUrl);
@@ -157,6 +164,7 @@ class InvitationCardService
             'event' => $event,
             'qrCodeImageUrl' => $qrCodeImageData ?: $qrCodeImageUrl,
             'qrCodeUrl' => $qrCodeUrl,
+            'cardDesign' => $cardDesign,
         ])->render();
 
         // Configuration DomPDF (utilisation du nom complet de la classe)
@@ -194,6 +202,57 @@ class InvitationCardService
         file_put_contents($path, $dompdf->output());
 
         return $path;
+    }
+
+    public function cardDesignForEvent(Event $event, bool $forPdf = false): array
+    {
+        $event->loadMissing('organization');
+
+        $organization = $event->organization;
+        $settings = $organization?->settings ?? [];
+        $branding = $settings['branding'] ?? [];
+        $invitationCard = $settings['invitation_card'] ?? [];
+
+        $primary = $this->validHex($branding['primary_color'] ?? null) ?: '#171713';
+        $accent = $this->validHex($branding['accent_color'] ?? null) ?: '#b98943';
+        $brandName = $branding['brand_name'] ?? $organization?->name ?? 'Accès Business';
+        $allowOrganizationLogo = (bool) ($invitationCard['allow_organization_logo'] ?? false);
+
+        return [
+            'brand_name' => $brandName,
+            'primary_color' => $primary,
+            'accent_color' => $accent,
+            'allow_organization_logo' => $allowOrganizationLogo,
+            'organization_logo' => $allowOrganizationLogo ? $this->assetForCard($organization?->logo, $forPdf) : null,
+            'organization_logo_blocked' => (bool) ($organization?->logo) && !$allowOrganizationLogo,
+            'signature_text' => trim((string) ($invitationCard['signature_text'] ?? '')),
+            'signature_logo' => $this->assetForCard($invitationCard['signature_logo'] ?? null, $forPdf),
+        ];
+    }
+
+    private function assetForCard(?string $path, bool $forPdf): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        if (!$forPdf) {
+            return Storage::disk('public')->url($path);
+        }
+
+        if (!Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        $absolutePath = Storage::disk('public')->path($path);
+        $mimeType = mime_content_type($absolutePath) ?: 'image/png';
+
+        return 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($absolutePath));
+    }
+
+    private function validHex(?string $color): ?string
+    {
+        return is_string($color) && preg_match('/^#[0-9A-Fa-f]{6}$/', $color) ? $color : null;
     }
 
     /**

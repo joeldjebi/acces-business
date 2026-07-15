@@ -4,18 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\EventAccessLink;
+use App\Services\InvitationCardService;
 use App\Services\MailjetService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 
 class EventAccessController extends Controller
 {
     protected $mailjetService;
+    protected $invitationCardService;
 
-    public function __construct(MailjetService $mailjetService)
+    public function __construct(MailjetService $mailjetService, InvitationCardService $invitationCardService)
     {
         $this->mailjetService = $mailjetService;
+        $this->invitationCardService = $invitationCardService;
     }
 
     /**
@@ -60,7 +61,9 @@ class EventAccessController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('events.send-link', compact('event', 'links'));
+        $cardDesign = $this->invitationCardService->cardDesignForEvent($event);
+
+        return view('events.send-link', compact('event', 'links', 'cardDesign'));
     }
 
     /**

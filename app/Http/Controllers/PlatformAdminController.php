@@ -263,6 +263,34 @@ class PlatformAdminController extends Controller
         return back()->with('success', 'Organisation mise à jour.');
     }
 
+    public function updateInvitationCardSettings(Request $request, Organization $organization)
+    {
+        $validated = $request->validate([
+            'allow_organization_logo' => 'nullable|boolean',
+            'signature_text' => 'nullable|string|max:500',
+            'signature_logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        $settings = $organization->settings ?? [];
+        $invitationCard = $settings['invitation_card'] ?? [];
+
+        $invitationCard['allow_organization_logo'] = (bool) ($validated['allow_organization_logo'] ?? false);
+        $invitationCard['signature_text'] = trim((string) ($validated['signature_text'] ?? ''));
+
+        if ($request->hasFile('signature_logo')) {
+            if (!empty($invitationCard['signature_logo'])) {
+                Storage::disk('public')->delete($invitationCard['signature_logo']);
+            }
+
+            $invitationCard['signature_logo'] = $request->file('signature_logo')->store('platform-signatures', 'public');
+        }
+
+        $settings['invitation_card'] = $invitationCard;
+        $organization->update(['settings' => $settings]);
+
+        return back()->with('success', 'Paramètres de carte d’invitation mis à jour.');
+    }
+
     public function regenerateOnboardingLink(Organization $organization)
     {
         $organization->update([

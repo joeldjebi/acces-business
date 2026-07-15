@@ -42,6 +42,7 @@ Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('pl
     Route::get('/organizations/{organization}/events/{event}', [PlatformAdminController::class, 'showOrganizationEvent'])->name('organizations.events.show');
     Route::get('/organizations/{organization}', [PlatformAdminController::class, 'showOrganization'])->name('organizations.show');
     Route::put('/organizations/{organization}', [PlatformAdminController::class, 'updateOrganization'])->name('organizations.update');
+    Route::put('/organizations/{organization}/invitation-card', [PlatformAdminController::class, 'updateInvitationCardSettings'])->name('organizations.invitation-card.update');
     Route::post('/organizations/{organization}/onboarding-link', [PlatformAdminController::class, 'regenerateOnboardingLink'])->name('organizations.onboarding-link');
     Route::put('/organizations/{organization}/users/{user}/role', [PlatformAdminController::class, 'updateUserRole'])->name('organizations.users.role');
     Route::get('/plans', [PlatformAdminController::class, 'plans'])->name('plans');
