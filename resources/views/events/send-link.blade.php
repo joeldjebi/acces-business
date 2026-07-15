@@ -352,7 +352,7 @@
                 <p>Envoyez une invitation personnalisée à une ou plusieurs adresses.</p>
             </div>
             <div class="panel-body">
-                <form method="POST" action="{{ route('events.send-link', $event) }}" enctype="multipart/form-data" id="sendLinkForm">
+                <form method="POST" action="{{ route('events.send-link.store', $event) }}" enctype="multipart/form-data" id="sendLinkForm">
                     @csrf
 
                     <div class="method-toggle">

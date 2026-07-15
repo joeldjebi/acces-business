@@ -103,7 +103,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     // Routes d'accès (admin)
     Route::middleware('role:super_admin,admin')->group(function () {
         Route::get('/events/{event}/send-link', [EventAccessController::class, 'showSendLinkForm'])->name('events.send-link');
-        Route::post('/events/{event}/send-link', [EventAccessController::class, 'sendLink'])->name('events.send-link');
+        Route::post('/events/{event}/send-link', [EventAccessController::class, 'sendLink'])->name('events.send-link.store');
         Route::get('/events/{event}/registrations', [EventRegistrationController::class, 'index'])->name('events.registrations');
     });
 });
