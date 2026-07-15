@@ -29,6 +29,7 @@ class InvitationCardService
             'email' => $registration->email,
             'nom' => $registration->nom,
             'prenom' => $registration->prenom,
+            'fonction' => $registration->fonction,
         ];
 
         $qrData = json_encode($data);
@@ -281,4 +282,3 @@ class InvitationCardService
         }
     }
 }
-

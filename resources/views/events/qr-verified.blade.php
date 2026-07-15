@@ -54,6 +54,9 @@
             @if($registration->entreprise)
             <p><strong>Entreprise :</strong> {{ $registration->entreprise }}</p>
             @endif
+            @if($registration->fonction)
+            <p><strong>Fonction :</strong> {{ $registration->fonction }}</p>
+            @endif
             <p><strong>Statut :</strong> 
                 @if($registration->statut_reponse === 'present')
                     <span class="badge bg-success">Présent</span>
@@ -74,4 +77,3 @@
     </div>
 </div>
 @endsection
-

@@ -116,6 +116,7 @@
                             <th>Email</th>
                             <th>Téléphone</th>
                             <th>Entreprise</th>
+                            <th>Fonction</th>
                             <th>Réponse</th>
                             <th>Date d'inscription</th>
                             <th>Carte envoyée</th>
@@ -131,6 +132,7 @@
                             <td>{{ $registration->email }}</td>
                             <td>{{ $registration->telephone ?: '-' }}</td>
                             <td>{{ $registration->entreprise ?: '-' }}</td>
+                            <td>{{ $registration->fonction ?: '-' }}</td>
                             <td>
                                 <span class="badge-response {{ $registration->statut_reponse }}">
                                     @if($registration->statut_reponse === 'present')
@@ -168,7 +170,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
+                            <td colspan="9" class="text-center text-muted py-4">
                                 <i class="bi bi-inbox" style="font-size: 3rem;"></i>
                                 <p class="mt-2">Aucune inscription pour le moment.</p>
                             </td>
@@ -187,4 +189,3 @@
     </div>
 </div>
 @endsection
-

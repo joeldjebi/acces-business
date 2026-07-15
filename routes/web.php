@@ -104,6 +104,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::middleware('role:super_admin,admin')->group(function () {
         Route::get('/events/{event}/send-link', [EventAccessController::class, 'showSendLinkForm'])->name('events.send-link');
         Route::post('/events/{event}/send-link', [EventAccessController::class, 'sendLink'])->name('events.send-link.store');
+        Route::delete('/events/{event}/send-link/{accessLink}', [EventAccessController::class, 'destroyLink'])->name('events.send-link.destroy');
         Route::get('/events/{event}/registrations', [EventRegistrationController::class, 'index'])->name('events.registrations');
     });
 });

@@ -623,6 +623,14 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="fonction" class="form-label">Fonction</label>
+                                    <input type="text" class="form-control @error('fonction') is-invalid @enderror" id="fonction" name="fonction" value="{{ old('fonction') }}">
+                                    @error('fonction')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <button type="submit" class="event-btn primary">

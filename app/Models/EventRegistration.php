@@ -19,6 +19,7 @@ class EventRegistration extends Model
         'prenom',
         'telephone',
         'entreprise',
+        'fonction',
         'statut_reponse',
         'token_unique',
         'qr_code_path',

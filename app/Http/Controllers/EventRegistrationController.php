@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\EventAccessLink;
 use App\Models\EventRegistration;
 use App\Services\InvitationCardService;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ class EventRegistrationController extends Controller
             'email' => 'required|email|max:255',
             'telephone' => 'nullable|string|max:20',
             'entreprise' => 'nullable|string|max:255',
+            'fonction' => 'nullable|string|max:255',
         ]);
 
         // Vérifier si l'email n'est pas déjà inscrit pour cet événement
@@ -54,6 +56,7 @@ class EventRegistrationController extends Controller
             'prenom' => $validated['prenom'],
             'telephone' => $validated['telephone'] ?? null,
             'entreprise' => $validated['entreprise'] ?? null,
+            'fonction' => $validated['fonction'] ?? null,
             'statut_reponse' => 'en_attente',
             'user_id' => auth()->id(),
         ]);
@@ -102,7 +105,7 @@ class EventRegistrationController extends Controller
 
         if (!$otpVerified || !$verifiedEmail) {
             // Essayer de trouver un lien d'accès pour rediriger vers la page de vérification
-            $accessLink = \App\Models\EventAccessLink::where('event_id', $event->id)
+            $accessLink = EventAccessLink::where('event_id', $event->id)
                 ->forOrganization($event->organization_id)
                 ->where('email_destinataire', $request->input('email'))
                 ->latest()
@@ -118,8 +121,9 @@ class EventRegistrationController extends Controller
         }
 
         $event->load(['category', 'visibilite']);
+        $inviteData = $this->inviteDataFor($event, $verifiedEmail);
 
-        return view('events.respond', compact('event', 'verifiedEmail'));
+        return view('events.respond', compact('event', 'verifiedEmail', 'inviteData'));
     }
 
     /**
@@ -133,6 +137,7 @@ class EventRegistrationController extends Controller
             'prenom' => 'required|string|max:255',
             'telephone' => 'nullable|string|max:20',
             'entreprise' => 'nullable|string|max:255',
+            'fonction' => 'nullable|string|max:255',
         ]);
 
         // Vérifier que l'OTP a été validé
@@ -141,7 +146,7 @@ class EventRegistrationController extends Controller
 
         if (!$otpVerified || !$verifiedEmail) {
             // Rediriger vers la page d'accès avec le token si disponible
-            $accessLink = \App\Models\EventAccessLink::where('event_id', $event->id)
+            $accessLink = EventAccessLink::where('event_id', $event->id)
                 ->forOrganization($event->organization_id)
                 ->where('email_destinataire', $request->input('email'))
                 ->latest()
@@ -168,6 +173,7 @@ class EventRegistrationController extends Controller
                 'prenom' => $validated['prenom'],
                 'telephone' => $validated['telephone'] ?? null,
                 'entreprise' => $validated['entreprise'] ?? null,
+                'fonction' => $validated['fonction'] ?? null,
                 'statut_reponse' => 'en_attente',
                 'date_validation_otp' => now(),
                 'user_id' => auth()->id(),
@@ -180,6 +186,7 @@ class EventRegistrationController extends Controller
             'prenom' => $validated['prenom'],
             'telephone' => $validated['telephone'] ?? null,
             'entreprise' => $validated['entreprise'] ?? null,
+            'fonction' => $validated['fonction'] ?? null,
             'statut_reponse' => $validated['reponse'],
             'date_reponse' => now(),
         ]);
@@ -318,5 +325,38 @@ class EventRegistrationController extends Controller
             return redirect()->back()
                 ->with('error', 'Une erreur est survenue lors du téléchargement. Veuillez réessayer.');
         }
+    }
+
+    private function inviteDataFor(Event $event, string $email): array
+    {
+        $registration = EventRegistration::where('event_id', $event->id)
+            ->forOrganization($event->organization_id)
+            ->where('email', $email)
+            ->latest()
+            ->first();
+
+        if ($registration) {
+            return [
+                'nom' => $registration->nom,
+                'prenom' => $registration->prenom,
+                'telephone' => $registration->telephone,
+                'entreprise' => $registration->entreprise,
+                'fonction' => $registration->fonction,
+            ];
+        }
+
+        $accessLink = EventAccessLink::where('event_id', $event->id)
+            ->forOrganization($event->organization_id)
+            ->where('email_destinataire', $email)
+            ->latest()
+            ->first();
+
+        return [
+            'nom' => $accessLink?->nom,
+            'prenom' => $accessLink?->prenom,
+            'telephone' => $accessLink?->telephone,
+            'entreprise' => $accessLink?->entreprise,
+            'fonction' => $accessLink?->fonction,
+        ];
     }
 }

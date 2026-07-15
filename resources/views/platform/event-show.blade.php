@@ -78,7 +78,7 @@
                 <p class="muted">Participants et réponses associés à cet événement.</p>
                 <div class="table-responsive">
                     <table class="mini-table">
-                        <thead><tr><th>Participant</th><th>Contact</th><th>Réponse</th><th>Inscription</th></tr></thead>
+                        <thead><tr><th>Participant</th><th>Contact</th><th>Fonction</th><th>Réponse</th><th>Inscription</th></tr></thead>
                         <tbody>
                             @forelse($registrations as $registration)
                                 <tr>
@@ -87,11 +87,12 @@
                                         <div class="muted">{{ $registration->entreprise ?: '-' }}</div>
                                     </td>
                                     <td>{{ $registration->email }}<div class="muted">{{ $registration->telephone ?: '-' }}</div></td>
+                                    <td>{{ $registration->fonction ?: '-' }}</td>
                                     <td><span class="status-pill status-{{ $registration->statut_reponse }}">{{ str_replace('_', ' ', ucfirst($registration->statut_reponse)) }}</span></td>
                                     <td>{{ optional($registration->date_inscription)->format('d/m/Y H:i') ?: '-' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="muted text-center py-4">Aucune inscription.</td></tr>
+                                <tr><td colspan="5" class="muted text-center py-4">Aucune inscription.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

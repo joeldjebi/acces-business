@@ -69,7 +69,12 @@ class EventAccessController extends Controller
     public function sendLink(Request $request, Event $event)
     {
         $validated = $request->validate([
-            'emails' => 'nullable|required_without:csv_file|string',
+            'email' => 'nullable|required_without:csv_file|email|max:255',
+            'nom' => 'nullable|string|max:255',
+            'prenom' => 'nullable|string|max:255',
+            'telephone' => 'nullable|string|max:30',
+            'entreprise' => 'nullable|string|max:255',
+            'fonction' => 'nullable|string|max:255',
             'csv_file' => 'nullable|file|mimes:csv,txt|max:2048',
             'message' => 'nullable|string|max:1000',
         ]);
@@ -79,33 +84,47 @@ class EventAccessController extends Controller
             return redirect()->back()->with('error', 'Cet événement ne nécessite pas de lien d\'accès.');
         }
 
-        $emailSource = $validated['emails'] ?? '';
+        $contacts = [];
 
         if ($request->hasFile('csv_file')) {
-            $emailSource .= "\n" . file_get_contents($request->file('csv_file')->getRealPath());
+            $contacts = array_merge($contacts, $this->parseInviteCsv($request->file('csv_file')->getRealPath()));
         }
 
-        // Séparer les emails (séparés par virgule, point-virgule ou retour à la ligne)
-        $emails = preg_split('/[,\s;]+/', $emailSource);
-        $emails = array_filter(array_map('trim', $emails));
-        $emails = array_filter($emails, function($email) {
-            return filter_var($email, FILTER_VALIDATE_EMAIL);
-        });
+        if (!empty($validated['email'])) {
+            $contacts[] = [
+                'email' => $validated['email'],
+                'nom' => $validated['nom'] ?? null,
+                'prenom' => $validated['prenom'] ?? null,
+                'telephone' => $validated['telephone'] ?? null,
+                'entreprise' => $validated['entreprise'] ?? null,
+                'fonction' => $validated['fonction'] ?? null,
+            ];
+        }
 
-        if (empty($emails)) {
+        $contacts = collect($contacts)
+            ->filter(fn ($contact) => filter_var($contact['email'] ?? null, FILTER_VALIDATE_EMAIL))
+            ->unique(fn ($contact) => strtolower($contact['email']))
+            ->values();
+
+        if ($contacts->isEmpty()) {
             return redirect()->back()->with('error', 'Aucun email valide fourni.');
         }
 
         $sentCount = 0;
         $errors = [];
 
-        foreach ($emails as $email) {
+        foreach ($contacts as $contact) {
             try {
                 // Créer le lien d'accès
                 $accessLink = EventAccessLink::create([
                     'organization_id' => $event->organization_id,
                     'event_id' => $event->id,
-                    'email_destinataire' => $email,
+                    'email_destinataire' => $contact['email'],
+                    'nom' => $contact['nom'] ?? null,
+                    'prenom' => $contact['prenom'] ?? null,
+                    'telephone' => $contact['telephone'] ?? null,
+                    'entreprise' => $contact['entreprise'] ?? null,
+                    'fonction' => $contact['fonction'] ?? null,
                     'envoye_par' => auth()->id(),
                 ]);
 
@@ -129,8 +148,8 @@ class EventAccessController extends Controller
                 $text .= "Cordialement,\n" . auth()->user()->name;
 
                 $result = $this->mailjetService->sendSimpleEmail(
-                    $email,
-                    $email,
+                    $contact['email'],
+                    $contact['email'],
                     $subject,
                     $text,
                     $html
@@ -139,10 +158,10 @@ class EventAccessController extends Controller
                 if ($result['success']) {
                     $sentCount++;
                 } else {
-                    $errors[] = $email . ': ' . ($result['message'] ?? 'Erreur inconnue');
+                    $errors[] = $contact['email'] . ': ' . ($result['message'] ?? 'Erreur inconnue');
                 }
             } catch (\Exception $e) {
-                $errors[] = $email . ': ' . $e->getMessage();
+                $errors[] = $contact['email'] . ': ' . $e->getMessage();
             }
         }
 
@@ -155,6 +174,16 @@ class EventAccessController extends Controller
             empty($errors) ? 'success' : 'warning',
             $message
         );
+    }
+
+    public function destroyLink(Event $event, EventAccessLink $accessLink)
+    {
+        abort_unless((int) $accessLink->event_id === (int) $event->id, 404);
+        abort_unless((int) $accessLink->organization_id === (int) $event->organization_id, 404);
+
+        $accessLink->delete();
+
+        return back()->with('success', 'Invitation supprimée.');
     }
 
     /**
@@ -188,17 +217,63 @@ class EventAccessController extends Controller
      */
     public function downloadCsvTemplate()
     {
-        $filename = 'modele_emails.csv';
+        $filename = 'modele_invitations.csv';
 
-        $csvContent = "email\n";
-        $csvContent .= "exemple1@email.com\n";
-        $csvContent .= "exemple2@email.com\n";
-        $csvContent .= "exemple3@email.com\n";
+        $csvContent = "email,nom,prenom,telephone,entreprise,fonction\n";
+        $csvContent .= "exemple1@email.com,Doe,Jean,+2250700000000,Entreprise A,Directeur\n";
+        $csvContent .= "exemple2@email.com,Kouassi,Aya,+2250500000000,Entreprise B,Responsable Marketing\n";
 
         return response($csvContent, 200)
             ->header('Content-Type', 'text/csv; charset=UTF-8')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
             ->header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0')
             ->header('Pragma', 'public');
+    }
+
+    private function parseInviteCsv(string $path): array
+    {
+        $handle = fopen($path, 'r');
+        if (!$handle) {
+            return [];
+        }
+
+        $contacts = [];
+        $headers = null;
+
+        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+            $row = array_map(fn ($value) => trim((string) $value), $row);
+
+            if ($headers === null) {
+                $headers = array_map(fn ($value) => strtolower(trim($value)), $row);
+                if (!in_array('email', $headers, true)) {
+                    $contacts[] = $this->contactFromCsvRow(['email'], $row);
+                    $headers = ['email'];
+                }
+                continue;
+            }
+
+            $contacts[] = $this->contactFromCsvRow($headers, $row);
+        }
+
+        fclose($handle);
+
+        return array_filter($contacts, fn ($contact) => !empty($contact['email']));
+    }
+
+    private function contactFromCsvRow(array $headers, array $row): array
+    {
+        $data = [];
+        foreach ($headers as $index => $header) {
+            $data[$header] = $row[$index] ?? null;
+        }
+
+        return [
+            'email' => $data['email'] ?? null,
+            'nom' => $data['nom'] ?? null,
+            'prenom' => $data['prenom'] ?? ($data['prenoms'] ?? null),
+            'telephone' => $data['telephone'] ?? null,
+            'entreprise' => $data['entreprise'] ?? null,
+            'fonction' => $data['fonction'] ?? null,
+        ];
     }
 }

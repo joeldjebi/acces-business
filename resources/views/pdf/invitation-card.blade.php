@@ -64,7 +64,13 @@
 
         .name {
             font-size: 18px;
-            margin-bottom: 10mm;
+            margin-bottom: 2mm;
+        }
+
+        .guest-meta {
+            color: #746f65;
+            font-size: 11px;
+            margin-bottom: 8mm;
         }
 
         .details {
@@ -166,6 +172,11 @@
         <div class="body">
             <div class="guest">Invité</div>
             <div class="name">{{ $registration->nom_complet ?: $registration->email }}</div>
+            @if($registration->entreprise || $registration->fonction)
+                <div class="guest-meta">
+                    {{ $registration->fonction ?: '' }}{{ $registration->fonction && $registration->entreprise ? ' · ' : '' }}{{ $registration->entreprise ?: '' }}
+                </div>
+            @endif
 
             <div class="details">
                 <div class="detail">

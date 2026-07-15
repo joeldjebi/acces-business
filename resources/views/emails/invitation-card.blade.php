@@ -19,6 +19,11 @@
                     <tr>
                         <td style="padding:34px;">
                             <p style="margin:0 0 20px; font-size:16px; line-height:1.7;">Bonjour <strong>{{ $registration->nom_complet ?: $registration->email }}</strong>,</p>
+                            @if($registration->entreprise || $registration->fonction)
+                                <p style="margin:-10px 0 20px; color:#746f65; font-size:14px;">
+                                    {{ $registration->fonction ?: '' }}{{ $registration->fonction && $registration->entreprise ? ' · ' : '' }}{{ $registration->entreprise ?: '' }}
+                                </p>
+                            @endif
                             <p style="margin:0 0 24px; color:#625b51; font-size:16px; line-height:1.7;">Votre invitation est confirmée. Présentez le QR code ci-dessous à l’entrée de l’événement.</p>
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff; border:1px solid #e5ded2; border-radius:18px;">

@@ -14,12 +14,16 @@
         margin: 0 auto;
     }
 
+    body {
+        overflow: hidden;
+    }
+
     .rsvp-hero {
         background: #171713;
         color: #fff;
         border-radius: 28px;
-        padding: 38px;
-        margin-bottom: 22px;
+        padding: 24px 30px;
+        margin-bottom: 14px;
         box-shadow: 0 24px 70px rgba(39, 33, 25, .12);
     }
 
@@ -32,10 +36,10 @@
     }
 
     .rsvp-title {
-        font-size: clamp(2rem, 4vw, 3.4rem);
+        font-size: clamp(1.7rem, 3vw, 2.6rem);
         font-weight: 500;
         line-height: 1.04;
-        margin: 12px 0 18px;
+        margin: 8px 0 12px;
     }
 
     .rsvp-meta {
@@ -50,7 +54,7 @@
         border: 1px solid rgba(222, 214, 200, .78);
         border-radius: 24px;
         box-shadow: 0 20px 55px rgba(39, 33, 25, .07);
-        padding: 28px;
+        padding: 20px;
     }
 
     .rsvp-note {
@@ -58,15 +62,15 @@
         border: 1px solid rgba(185, 137, 67, .22);
         border-radius: 18px;
         color: #725322;
-        padding: 15px 18px;
-        margin-bottom: 24px;
+        padding: 12px 15px;
+        margin-bottom: 14px;
     }
 
     .response-buttons {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-        margin: 18px 0 28px;
+        gap: 10px;
+        margin: 12px 0 16px;
     }
 
     .response-btn {
@@ -74,8 +78,8 @@
         border: 1px solid var(--line);
         border-radius: 22px;
         cursor: pointer;
-        min-height: 166px;
-        padding: 24px;
+        min-height: 112px;
+        padding: 16px;
         transition: all .2s ease;
     }
 
@@ -91,7 +95,7 @@
 
     .response-btn i {
         font-size: 2rem;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
     }
 
     .response-btn h3 {
@@ -110,7 +114,7 @@
     .form-section {
         display: none;
         border-top: 1px solid rgba(222, 214, 200, .72);
-        padding-top: 24px;
+        padding-top: 14px;
     }
 
     .form-section.active {
@@ -120,8 +124,8 @@
     .form-control {
         border: 1px solid var(--line);
         border-radius: 16px;
-        min-height: 48px;
-        padding: 12px 14px;
+        min-height: 42px;
+        padding: 9px 12px;
     }
 
     .form-control:focus {
@@ -134,7 +138,7 @@
         border: 1px solid var(--ink);
         border-radius: 999px;
         color: #fff;
-        min-height: 50px;
+        min-height: 44px;
         padding: 0 22px;
     }
 
@@ -144,6 +148,10 @@
     }
 
     @media (max-width: 820px) {
+        body {
+            overflow: auto;
+        }
+
         .response-buttons {
             grid-template-columns: 1fr;
         }
@@ -209,19 +217,23 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="nom" name="nom" value="{{ old('nom') }}" required>
+                        <input type="text" class="form-control" id="nom" name="nom" value="{{ old('nom', $inviteData['nom'] ?? '') }}" required>
                     </div>
                     <div class="col-md-6">
                         <label for="prenom" class="form-label">Prénom <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="prenom" name="prenom" value="{{ old('prenom') }}" required>
+                        <input type="text" class="form-control" id="prenom" name="prenom" value="{{ old('prenom', $inviteData['prenom'] ?? '') }}" required>
                     </div>
                     <div class="col-md-6">
                         <label for="telephone" class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" id="telephone" name="telephone" value="{{ old('telephone') }}">
+                        <input type="tel" class="form-control" id="telephone" name="telephone" value="{{ old('telephone', $inviteData['telephone'] ?? '') }}">
                     </div>
                     <div class="col-md-6">
                         <label for="entreprise" class="form-label">Entreprise</label>
-                        <input type="text" class="form-control" id="entreprise" name="entreprise" value="{{ old('entreprise') }}">
+                        <input type="text" class="form-control" id="entreprise" name="entreprise" value="{{ old('entreprise', $inviteData['entreprise'] ?? '') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="fonction" class="form-label">Fonction</label>
+                        <input type="text" class="form-control" id="fonction" name="fonction" value="{{ old('fonction', $inviteData['fonction'] ?? '') }}">
                     </div>
                 </div>
 
@@ -245,7 +257,6 @@
             this.classList.add('selected');
             reponseInput.value = this.dataset.value;
             infoForm.classList.add('active');
-            infoForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         });
     });
 </script>

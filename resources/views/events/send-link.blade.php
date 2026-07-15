@@ -157,7 +157,7 @@
         border-bottom: 1px solid rgba(222, 214, 200, .7);
         display: grid;
         gap: 14px;
-        grid-template-columns: minmax(220px, 1fr) 150px 150px 98px 84px;
+        grid-template-columns: minmax(220px, 1.2fr) minmax(170px, .8fr) 130px 130px 98px 92px;
         padding: 15px 20px;
     }
 
@@ -308,15 +308,28 @@
 
             @if($links->count() > 0)
                 <div class="link-row head">
-                    <div>Email</div>
+                    <div>Invité</div>
+                    <div>Fonction</div>
                     <div>Envoyé</div>
                     <div>Utilisé</div>
                     <div>Statut</div>
-                    <div class="text-end">Lien</div>
+                    <div class="text-end">Actions</div>
                 </div>
                 @foreach($links as $link)
                     <div class="link-row">
-                        <div class="email-cell">{{ $link->email_destinataire }}</div>
+                        <div>
+                            <div class="email-cell">{{ trim(($link->prenom ?? '') . ' ' . ($link->nom ?? '')) ?: $link->email_destinataire }}</div>
+                            <div class="muted-cell">{{ $link->email_destinataire }}</div>
+                            @if($link->telephone)
+                                <div class="muted-cell">{{ $link->telephone }}</div>
+                            @endif
+                        </div>
+                        <div class="muted-cell">
+                            {{ $link->fonction ?: '-' }}
+                            @if($link->entreprise)
+                                <div>{{ $link->entreprise }}</div>
+                            @endif
+                        </div>
                         <div class="muted-cell">{{ optional($link->envoye_le)->format('d/m/Y H:i') }}</div>
                         <div class="muted-cell">{{ $link->utilise_le ? $link->utilise_le->format('d/m/Y H:i') : 'Non utilisé' }}</div>
                         <div>
@@ -326,10 +339,17 @@
                                 <span class="badge-status envoye">Envoyé</span>
                             @endif
                         </div>
-                        <div class="text-end">
+                        <div class="d-flex justify-content-end gap-2">
                             <a href="{{ $link->access_url }}" target="_blank" class="icon-btn" title="Ouvrir le lien">
                                 <i class="bi bi-link-45deg"></i>
                             </a>
+                            <form method="POST" action="{{ route('events.send-link.destroy', [$event, $link]) }}" onsubmit="return confirm('Supprimer cette invitation ?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="icon-btn" title="Supprimer l'invitation">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 @endforeach
@@ -366,11 +386,33 @@
 
                     <div id="manualInput" class="input-method">
                         <div class="mb-3">
-                            <label for="emails" class="form-label">Emails des destinataires</label>
-                            <textarea class="form-control @error('emails') is-invalid @enderror" id="emails" name="emails" rows="5" placeholder="client@example.com&#10;partenaire@example.com">{{ old('emails') }}</textarea>
-                            @error('emails')
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" placeholder="invite@example.com">
+                            @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="nom" class="form-label">Nom</label>
+                                <input class="form-control" id="nom" name="nom" value="{{ old('nom') }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="prenom" class="form-label">Prénoms</label>
+                                <input class="form-control" id="prenom" name="prenom" value="{{ old('prenom') }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="telephone" class="form-label">Téléphone</label>
+                                <input class="form-control" id="telephone" name="telephone" value="{{ old('telephone') }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="entreprise" class="form-label">Entreprise</label>
+                                <input class="form-control" id="entreprise" name="entreprise" value="{{ old('entreprise') }}">
+                            </div>
+                            <div class="col-12">
+                                <label for="fonction" class="form-label">Fonction</label>
+                                <input class="form-control" id="fonction" name="fonction" value="{{ old('fonction') }}">
+                            </div>
                         </div>
                     </div>
 
@@ -383,7 +425,7 @@
                             <div class="upload-section" id="uploadArea" onclick="document.getElementById('csv_file').click()">
                                 <i class="bi bi-cloud-upload d-block mb-2" style="font-size: 1.6rem; color: var(--gold);"></i>
                                 <strong>Sélectionner un fichier</strong>
-                                <p class="text-muted small mb-0 mt-1">CSV ou TXT avec une colonne email.</p>
+                                <p class="text-muted small mb-0 mt-1">Colonnes: email, nom, prenom, telephone, entreprise, fonction.</p>
                             </div>
                             <input type="file" class="form-control d-none @error('csv_file') is-invalid @enderror" id="csv_file" name="csv_file" accept=".csv,.txt" onchange="handleFileSelect(this)">
                             <div id="fileInfo" class="mt-2" style="display: none;">
@@ -462,9 +504,9 @@
     });
 
     document.getElementById('sendLinkForm').addEventListener('submit', function(e) {
-        if (currentMethod === 'manual' && !document.getElementById('emails').value.trim()) {
+        if (currentMethod === 'manual' && !document.getElementById('email').value.trim()) {
             e.preventDefault();
-            alert('Veuillez entrer au moins un email.');
+            alert('Veuillez entrer un email.');
         }
     });
 </script>
