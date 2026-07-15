@@ -57,7 +57,7 @@ class EventAccessController extends Controller
         }
 
         $links = $query->orderBy('created_at', 'desc')
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
 
         return view('events.send-link', compact('event', 'links'));

@@ -66,13 +66,6 @@
         color: #fff;
     }
 
-    .invite-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 390px;
-        gap: 20px;
-        align-items: start;
-    }
-
     .invite-panel {
         background: var(--panel);
         border: 1px solid rgba(222, 214, 200, .78);
@@ -81,9 +74,8 @@
         overflow: hidden;
     }
 
-    .invite-panel.sticky {
-        position: sticky;
-        top: 90px;
+    .modal-content.invite-panel {
+        border: 1px solid rgba(222, 214, 200, .78);
     }
 
     .panel-head {
@@ -222,16 +214,6 @@
         text-align: center;
     }
 
-    @media (max-width: 1100px) {
-        .invite-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .invite-panel.sticky {
-            position: static;
-        }
-    }
-
     @media (max-width: 860px) {
         .invite-head {
             align-items: flex-start;
@@ -258,9 +240,14 @@
             <h1 class="invite-title">Envoyer des liens d’accès</h1>
             <p class="invite-copy">{{ $event->titre }}</p>
         </div>
-        <a href="{{ route('events.show', $event) }}" class="invite-btn">
-            <i class="bi bi-arrow-left"></i> Retour à l'événement
-        </a>
+        <div class="d-flex flex-wrap gap-2 justify-content-end">
+            <button type="button" class="invite-btn primary" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
+                <i class="bi bi-send"></i> Nouveau lien
+            </button>
+            <a href="{{ route('events.show', $event) }}" class="invite-btn">
+                <i class="bi bi-arrow-left"></i> Retour à l'événement
+            </a>
+        </div>
     </header>
 
     @foreach(['success' => 'success', 'warning' => 'warning', 'error' => 'danger'] as $key => $type)
@@ -271,8 +258,7 @@
         @endif
     @endforeach
 
-    <div class="invite-grid">
-        <div class="invite-panel">
+    <div class="invite-panel">
             <div class="panel-head">
                 <h2>Historique des liens</h2>
                 <p>{{ $links->total() }} lien(s) généré(s) pour cet événement.</p>
@@ -364,12 +350,19 @@
                     Aucun lien envoyé pour le moment.
                 </div>
             @endif
-        </div>
+    </div>
 
-        <aside class="invite-panel sticky">
+    <div class="modal fade" id="sendLinkModal" tabindex="-1" aria-labelledby="sendLinkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content invite-panel">
             <div class="panel-head">
-                <h2>Nouveau lien</h2>
-                <p>Envoyez une invitation personnalisée à une ou plusieurs adresses.</p>
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <h2 id="sendLinkModalLabel">Nouveau lien</h2>
+                        <p>Envoyez une invitation personnalisée à une ou plusieurs adresses.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
             </div>
             <div class="panel-body">
                 <form method="POST" action="{{ route('events.send-link.store', $event) }}" enctype="multipart/form-data" id="sendLinkForm">
@@ -450,7 +443,8 @@
                     </button>
                 </form>
             </div>
-        </aside>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -509,6 +503,10 @@
             alert('Veuillez entrer un email.');
         }
     });
+
+    @if($errors->any())
+        new bootstrap.Modal(document.getElementById('sendLinkModal')).show();
+    @endif
 </script>
 @endpush
 @endsection
