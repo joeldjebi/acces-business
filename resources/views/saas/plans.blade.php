@@ -282,9 +282,7 @@
 </div>
 
 @foreach($plans as $key => $plan)
-    @php
-        $defaultAmount = \App\Support\SaasPlans::price($plan, $cycle);
-    @endphp
+    @php($defaultAmount = \App\Support\SaasPlans::price($plan, $cycle))
     <div class="modal fade subscription-modal" id="planPaymentModal{{ $loop->index }}" tabindex="-1" aria-labelledby="planPaymentModalLabel{{ $loop->index }}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
