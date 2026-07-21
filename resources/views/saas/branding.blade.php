@@ -6,7 +6,7 @@
     $primary = old('primary_color', $branding['primary_color'] ?? '#171713');
     $accent = old('accent_color', $branding['accent_color'] ?? '#b98943');
     $brandName = old('brand_name', $branding['brand_name'] ?? $organization->name);
-    $logoUrl = $organization->logo ? \Illuminate\Support\Facades\Storage::url($organization->logo) : null;
+    $logoUrl = \App\Support\EventMedia::storageUrl($organization->logo);
 @endphp
 
 @push('styles')

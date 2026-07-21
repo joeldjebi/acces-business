@@ -49,6 +49,9 @@ Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('pl
     Route::get('/plans', [PlatformAdminController::class, 'plans'])->name('plans');
     Route::post('/plans', [PlatformAdminController::class, 'storePlan'])->name('plans.store');
     Route::put('/plans/{plan}', [PlatformAdminController::class, 'updatePlan'])->name('plans.update');
+    Route::get('/communication-packages', [PlatformAdminController::class, 'communicationPackages'])->name('communication-packages');
+    Route::post('/communication-packages', [PlatformAdminController::class, 'storeCommunicationPackage'])->name('communication-packages.store');
+    Route::put('/communication-packages/{package}', [PlatformAdminController::class, 'updateCommunicationPackage'])->name('communication-packages.update');
 });
 
 // Routes protégées
@@ -65,6 +68,8 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::post('/saas/plans', [SaasSettingsController::class, 'updatePlan'])->name('saas.plans.update');
         Route::get('/saas/facturation', [SaasSettingsController::class, 'billing'])->name('saas.billing');
         Route::put('/saas/facturation', [SaasSettingsController::class, 'updateBilling'])->name('saas.billing.update');
+        Route::get('/saas/communications', [SaasSettingsController::class, 'communications'])->name('saas.communications');
+        Route::post('/saas/communications', [SaasSettingsController::class, 'purchaseCommunicationCredits'])->name('saas.communications.purchase');
         Route::get('/saas/branding', [SaasSettingsController::class, 'branding'])->name('saas.branding');
         Route::put('/saas/branding', [SaasSettingsController::class, 'updateBranding'])->name('saas.branding.update');
     });

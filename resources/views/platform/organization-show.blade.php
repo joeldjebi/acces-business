@@ -281,8 +281,8 @@
 
             <section class="panel" id="invitation-card">
                 @php($invitationCard = ($organization->settings ?? [])['invitation_card'] ?? [])
-                @php($signatureLogo = !empty($invitationCard['signature_logo']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($invitationCard['signature_logo']) : null)
-                @php($organizationLogo = $organization->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($organization->logo) : null)
+                @php($signatureLogo = !empty($invitationCard['signature_logo']) ? \App\Support\EventMedia::storageUrl($invitationCard['signature_logo']) : null)
+                @php($organizationLogo = \App\Support\EventMedia::storageUrl($organization->logo))
                 <h2 class="section-title">Carte d’invitation</h2>
                 <p class="muted">Signature plateforme et autorisation d’affichage du logo organisateur.</p>
 

@@ -406,7 +406,7 @@
         $organizationSettings = $currentOrganization?->settings ?? [];
         $organizationBranding = $organizationSettings['branding'] ?? [];
         $brandName = $organizationBranding['brand_name'] ?? $currentOrganization?->name ?? 'EventOps';
-        $brandLogo = $currentOrganization?->logo ? \Illuminate\Support\Facades\Storage::url($currentOrganization->logo) : null;
+        $brandLogo = \App\Support\EventMedia::storageUrl($currentOrganization?->logo);
         $isPlatformAdmin = auth()->user()->isPlatformAdmin();
     @endphp
     <div class="sidebar">
@@ -448,6 +448,12 @@
                 <a href="{{ route('platform.plans') }}" class="{{ request()->routeIs('platform.plans') ? 'active' : '' }}">
                     <i class="bi bi-gem"></i>
                     <span>Plans abonnement</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('platform.communication-packages') }}" class="{{ request()->routeIs('platform.communication-packages') ? 'active' : '' }}">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>Packages messages</span>
                 </a>
             </li>
             @else
@@ -500,6 +506,12 @@
                 <a href="{{ route('saas.billing') }}" class="{{ request()->routeIs('saas.billing') ? 'active' : '' }}">
                     <i class="bi bi-receipt"></i>
                     <span>Facturation</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('saas.communications') }}" class="{{ request()->routeIs('saas.communications') ? 'active' : '' }}">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>Crédits messages</span>
                 </a>
             </li>
             <li>

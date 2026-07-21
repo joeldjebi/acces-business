@@ -154,9 +154,26 @@
                     <small class="form-text text-muted">Format: JPG, PNG, GIF (max 2MB)</small>
                     @if($event->image)
                         <div class="mt-2">
-                            <img src="{{ Storage::url($event->image) }}" alt="Image actuelle" style="max-width: 200px; border-radius: 8px;">
+                            <img src="{{ \App\Support\EventMedia::storageUrl($event->image) }}" alt="Image actuelle" style="max-width: 200px; border-radius: 8px;">
                         </div>
                     @endif
+                </div>
+
+                <div class="form-group">
+                    <label for="video_url" class="form-label">
+                        <i class="bi bi-play-btn"></i>
+                        Lien vidéo optionnel
+                    </label>
+                    <input type="url"
+                           class="form-control @error('video_url') is-invalid @enderror"
+                           id="video_url"
+                           name="video_url"
+                           value="{{ old('video_url', $event->video_url) }}"
+                           placeholder="https://youtube.com/watch?v=...">
+                    @error('video_url')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                    <small class="form-text text-muted">YouTube, Vimeo ou lien vidéo externe.</small>
                 </div>
                 
                 <!-- Dates et horaires -->

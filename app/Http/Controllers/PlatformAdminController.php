@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BillingInvoice;
 use App\Models\Category;
 use App\Models\City;
+use App\Models\CommunicationPackage;
 use App\Models\Country;
 use App\Models\Devise;
 use App\Models\Event;
@@ -148,6 +149,28 @@ class PlatformAdminController extends Controller
         return view('platform.plans', [
             'plans' => SubscriptionPlan::orderBy('sort_order')->orderBy('monthly_price')->get(),
         ]);
+    }
+
+    public function communicationPackages()
+    {
+        return view('platform.communication-packages', [
+            'packages' => CommunicationPackage::orderBy('sort_order')->orderBy('channel')->get(),
+            'channels' => $this->communicationChannels(),
+        ]);
+    }
+
+    public function storeCommunicationPackage(Request $request)
+    {
+        CommunicationPackage::create($this->validateCommunicationPackage($request));
+
+        return back()->with('success', 'Package communication créé.');
+    }
+
+    public function updateCommunicationPackage(Request $request, CommunicationPackage $package)
+    {
+        $package->update($this->validateCommunicationPackage($request));
+
+        return back()->with('success', 'Package communication mis à jour.');
     }
 
     public function storePlan(Request $request)
@@ -387,5 +410,32 @@ class PlatformAdminController extends Controller
         unset($validated['features_text']);
 
         return $validated;
+    }
+
+    private function validateCommunicationPackage(Request $request): array
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:120',
+            'channel' => ['required', Rule::in(array_keys($this->communicationChannels()))],
+            'unit_price' => 'required|integer|min:0',
+            'minimum_quantity' => 'required|integer|min:1',
+            'currency' => 'required|string|max:8',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer|min:0|max:65535',
+        ]);
+
+        $validated['is_active'] = (bool) ($validated['is_active'] ?? false);
+        $validated['sort_order'] = (int) ($validated['sort_order'] ?? 0);
+
+        return $validated;
+    }
+
+    private function communicationChannels(): array
+    {
+        return [
+            'sms' => 'SMS',
+            'whatsapp' => 'WhatsApp',
+            'email' => 'Email',
+        ];
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BillingInvoice;
+use App\Models\CommunicationCreditBalance;
+use App\Models\CommunicationPackage;
 use App\Support\SaasPlans;
 use App\Support\SaasUsage;
 use Illuminate\Http\Request;
@@ -120,6 +122,78 @@ class SaasSettingsController extends Controller
         ]);
     }
 
+    public function communications()
+    {
+        $organization = auth()->user()->organization;
+
+        return view('saas.communications', [
+            'organization' => $organization,
+            'packages' => CommunicationPackage::active()->orderBy('sort_order')->orderBy('channel')->get(),
+            'balances' => CommunicationCreditBalance::forOrganization($organization->id)->get()->keyBy('channel'),
+            'invoices' => BillingInvoice::forOrganization($organization->id)
+                ->where('metadata->type', 'communication_credits')
+                ->latest()
+                ->take(10)
+                ->get(),
+            'paymentOperators' => $this->paymentOperators(),
+            'channels' => $this->communicationChannels(),
+        ]);
+    }
+
+    public function purchaseCommunicationCredits(Request $request)
+    {
+        $validated = $request->validate([
+            'package_id' => ['required', Rule::exists('communication_packages', 'id')->where(fn ($query) => $query->where('is_active', true))],
+            'quantity' => 'required|integer|min:1',
+            'payment_operator' => ['required', Rule::in(array_keys($this->paymentOperators()))],
+            'payment_phone' => ['required', 'string', 'max:30'],
+        ]);
+
+        $organization = auth()->user()->organization;
+        $package = CommunicationPackage::active()->findOrFail($validated['package_id']);
+        $quantity = (int) $validated['quantity'];
+
+        if ($quantity < $package->minimum_quantity) {
+            return back()
+                ->withErrors(['quantity' => 'La quantité minimale pour ce package est ' . $package->minimum_quantity . '.'])
+                ->withInput();
+        }
+
+        $amount = $quantity * $package->unit_price;
+        $operators = $this->paymentOperators();
+
+        $balance = CommunicationCreditBalance::firstOrCreate(
+            ['organization_id' => $organization->id, 'channel' => $package->channel],
+            ['purchased' => 0, 'used' => 0]
+        );
+
+        $balance->increment('purchased', $quantity);
+
+        BillingInvoice::create([
+            'organization_id' => $organization->id,
+            'reference' => 'MSG-' . now()->format('YmdHis') . '-' . $organization->id,
+            'description' => 'Achat crédits ' . ($this->communicationChannels()[$package->channel] ?? strtoupper($package->channel)),
+            'amount' => $amount,
+            'currency' => $package->currency,
+            'status' => 'paid',
+            'due_at' => now(),
+            'paid_at' => now(),
+            'metadata' => [
+                'type' => 'communication_credits',
+                'package_id' => $package->id,
+                'package_name' => $package->name,
+                'channel' => $package->channel,
+                'quantity' => $quantity,
+                'unit_price' => $package->unit_price,
+                'payment_operator' => $validated['payment_operator'],
+                'payment_operator_label' => $operators[$validated['payment_operator']],
+                'payment_phone' => $validated['payment_phone'],
+            ],
+        ]);
+
+        return back()->with('success', number_format($quantity, 0, ',', ' ') . ' crédit(s) ajouté(s).');
+    }
+
     public function updateBilling(Request $request)
     {
         $validated = $request->validate([
@@ -193,6 +267,15 @@ class SaasSettingsController extends Controller
             'wave' => 'Wave',
             'card' => 'Carte bancaire',
             'bank_transfer' => 'Virement bancaire',
+        ];
+    }
+
+    private function communicationChannels(): array
+    {
+        return [
+            'sms' => 'SMS',
+            'whatsapp' => 'WhatsApp',
+            'email' => 'Email',
         ];
     }
 }

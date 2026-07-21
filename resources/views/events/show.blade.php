@@ -518,8 +518,20 @@
     <div class="event-layout">
         <main>
             <section class="detail-panel">
+                @php($eventVideoEmbed = \App\Support\EventMedia::videoEmbedUrl($event->video_url))
                 @if($event->image)
-                    <img src="{{ Storage::url($event->image) }}" alt="{{ $event->titre }}" class="event-image">
+                    <img src="{{ \App\Support\EventMedia::storageUrl($event->image) }}" alt="{{ $event->titre }}" class="event-image">
+                @endif
+                @if($eventVideoEmbed)
+                    <div class="ratio ratio-16x9">
+                        <iframe src="{{ $eventVideoEmbed }}" title="Vidéo de l'événement" allowfullscreen></iframe>
+                    </div>
+                @elseif($event->video_url)
+                    <div class="p-3">
+                        <a href="{{ $event->video_url }}" target="_blank" class="event-btn">
+                            <i class="bi bi-play-circle"></i> Voir la vidéo
+                        </a>
+                    </div>
                 @endif
                 <div class="panel-head">
                     <h2>Description</h2>

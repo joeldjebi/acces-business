@@ -38,6 +38,27 @@
         min-height: 520px;
     }
 
+    .guest-image {
+        aspect-ratio: 16 / 10;
+        border-radius: 20px;
+        margin-top: 24px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .guest-video {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        margin-bottom: 22px;
+        overflow: hidden;
+    }
+
+    .guest-video iframe {
+        aspect-ratio: 16 / 9;
+        border: 0;
+        width: 100%;
+    }
+
     .guest-kicker {
         color: #d8b476;
         font-size: .76rem;
@@ -178,11 +199,15 @@
 
 @section('content')
 <div class="guest-page">
+    @php($eventVideoEmbed = \App\Support\EventMedia::videoEmbedUrl($event->video_url))
     <div class="guest-card">
         <aside class="guest-aside">
             <div>
                 <div class="guest-kicker">Invitation privée</div>
                 <h1 class="guest-title">{{ $event->titre }}</h1>
+                @if($event->image)
+                    <img class="guest-image" src="{{ \App\Support\EventMedia::storageUrl($event->image) }}" alt="{{ $event->titre }}">
+                @endif
             </div>
             <div class="guest-meta">
                 @if($event->date_debut)
@@ -198,6 +223,16 @@
         </aside>
 
         <main class="guest-body">
+            @if($eventVideoEmbed)
+                <div class="guest-video">
+                    <iframe src="{{ $eventVideoEmbed }}" title="Vidéo de l'événement" allowfullscreen></iframe>
+                </div>
+            @elseif($event->video_url)
+                <a href="{{ $event->video_url }}" target="_blank" class="guest-btn secondary mb-3">
+                    <i class="bi bi-play-circle"></i> Voir la vidéo de l'événement
+                </a>
+            @endif
+
             <div class="step active" id="step-email">
                 <h2 class="section-title">Vérifiez votre accès</h2>
                 <p class="section-copy">Entrez l’adresse email ayant reçu l’invitation. Nous vous enverrons un code sécurisé pour continuer.</p>

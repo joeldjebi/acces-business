@@ -519,6 +519,23 @@
                         <small class="form-text text-muted">Format: JPG, PNG, GIF (max 2MB)</small>
                     </div>
 
+                    <div class="form-group">
+                        <label for="video_url" class="form-label">
+                            <i class="bi bi-play-btn"></i>
+                            Lien vidéo optionnel
+                        </label>
+                        <input type="url"
+                               class="form-control @error('video_url') is-invalid @enderror"
+                               id="video_url"
+                               name="video_url"
+                               value="{{ old('video_url') }}"
+                               placeholder="https://youtube.com/watch?v=...">
+                        @error('video_url')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <small class="form-text text-muted">YouTube, Vimeo ou lien vidéo externe.</small>
+                    </div>
+
                     <div class="step-actions">
                         <a href="{{ route('events.index') }}" class="btn btn-nav-secondary">
                             <i class="bi bi-x-circle me-1"></i>Annuler

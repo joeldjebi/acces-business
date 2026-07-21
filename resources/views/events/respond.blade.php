@@ -57,6 +57,32 @@
         padding: 20px;
     }
 
+    .event-media {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        margin-bottom: 14px;
+    }
+
+    .event-media img,
+    .event-video {
+        aspect-ratio: 16 / 9;
+        border: 1px solid rgba(222, 214, 200, .78);
+        border-radius: 20px;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .event-media img {
+        object-fit: cover;
+    }
+
+    .event-video iframe {
+        border: 0;
+        height: 100%;
+        width: 100%;
+    }
+
     .rsvp-note {
         background: rgba(185, 137, 67, .1);
         border: 1px solid rgba(185, 137, 67, .22);
@@ -156,6 +182,10 @@
             grid-template-columns: 1fr;
         }
 
+        .event-media {
+            grid-template-columns: 1fr;
+        }
+
         .rsvp-hero,
         .rsvp-card {
             border-radius: 22px;
@@ -167,6 +197,7 @@
 
 @section('content')
 <div class="rsvp-page">
+    @php($eventVideoEmbed = \App\Support\EventMedia::videoEmbedUrl($event->video_url))
     <section class="rsvp-hero">
         <div class="rsvp-kicker">Réponse à l’invitation</div>
         <h1 class="rsvp-title">{{ $event->titre }}</h1>
@@ -182,6 +213,23 @@
             @endif
         </div>
     </section>
+
+    @if($event->image || $event->video_url)
+        <section class="event-media">
+            @if($event->image)
+                <img src="{{ \App\Support\EventMedia::storageUrl($event->image) }}" alt="{{ $event->titre }}">
+            @endif
+            @if($eventVideoEmbed)
+                <div class="event-video">
+                    <iframe src="{{ $eventVideoEmbed }}" title="Vidéo de l'événement" allowfullscreen></iframe>
+                </div>
+            @elseif($event->video_url)
+                <a href="{{ $event->video_url }}" target="_blank" class="rsvp-card text-decoration-none">
+                    <i class="bi bi-play-circle me-2"></i> Voir la vidéo de l'événement
+                </a>
+            @endif
+        </section>
+    @endif
 
     <section class="rsvp-card">
         <div class="rsvp-note">

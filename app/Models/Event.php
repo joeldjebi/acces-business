@@ -19,6 +19,7 @@ class Event extends Model
         'description',
         'slug',
         'image',
+        'video_url',
         'category_id',
         'user_id',
         'date_debut',

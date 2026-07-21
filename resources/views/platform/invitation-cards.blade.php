@@ -64,8 +64,8 @@
                 $settings = $organization->settings ?? [];
                 $branding = $settings['branding'] ?? [];
                 $card = $settings['invitation_card'] ?? [];
-                $organizationLogo = $organization->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($organization->logo) : null;
-                $signatureLogo = !empty($card['signature_logo']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($card['signature_logo']) : null;
+                $organizationLogo = \App\Support\EventMedia::storageUrl($organization->logo);
+                $signatureLogo = !empty($card['signature_logo']) ? \App\Support\EventMedia::storageUrl($card['signature_logo']) : null;
                 $logoAllowed = !empty($card['allow_organization_logo']);
                 $brandingAllowed = !empty($card['allow_organization_branding']);
             @endphp
