@@ -280,11 +280,9 @@
             </section>
 
             <section class="panel" id="invitation-card">
-                @php
-                    $invitationCard = ($organization->settings ?? [])['invitation_card'] ?? [];
-                    $signatureLogo = !empty($invitationCard['signature_logo']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($invitationCard['signature_logo']) : null;
-                    $organizationLogo = $organization->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($organization->logo) : null;
-                @endphp
+                @php($invitationCard = ($organization->settings ?? [])['invitation_card'] ?? [])
+                @php($signatureLogo = !empty($invitationCard['signature_logo']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($invitationCard['signature_logo']) : null)
+                @php($organizationLogo = $organization->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($organization->logo) : null)
                 <h2 class="section-title">Carte d’invitation</h2>
                 <p class="muted">Signature plateforme et autorisation d’affichage du logo organisateur.</p>
 
