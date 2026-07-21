@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventAccessLink;
 use App\Services\InvitationCardService;
 use App\Services\MailjetService;
+use App\Support\SaasUsage;
 use Illuminate\Http\Request;
 
 class EventAccessController extends Controller
@@ -62,8 +63,9 @@ class EventAccessController extends Controller
             ->withQueryString();
 
         $cardDesign = $this->invitationCardService->cardDesignForEvent($event);
+        $quota = SaasUsage::forOrganization($event->organization);
 
-        return view('events.send-link', compact('event', 'links', 'cardDesign'));
+        return view('events.send-link', compact('event', 'links', 'cardDesign', 'quota'));
     }
 
     /**
@@ -111,6 +113,17 @@ class EventAccessController extends Controller
 
         if ($contacts->isEmpty()) {
             return redirect()->back()->with('error', 'Aucun email valide fourni.');
+        }
+
+        if (!SaasUsage::canAdd($event->organization, 'invitations', $contacts->count())) {
+            $remaining = SaasUsage::remaining($event->organization, 'invitations');
+            $message = SaasUsage::limitMessage($event->organization, 'invitations');
+
+            if ($remaining !== null) {
+                $message .= ' Il reste ' . $remaining . ' invitation(s), votre envoi en contient ' . $contacts->count() . '.';
+            }
+
+            return redirect()->back()->with('error', $message);
         }
 
         $sentCount = 0;

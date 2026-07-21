@@ -15,6 +15,7 @@ use App\Models\Organization;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Support\SaasPlans;
+use App\Support\SaasUsage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -257,6 +258,14 @@ class PlatformAdminController extends Controller
             'domain' => ['nullable', 'string', 'max:255', Rule::unique('organizations', 'domain')->ignore($organization->id)],
             'subscription_ends_at' => 'nullable|date',
         ]);
+
+        $plan = SaasPlans::get($validated['plan']);
+
+        if (!SaasUsage::planCanCoverCurrentUsage($organization, $plan)) {
+            return back()
+                ->withErrors(['plan' => SaasUsage::planCoverageMessage($organization, $plan)])
+                ->withInput();
+        }
 
         $organization->update($validated);
 

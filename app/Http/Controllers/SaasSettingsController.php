@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BillingInvoice;
 use App\Support\SaasPlans;
+use App\Support\SaasUsage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -21,6 +22,7 @@ class SaasSettingsController extends Controller
             'plans' => SaasPlans::all(),
             'cycle' => $cycle,
             'paymentOperators' => $this->paymentOperators(),
+            'quota' => SaasUsage::forOrganization($organization),
         ]);
     }
 
@@ -37,6 +39,12 @@ class SaasSettingsController extends Controller
         $organization = auth()->user()->organization;
         $plan = SaasPlans::get($validated['plan']);
         $expectedAmount = SaasPlans::price($plan, $validated['billing_cycle']);
+
+        if (!SaasUsage::planCanCoverCurrentUsage($organization, $plan)) {
+            return back()
+                ->withErrors(['plan' => SaasUsage::planCoverageMessage($organization, $plan)])
+                ->withInput();
+        }
 
         if ((int) $validated['amount'] !== $expectedAmount) {
             return back()

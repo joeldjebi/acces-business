@@ -3,8 +3,19 @@
 @section('title', 'Créer un Utilisateur')
 
 @section('content')
+@php
+    $quota = $quota ?? \App\Support\SaasUsage::forOrganization(auth()->user()->organization);
+    $userLimit = $quota['limits']['users'] ?? null;
+    $usersUsed = $quota['usage']['users'] ?? 0;
+    $canCreateUser = $userLimit === null || $usersUsed < $userLimit;
+@endphp
 <div class="row">
     <div class="col-md-8 offset-md-2">
+        @if(!$canCreateUser)
+            <div class="alert alert-warning">
+                Votre forfait autorise {{ number_format((int) $userLimit, 0, ',', ' ') }} utilisateur(s). Passez à un forfait supérieur pour ajouter un compte.
+            </div>
+        @endif
         <div class="card">
             <div class="card-header">
                 <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i>Créer un Nouvel Utilisateur</h4>
@@ -82,7 +93,7 @@
                         <a href="{{ route('users.index') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left me-1"></i>Retour
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" {{ !$canCreateUser ? 'disabled' : '' }}>
                             <i class="bi bi-check-circle me-1"></i>Créer l'utilisateur
                         </button>
                     </div>
@@ -92,4 +103,3 @@
     </div>
 </div>
 @endsection
-

@@ -23,6 +23,7 @@
     $pendingRegistrations = \App\Models\EventRegistration::forOrganization($organizationId)->where('statut_reponse', 'en_attente')->count();
     $absentRegistrations = \App\Models\EventRegistration::forOrganization($organizationId)->where('statut_reponse', 'absent')->count();
     $cardsSent = \App\Models\EventRegistration::forOrganization($organizationId)->where('carte_envoyee', true)->count();
+    $accessLinksCount = \App\Models\EventAccessLink::forOrganization($organizationId)->count();
 
     $usersCount = \App\Models\User::where('organization_id', $organizationId)->count();
     $operatorsCount = \App\Models\User::where('organization_id', $organizationId)->whereIn('role', ['super_admin', 'admin', 'manager'])->count();
@@ -35,7 +36,7 @@
     $invitationLimit = $plan['limits']['invitations'];
     $eventUsage = $eventLimit ? min(100, round(($eventsCount / $eventLimit) * 100)) : 100;
     $userUsage = $userLimit ? min(100, round(($usersCount / $userLimit) * 100)) : 100;
-    $invitationUsage = $invitationLimit ? min(100, round(($registrationsCount / $invitationLimit) * 100)) : 100;
+    $invitationUsage = $invitationLimit ? min(100, round(($accessLinksCount / $invitationLimit) * 100)) : 100;
 
     $recentEvents = \App\Models\Event::forOrganization($organizationId)
         ->with(['category', 'visibilite'])
@@ -1077,7 +1078,7 @@
                         <div class="usage-row" style="--accent: var(--blue);">
                             <div class="usage-meta">
                                 <strong>Invitations</strong>
-                                <span>{{ $registrationsCount }} / {{ $invitationLimit ? number_format($invitationLimit, 0, ',', ' ') : '∞' }}</span>
+                                <span>{{ $accessLinksCount }} / {{ $invitationLimit ? number_format($invitationLimit, 0, ',', ' ') : '∞' }}</span>
                             </div>
                             <div class="premium-progress"><span style="width: {{ $invitationUsage }}%;"></span></div>
                         </div>

@@ -51,6 +51,16 @@
         </a>
     </div>
 
+    @if($errors->any())
+        <div class="alert alert-danger">{{ $errors->first() }}</div>
+    @endif
+
+    @foreach(['success' => 'success', 'warning' => 'warning', 'error' => 'danger'] as $key => $type)
+        @if(session($key))
+            <div class="alert alert-{{ $type }}">{{ session($key) }}</div>
+        @endif
+    @endforeach
+
     <section class="grid metrics">
         <article class="metric"><span>Événements</span><strong>{{ $eventsCount }}</strong></article>
         <article class="metric"><span>Utilisateurs</span><strong>{{ $organization->users_count }}</strong></article>

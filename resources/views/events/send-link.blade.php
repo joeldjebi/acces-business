@@ -2,6 +2,14 @@
 
 @section('title', 'Envoyer des liens d\'accès - ' . $event->titre)
 
+@php
+    $quota = $quota ?? \App\Support\SaasUsage::forOrganization($event->organization);
+    $invitationLimit = $quota['limits']['invitations'] ?? null;
+    $invitationsUsed = $quota['usage']['invitations'] ?? 0;
+    $remainingInvitations = $invitationLimit === null ? null : max(0, (int) $invitationLimit - (int) $invitationsUsed);
+    $canSendInvitations = $remainingInvitations === null || $remainingInvitations > 0;
+@endphp
+
 @push('styles')
 <style>
     .invite-admin {
@@ -461,6 +469,15 @@
                 <p class="muted-cell mb-0">
                     Les couleurs viennent du branding de l’organisation. La signature et l’autorisation du logo sont contrôlées par le super admin plateforme.
                 </p>
+                <div class="approval-note mt-3" style="{{ $canSendInvitations ? 'background:rgba(46,123,101,.1);border-color:rgba(46,123,101,.22);color:#2e7b65;' : '' }}">
+                    <i class="bi {{ $canSendInvitations ? 'bi-send-check' : 'bi-lock' }} me-1"></i>
+                    @if($invitationLimit === null)
+                        Invitations illimitées sur votre forfait.
+                    @else
+                        {{ number_format($invitationsUsed, 0, ',', ' ') }} / {{ number_format((int) $invitationLimit, 0, ',', ' ') }} invitation(s) utilisées.
+                        Il reste {{ number_format((int) $remainingInvitations, 0, ',', ' ') }} invitation(s).
+                    @endif
+                </div>
             </div>
         </aside>
     </section>
@@ -645,9 +662,14 @@
                         @enderror
                     </div>
 
-                    <button type="submit" class="invite-btn primary w-100 justify-content-center">
+                    <button type="submit" class="invite-btn primary w-100 justify-content-center" {{ !$canSendInvitations ? 'disabled' : '' }}>
                         <i class="bi bi-send"></i> Envoyer les liens
                     </button>
+                    @if(!$canSendInvitations)
+                        <div class="alert alert-warning mt-3 mb-0">
+                            Limite d’invitations atteinte. Passez à un forfait supérieur pour continuer.
+                        </div>
+                    @endif
                 </form>
             </div>
             </div>

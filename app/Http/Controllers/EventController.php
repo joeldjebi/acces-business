@@ -11,6 +11,7 @@ use App\Models\EventRegistration;
 use App\Models\TypeTarification;
 use App\Models\User;
 use App\Models\Visibilite;
+use App\Support\SaasUsage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -71,8 +72,9 @@ class EventController extends Controller
         $categories = Category::forOrganization()->active()->get();
         $visibilites = Visibilite::active()->get();
         $users = User::where('organization_id', auth()->user()->organization_id)->get();
+        $quota = SaasUsage::forOrganization(auth()->user()->organization);
 
-        return view('events.index', compact('events', 'categories', 'visibilites', 'users'));
+        return view('events.index', compact('events', 'categories', 'visibilites', 'users', 'quota'));
     }
 
     /**
@@ -80,6 +82,11 @@ class EventController extends Controller
      */
     public function create()
     {
+        if (!SaasUsage::canAdd(auth()->user()->organization, 'events')) {
+            return redirect()->route('events.index')
+                ->with('error', SaasUsage::limitMessage(auth()->user()->organization, 'events'));
+        }
+
         $categories = Category::forOrganization()->active()->get();
         $devises = Devise::forOrganization()->active()->get();
         $typeTarifications = TypeTarification::active()->get();
@@ -141,6 +148,12 @@ class EventController extends Controller
         }
 
         unset($validated['draft_event_id']);
+
+        if (!$draft && !SaasUsage::canAdd(auth()->user()->organization, 'events')) {
+            throw ValidationException::withMessages([
+                'titre' => SaasUsage::limitMessage(auth()->user()->organization, 'events'),
+            ]);
+        }
 
         // Génération du slug
         $validated['slug'] = Str::slug($validated['titre'] . '-' . time());
@@ -213,6 +226,12 @@ class EventController extends Controller
                 ->where('user_id', auth()->id())
                 ->where('statut', 'brouillon')
                 ->first();
+        }
+
+        if (!$draft && !SaasUsage::canAdd(auth()->user()->organization, 'events')) {
+            throw ValidationException::withMessages([
+                'draft' => SaasUsage::limitMessage(auth()->user()->organization, 'events'),
+            ]);
         }
 
         $data = $this->draftPayload($validated, $draft);

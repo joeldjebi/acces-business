@@ -8,6 +8,10 @@
     $admins = $users->where('role', 'admin')->count();
     $managers = $users->where('role', 'manager')->count();
     $moderateurs = $users->where('role', 'moderateur')->count();
+    $quota = \App\Support\SaasUsage::forOrganization(auth()->user()->organization);
+    $userLimit = $quota['limits']['users'] ?? null;
+    $usersUsed = $quota['usage']['users'] ?? $totalUsers;
+    $canCreateUser = $userLimit === null || $usersUsed < $userLimit;
 
     $roleLabels = [
         'super_admin' => 'Super administrateur',
@@ -104,6 +108,20 @@
         background: var(--panel);
         border-color: var(--line);
         color: var(--ink);
+    }
+
+    .ops-btn.disabled {
+        cursor: not-allowed;
+        opacity: .55;
+    }
+
+    .quota-note {
+        background: rgba(185, 137, 67, .1);
+        border: 1px solid rgba(185, 137, 67, .28);
+        border-radius: 14px;
+        color: #7a5727;
+        margin-bottom: 18px;
+        padding: 13px 15px;
     }
 
     .role-strip {
@@ -358,12 +376,32 @@
             </p>
         </div>
         <div class="ops-actions">
-            <a href="{{ route('users.create') }}" class="ops-btn primary">
-                <i class="bi bi-person-plus"></i>
-                Nouvel utilisateur
-            </a>
+            @if($canCreateUser)
+                <a href="{{ route('users.create') }}" class="ops-btn primary">
+                    <i class="bi bi-person-plus"></i>
+                    Nouvel utilisateur
+                </a>
+            @else
+                <span class="ops-btn primary disabled" title="Limite du forfait atteinte">
+                    <i class="bi bi-lock"></i>
+                    Limite atteinte
+                </span>
+            @endif
         </div>
     </div>
+
+    @foreach(['success' => 'success', 'warning' => 'warning', 'error' => 'danger'] as $key => $type)
+        @if(session($key))
+            <div class="alert alert-{{ $type }}">{{ session($key) }}</div>
+        @endif
+    @endforeach
+
+    @if(!$canCreateUser)
+        <div class="quota-note">
+            <i class="bi bi-info-circle me-1"></i>
+            Votre forfait autorise {{ number_format((int) $userLimit, 0, ',', ' ') }} utilisateur(s). Passez à un forfait supérieur pour ajouter un compte.
+        </div>
+    @endif
 
     <section class="role-strip">
         <div class="role-card">
@@ -444,12 +482,14 @@
             <div class="empty-state">
                 <i class="bi bi-inbox d-block mb-3" style="font-size: 2.6rem;"></i>
                 Aucun utilisateur trouvé.
-                <div class="mt-3">
-                    <a href="{{ route('users.create') }}" class="ops-btn primary">
-                        <i class="bi bi-person-plus"></i>
-                        Créer un utilisateur
-                    </a>
-                </div>
+                @if($canCreateUser)
+                    <div class="mt-3">
+                        <a href="{{ route('users.create') }}" class="ops-btn primary">
+                            <i class="bi bi-person-plus"></i>
+                            Créer un utilisateur
+                        </a>
+                    </div>
+                @endif
             </div>
         @endforelse
     </section>

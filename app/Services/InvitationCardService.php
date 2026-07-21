@@ -237,7 +237,7 @@ class InvitationCardService
         }
 
         if (!$forPdf) {
-            return Storage::disk('public')->url($path);
+            return asset(Storage::disk('public')->url($path));
         }
 
         if (!Storage::disk('public')->exists($path)) {

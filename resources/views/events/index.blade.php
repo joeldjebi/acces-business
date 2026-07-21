@@ -11,6 +11,10 @@
     $activeFilters = collect(['search', 'statut', 'category_id', 'visibilite_id', 'date_from', 'date_to', 'user_id'])
         ->filter(fn ($key) => request()->filled($key))
         ->count();
+    $quota = $quota ?? \App\Support\SaasUsage::forOrganization(auth()->user()->organization);
+    $eventLimit = $quota['limits']['events'] ?? null;
+    $eventsUsed = $quota['usage']['events'] ?? $totalEvents;
+    $canCreateEvent = $eventLimit === null || $eventsUsed < $eventLimit;
 
     $statusLabels = [
         'publie' => 'Publié',
@@ -120,6 +124,20 @@
         background: var(--red);
         border-color: var(--red);
         color: #fff;
+    }
+
+    .ops-btn.disabled {
+        cursor: not-allowed;
+        opacity: .55;
+    }
+
+    .quota-note {
+        background: rgba(185, 137, 67, .1);
+        border: 1px solid rgba(185, 137, 67, .28);
+        border-radius: 14px;
+        color: #7a5727;
+        margin-bottom: 18px;
+        padding: 13px 15px;
     }
 
     .metric-strip {
@@ -457,10 +475,17 @@
             </p>
         </div>
         <div class="ops-actions">
-            <a href="{{ route('events.create') }}" class="ops-btn primary">
-                <i class="bi bi-plus-lg"></i>
-                Nouvel événement
-            </a>
+            @if($canCreateEvent)
+                <a href="{{ route('events.create') }}" class="ops-btn primary">
+                    <i class="bi bi-plus-lg"></i>
+                    Nouvel événement
+                </a>
+            @else
+                <span class="ops-btn primary disabled" title="Limite du forfait atteinte">
+                    <i class="bi bi-lock"></i>
+                    Limite atteinte
+                </span>
+            @endif
             @if(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
                 <form action="{{ route('events.destroy-all') }}" method="POST" onsubmit="return confirm('Cette action va supprimer définitivement tous les événements, inscriptions, OTP, liens d’accès et fichiers liés. Continuer ?');">
                     @csrf
@@ -477,6 +502,19 @@
             </a>
         </div>
     </div>
+
+    @foreach(['success' => 'success', 'warning' => 'warning', 'error' => 'danger'] as $key => $type)
+        @if(session($key))
+            <div class="alert alert-{{ $type }}">{{ session($key) }}</div>
+        @endif
+    @endforeach
+
+    @if(!$canCreateEvent)
+        <div class="quota-note">
+            <i class="bi bi-info-circle me-1"></i>
+            Votre forfait autorise {{ number_format((int) $eventLimit, 0, ',', ' ') }} événement(s). Passez à un forfait supérieur pour créer un nouvel événement.
+        </div>
+    @endif
 
     <section class="metric-strip">
         <div class="metric">
@@ -641,12 +679,14 @@
         <div class="empty-state">
             <i class="bi bi-calendar-x d-block mb-3" style="font-size: 2.6rem;"></i>
             Aucun événement ne correspond à votre recherche.
-            <div class="mt-3">
+            @if($canCreateEvent)
+                <div class="mt-3">
                 <a href="{{ route('events.create') }}" class="ops-btn primary">
                     <i class="bi bi-plus-lg"></i>
                     Créer un événement
                 </a>
-            </div>
+                </div>
+            @endif
         </div>
     @endif
 </div>

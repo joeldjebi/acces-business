@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\SaasUsage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $quota = SaasUsage::forOrganization(auth()->user()->organization);
+
+        return view('users.create', compact('quota'));
     }
 
     /**
@@ -35,6 +38,11 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        if (!SaasUsage::canAdd(auth()->user()->organization, 'users')) {
+            return redirect()->route('users.index')
+                ->with('error', SaasUsage::limitMessage(auth()->user()->organization, 'users'));
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',

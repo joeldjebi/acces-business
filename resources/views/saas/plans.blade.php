@@ -225,8 +225,21 @@
         </a>
     </div>
 
+    @if($errors->any())
+        <div class="alert alert-danger">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
+    @foreach(['success' => 'success', 'warning' => 'warning', 'error' => 'danger'] as $key => $type)
+        @if(session($key))
+            <div class="alert alert-{{ $type }}">{{ session($key) }}</div>
+        @endif
+    @endforeach
+
     <div class="plan-grid">
         @foreach($plans as $key => $plan)
+            @php($planCanCoverUsage = \App\Support\SaasUsage::planCanCoverCurrentUsage($organization, $plan))
             <article class="plan-card {{ $currentPlan === $key ? 'active' : '' }}">
                 <div class="plan-top">
                     <h2 class="plan-name">{{ $plan['name'] }}</h2>
@@ -251,10 +264,17 @@
                 </ul>
 
                 <div class="plan-form">
-                    <button type="button" class="saas-btn" data-bs-toggle="modal" data-bs-target="#planPaymentModal{{ $loop->index }}">
-                        <i class="bi bi-arrow-right-circle"></i>
-                        {{ $currentPlan === $key ? 'Renouveler ce plan' : 'Choisir ce plan' }}
-                    </button>
+                    @if($planCanCoverUsage)
+                        <button type="button" class="saas-btn" data-bs-toggle="modal" data-bs-target="#planPaymentModal{{ $loop->index }}">
+                            <i class="bi bi-arrow-right-circle"></i>
+                            {{ $currentPlan === $key ? 'Renouveler ce plan' : 'Choisir ce plan' }}
+                        </button>
+                    @else
+                        <button type="button" class="saas-btn" disabled style="opacity:.55;cursor:not-allowed;">
+                            <i class="bi bi-lock"></i>
+                            Usage actuel trop élevé
+                        </button>
+                    @endif
                 </div>
             </article>
         @endforeach
