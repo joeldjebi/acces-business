@@ -36,6 +36,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('platform.')->group(function () {
     Route::get('/dashboard', [PlatformAdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/invitation-cards', [PlatformAdminController::class, 'invitationCards'])->name('invitation-cards');
     Route::get('/organizations', [PlatformAdminController::class, 'organizations'])->name('organizations');
     Route::post('/organizations', [PlatformAdminController::class, 'storeOrganization'])->name('organizations.store');
     Route::delete('/organizations/purge', [PlatformAdminController::class, 'purgeOrganizations'])->name('organizations.purge');

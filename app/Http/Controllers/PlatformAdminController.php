@@ -66,6 +66,25 @@ class PlatformAdminController extends Controller
         ]);
     }
 
+    public function invitationCards(Request $request)
+    {
+        $query = Organization::query()
+            ->withCount(['users', 'events'])
+            ->latest();
+
+        if ($request->filled('search')) {
+            $query->where(function ($subQuery) use ($request) {
+                $subQuery->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('slug', 'like', '%' . $request->search . '%')
+                    ->orWhere('domain', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        return view('platform.invitation-cards', [
+            'organizations' => $query->paginate(10)->withQueryString(),
+        ]);
+    }
+
     public function showOrganization(Organization $organization)
     {
         $organization->loadCount(['users', 'events']);
@@ -276,6 +295,7 @@ class PlatformAdminController extends Controller
     {
         $validated = $request->validate([
             'allow_organization_logo' => 'nullable|boolean',
+            'allow_organization_branding' => 'nullable|boolean',
             'signature_text' => 'nullable|string|max:500',
             'signature_logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
@@ -284,6 +304,7 @@ class PlatformAdminController extends Controller
         $invitationCard = $settings['invitation_card'] ?? [];
 
         $invitationCard['allow_organization_logo'] = (bool) ($validated['allow_organization_logo'] ?? false);
+        $invitationCard['allow_organization_branding'] = (bool) ($validated['allow_organization_branding'] ?? false);
         $invitationCard['signature_text'] = trim((string) ($validated['signature_text'] ?? ''));
 
         if ($request->hasFile('signature_logo')) {

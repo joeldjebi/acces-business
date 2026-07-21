@@ -213,8 +213,9 @@ class InvitationCardService
         $branding = $settings['branding'] ?? [];
         $invitationCard = $settings['invitation_card'] ?? [];
 
-        $primary = $this->validHex($branding['primary_color'] ?? null) ?: '#171713';
-        $accent = $this->validHex($branding['accent_color'] ?? null) ?: '#b98943';
+        $allowOrganizationBranding = (bool) ($invitationCard['allow_organization_branding'] ?? false);
+        $primary = $allowOrganizationBranding ? ($this->validHex($branding['primary_color'] ?? null) ?: '#171713') : '#171713';
+        $accent = $allowOrganizationBranding ? ($this->validHex($branding['accent_color'] ?? null) ?: '#b98943') : '#b98943';
         $brandName = $branding['brand_name'] ?? $organization?->name ?? 'Accès Business';
         $allowOrganizationLogo = (bool) ($invitationCard['allow_organization_logo'] ?? false);
 
@@ -223,8 +224,10 @@ class InvitationCardService
             'primary_color' => $primary,
             'accent_color' => $accent,
             'allow_organization_logo' => $allowOrganizationLogo,
+            'allow_organization_branding' => $allowOrganizationBranding,
             'organization_logo' => $allowOrganizationLogo ? $this->assetForCard($organization?->logo, $forPdf) : null,
             'organization_logo_blocked' => (bool) ($organization?->logo) && !$allowOrganizationLogo,
+            'organization_branding_blocked' => !$allowOrganizationBranding && (!empty($branding['primary_color']) || !empty($branding['accent_color'])),
             'signature_text' => trim((string) ($invitationCard['signature_text'] ?? '')),
             'signature_logo' => $this->assetForCard($invitationCard['signature_logo'] ?? null, $forPdf),
         ];

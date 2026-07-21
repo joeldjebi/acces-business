@@ -466,8 +466,17 @@
                         <i class="bi bi-info-circle me-1"></i> Aucun logo organisation n’est disponible pour cette carte.
                     </div>
                 @endif
+                @if(!empty($cardDesign['allow_organization_branding']))
+                    <div class="approval-note mb-3" style="background:rgba(46,123,101,.1);border-color:rgba(46,123,101,.22);color:#2e7b65;">
+                        <i class="bi bi-palette me-1"></i> Couleurs organisation autorisées par le SA.
+                    </div>
+                @elseif(!empty($cardDesign['organization_branding_blocked']))
+                    <div class="approval-note mb-3">
+                        <i class="bi bi-shield-lock me-1"></i> Les couleurs organisation existent, mais elles ne sont pas encore autorisées par le SA.
+                    </div>
+                @endif
                 <p class="muted-cell mb-0">
-                    Les couleurs viennent du branding de l’organisation. La signature et l’autorisation du logo sont contrôlées par le super admin plateforme.
+                    La signature, le logo et l’utilisation des couleurs organisation sont contrôlés par le super admin plateforme.
                 </p>
                 <div class="approval-note mt-3" style="{{ $canSendInvitations ? 'background:rgba(46,123,101,.1);border-color:rgba(46,123,101,.22);color:#2e7b65;' : '' }}">
                     <i class="bi {{ $canSendInvitations ? 'bi-send-check' : 'bi-lock' }} me-1"></i>

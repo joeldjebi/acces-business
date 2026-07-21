@@ -297,6 +297,10 @@
                             <input class="form-check-input" type="checkbox" role="switch" id="allow_organization_logo" name="allow_organization_logo" value="1" {{ !empty($invitationCard['allow_organization_logo']) ? 'checked' : '' }}>
                             <label class="form-check-label" for="allow_organization_logo">Autoriser le logo organisateur sur la carte</label>
                         </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="allow_organization_branding" name="allow_organization_branding" value="1" {{ !empty($invitationCard['allow_organization_branding']) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="allow_organization_branding">Autoriser les couleurs de l’organisation sur la carte</label>
+                        </div>
                         <div class="d-flex align-items-center gap-3">
                             <div class="logo-preview">
                                 @if($organizationLogo)

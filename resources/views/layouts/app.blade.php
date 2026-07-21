@@ -439,6 +439,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('platform.invitation-cards') }}" class="{{ request()->routeIs('platform.invitation-cards') ? 'active' : '' }}">
+                    <i class="bi bi-postcard"></i>
+                    <span>Cartes invitation</span>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('platform.plans') }}" class="{{ request()->routeIs('platform.plans') ? 'active' : '' }}">
                     <i class="bi bi-gem"></i>
                     <span>Plans abonnement</span>
