@@ -6,7 +6,21 @@ class EventMedia
 {
     public static function storageUrl(?string $path): ?string
     {
-        return $path ? '/storage/' . ltrim($path, '/') : null;
+        if (!$path) {
+            return null;
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            return asset($path);
+        }
+
+        return asset('storage/' . $path);
     }
 
     public static function videoEmbedUrl(?string $url): ?string
