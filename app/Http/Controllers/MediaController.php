@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
 {
-    public function eventImage(string $filename): Response
+    public function eventImage(string $filename)
     {
         abort_unless(preg_match('/^[A-Za-z0-9._-]+$/', $filename), 404);
 
