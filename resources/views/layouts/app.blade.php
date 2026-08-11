@@ -457,6 +457,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('platform.landing.edit') }}" class="{{ request()->routeIs('platform.landing.*') ? 'active' : '' }}">
+                    <i class="bi bi-window-stack"></i>
+                    <span>Landing page</span>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('platform.invitation-cards') }}" class="{{ request()->routeIs('platform.invitation-cards') ? 'active' : '' }}">
                     <i class="bi bi-postcard"></i>
                     <span>Cartes invitation</span>

@@ -35,6 +35,7 @@
         <a href="{{ route('categories.index') }}"><i class="bi bi-tags"></i>Catégories d'événement</a>
         <a href="{{ route('devises.index') }}"><i class="bi bi-currency-exchange"></i>Devises</a>
         <a href="{{ route('localisations.index') }}"><i class="bi bi-globe2"></i>Pays & villes</a>
+        <a href="{{ route('platform.landing.edit') }}"><i class="bi bi-window-stack"></i>Landing page</a>
     </nav>
 
     <section class="metric-grid">

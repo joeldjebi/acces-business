@@ -9,6 +9,7 @@ use App\Http\Controllers\EventAccessController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SaasSettingsController;
 use App\Http\Controllers\PlatformAdminController;
+use App\Http\Controllers\PlatformLandingController;
 use App\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +23,9 @@ Route::get('/', function () {
         return redirect('/register');
     }
 
-    return view('landing');
+    $landing = \App\Models\LandingPage::current();
+
+    return view('landing', ['landing' => $landing, 'settings' => $landing->mergedSettings()]);
 })->name('landing');
 
 // Routes d'authentification
@@ -42,6 +45,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('platform.')->group(function () {
     Route::get('/dashboard', [PlatformAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/invitation-cards', [PlatformAdminController::class, 'invitationCards'])->name('invitation-cards');
+    Route::get('/landing', [PlatformLandingController::class, 'edit'])->name('landing.edit');
+    Route::put('/landing', [PlatformLandingController::class, 'update'])->name('landing.update');
     Route::get('/organizations', [PlatformAdminController::class, 'organizations'])->name('organizations');
     Route::post('/organizations', [PlatformAdminController::class, 'storeOrganization'])->name('organizations.store');
     Route::delete('/organizations/purge', [PlatformAdminController::class, 'purgeOrganizations'])->name('organizations.purge');
