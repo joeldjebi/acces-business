@@ -14,14 +14,15 @@ use Illuminate\Support\Facades\Route;
 
 // Routes publiques
 Route::get('/media/events/{filename}', [MediaController::class, 'eventImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.events.image');
+Route::get('/media/organizations/{filename}', [MediaController::class, 'organizationLogo'])->where('filename', '[A-Za-z0-9._-]+')->name('media.organizations.logo');
 
 Route::get('/', function () {
-    // Si aucun utilisateur n'existe, rediriger vers l'inscription
     if (\Illuminate\Support\Facades\Schema::hasTable('users') && \App\Models\User::count() === 0) {
         return redirect('/register');
     }
-    return redirect()->route('client.login');
-});
+
+    return view('landing');
+})->name('landing');
 
 // Routes d'authentification
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

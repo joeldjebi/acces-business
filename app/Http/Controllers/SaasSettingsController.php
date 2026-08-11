@@ -8,8 +8,11 @@ use App\Models\CommunicationPackage;
 use App\Support\SaasPlans;
 use App\Support\SaasUsage;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class SaasSettingsController extends Controller
 {
@@ -261,11 +264,8 @@ class SaasSettingsController extends Controller
         $branding = $settings['branding'] ?? [];
 
         if ($request->hasFile('logo')) {
-            if ($organization->logo) {
-                Storage::disk('public')->delete($organization->logo);
-            }
-
-            $organization->logo = $request->file('logo')->store('organization-logos', 'public');
+            $this->deleteOrganizationLogo($organization->logo);
+            $organization->logo = $this->storeOrganizationLogo($request->file('logo'));
         }
 
         $branding['brand_name'] = $validated['brand_name'] ?: $organization->name;
@@ -277,6 +277,55 @@ class SaasSettingsController extends Controller
         $organization->save();
 
         return back()->with('success', 'Branding mis à jour.');
+    }
+
+    private function storeOrganizationLogo(UploadedFile $logo): string
+    {
+        $directory = public_path('uploads/organizations');
+
+        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+            throw ValidationException::withMessages([
+                'logo' => 'Le dossier public/uploads/organizations n’a pas pu être créé.',
+            ]);
+        }
+
+        $extension = strtolower($logo->getClientOriginalExtension() ?: $logo->extension() ?: 'png');
+        $filename = Str::random(40) . '.' . $extension;
+        $path = 'uploads/organizations/' . $filename;
+
+        $logo->move($directory, $filename);
+        @chmod(public_path($path), 0664);
+
+        if (!is_file(public_path($path))) {
+            throw ValidationException::withMessages([
+                'logo' => 'Le logo n’a pas pu être enregistré dans public/uploads/organizations.',
+            ]);
+        }
+
+        return $path;
+    }
+
+    private function deleteOrganizationLogo(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'uploads/')) {
+            $fullPath = public_path($path);
+            if (is_file($fullPath)) {
+                @unlink($fullPath);
+            }
+            return;
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        Storage::disk('public')->delete($path);
     }
 
     private function paymentOperators(): array

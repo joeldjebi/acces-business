@@ -14,6 +14,7 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/client/login');
+        $response->assertOk();
+        $response->assertSee('Gérez vos invitations événementielles avec précision.');
     }
 }
