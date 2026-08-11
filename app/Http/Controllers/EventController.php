@@ -163,7 +163,7 @@ class EventController extends Controller
         // Gestion de l'image
         if ($request->hasFile('image')) {
             if ($draft && $draft->image) {
-                Storage::disk('public')->delete($draft->image);
+                $this->deleteEventImage($draft->image);
             }
 
             $validated['image'] = $this->storeEventImage($request->file('image'));
@@ -241,7 +241,7 @@ class EventController extends Controller
 
         if ($request->hasFile('image')) {
             if ($draft && $draft->image) {
-                Storage::disk('public')->delete($draft->image);
+                $this->deleteEventImage($draft->image);
             }
 
             $data['image'] = $this->storeEventImage($request->file('image'));
@@ -261,28 +261,56 @@ class EventController extends Controller
 
     private function storeEventImage(UploadedFile $image): string
     {
-        $disk = Storage::disk('public');
-        $disk->makeDirectory('events');
+        $directory = public_path('uploads/events');
 
-        $extension = strtolower($image->getClientOriginalExtension() ?: $image->extension() ?: 'jpg');
-        $filename = Str::random(40) . '.' . $extension;
-        $path = 'events/' . $filename;
-
-        $stored = $disk->putFileAs('events', $image, $filename, 'public');
-
-        if (!$stored || !$disk->exists($path)) {
+        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw ValidationException::withMessages([
-                'image' => 'L’image n’a pas pu être enregistrée sur le stockage public. Vérifiez les permissions du dossier storage/app/public/events.',
+                'image' => 'Le dossier public/uploads/events n’a pas pu être créé.',
             ]);
         }
 
-        try {
-            $disk->setVisibility($path, 'public');
-        } catch (\Throwable $e) {
-            report($e);
+        $extension = strtolower($image->getClientOriginalExtension() ?: $image->extension() ?: 'jpg');
+        $filename = Str::random(40) . '.' . $extension;
+        $path = 'uploads/events/' . $filename;
+
+        $image->move($directory, $filename);
+        @chmod(public_path($path), 0664);
+
+        if (!is_file(public_path($path))) {
+            throw ValidationException::withMessages([
+                'image' => 'L’image n’a pas pu être enregistrée dans public/uploads/events.',
+            ]);
         }
 
         return $path;
+    }
+
+    private function deleteEventImage(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'uploads/')) {
+            $fullPath = public_path($path);
+            if (is_file($fullPath)) {
+                @unlink($fullPath);
+            }
+            return;
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            $publicStoragePath = public_path($path);
+            if (is_file($publicStoragePath)) {
+                @unlink($publicStoragePath);
+            }
+
+            $path = substr($path, strlen('storage/'));
+        }
+
+        Storage::disk('public')->delete($path);
     }
 
     private function draftPayload(array $validated, ?Event $draft = null): array
@@ -470,7 +498,7 @@ class EventController extends Controller
         if ($request->hasFile('image')) {
             // Supprimer l'ancienne image
             if ($event->image) {
-                Storage::disk('public')->delete($event->image);
+                $this->deleteEventImage($event->image);
             }
             $validated['image'] = $this->storeEventImage($request->file('image'));
         }
@@ -488,7 +516,7 @@ class EventController extends Controller
     {
         // Supprimer l'image si elle existe
         if ($event->image) {
-            Storage::disk('public')->delete($event->image);
+            $this->deleteEventImage($event->image);
         }
 
         $event->delete();
@@ -528,10 +556,10 @@ class EventController extends Controller
                 ->forceDelete();
         });
 
-        $filesToDelete = $imagePaths->merge($qrCodePaths)->unique()->values();
+        $imagePaths->unique()->each(fn ($path) => $this->deleteEventImage($path));
 
-        if ($filesToDelete->isNotEmpty()) {
-            Storage::disk('public')->delete($filesToDelete->all());
+        if ($qrCodePaths->isNotEmpty()) {
+            Storage::disk('public')->delete($qrCodePaths->unique()->values()->all());
         }
 
         return redirect()->route('events.index')

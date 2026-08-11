@@ -16,7 +16,11 @@ class EventMedia
 
         $path = ltrim($path, '/');
 
-        if (str_starts_with($path, 'storage/')) {
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        if (str_starts_with($path, 'storage/') || str_starts_with($path, 'uploads/')) {
             return asset($path);
         }
 
