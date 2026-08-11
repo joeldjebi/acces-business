@@ -15,6 +15,7 @@ use App\Support\SaasUsage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -165,7 +166,7 @@ class EventController extends Controller
                 Storage::disk('public')->delete($draft->image);
             }
 
-            $validated['image'] = $request->file('image')->store('events', 'public');
+            $validated['image'] = $this->storeEventImage($request->file('image'));
         }
 
         // Ajout de l'utilisateur créateur
@@ -243,7 +244,7 @@ class EventController extends Controller
                 Storage::disk('public')->delete($draft->image);
             }
 
-            $data['image'] = $request->file('image')->store('events', 'public');
+            $data['image'] = $this->storeEventImage($request->file('image'));
         }
 
         if ($draft) {
@@ -256,6 +257,32 @@ class EventController extends Controller
             'id' => $draft->id,
             'saved_at' => now()->format('H:i'),
         ]);
+    }
+
+    private function storeEventImage(UploadedFile $image): string
+    {
+        $disk = Storage::disk('public');
+        $disk->makeDirectory('events');
+
+        $extension = strtolower($image->getClientOriginalExtension() ?: $image->extension() ?: 'jpg');
+        $filename = Str::random(40) . '.' . $extension;
+        $path = 'events/' . $filename;
+
+        $stored = $disk->putFileAs('events', $image, $filename, 'public');
+
+        if (!$stored || !$disk->exists($path)) {
+            throw ValidationException::withMessages([
+                'image' => 'L’image n’a pas pu être enregistrée sur le stockage public. Vérifiez les permissions du dossier storage/app/public/events.',
+            ]);
+        }
+
+        try {
+            $disk->setVisibility($path, 'public');
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return $path;
     }
 
     private function draftPayload(array $validated, ?Event $draft = null): array
@@ -445,7 +472,7 @@ class EventController extends Controller
             if ($event->image) {
                 Storage::disk('public')->delete($event->image);
             }
-            $validated['image'] = $request->file('image')->store('events', 'public');
+            $validated['image'] = $this->storeEventImage($request->file('image'));
         }
 
         $event->update($validated);
