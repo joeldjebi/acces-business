@@ -26,6 +26,21 @@ class MediaController extends Controller
         abort(404);
     }
 
+    public function landingImage(string $filename)
+    {
+        abort_unless(preg_match('/^[A-Za-z0-9._-]+$/', $filename), 404);
+
+        $path = public_path('images/landing/' . $filename);
+
+        if (is_file($path)) {
+            return response()->file($path, [
+                'Cache-Control' => 'public, max-age=31536000, immutable',
+            ]);
+        }
+
+        abort(404);
+    }
+
     public function eventImage(string $filename)
     {
         abort_unless(preg_match('/^[A-Za-z0-9._-]+$/', $filename), 404);

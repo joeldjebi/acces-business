@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Routes publiques
 Route::get('/media/events/{filename}', [MediaController::class, 'eventImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.events.image');
 Route::get('/media/organizations/{filename}', [MediaController::class, 'organizationLogo'])->where('filename', '[A-Za-z0-9._-]+')->name('media.organizations.logo');
+Route::get('/media/landing/{filename}', [MediaController::class, 'landingImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.landing.image');
 
 Route::get('/', function () {
     if (\Illuminate\Support\Facades\Schema::hasTable('users') && \App\Models\User::count() === 0) {
