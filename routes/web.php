@@ -9,9 +9,12 @@ use App\Http\Controllers\EventAccessController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SaasSettingsController;
 use App\Http\Controllers\PlatformAdminController;
+use App\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques
+Route::get('/media/events/{filename}', [MediaController::class, 'eventImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.events.image');
+
 Route::get('/', function () {
     // Si aucun utilisateur n'existe, rediriger vers l'inscription
     if (\Illuminate\Support\Facades\Schema::hasTable('users') && \App\Models\User::count() === 0) {

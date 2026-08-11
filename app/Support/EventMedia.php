@@ -20,6 +20,18 @@ class EventMedia
             return $path;
         }
 
+        if (str_starts_with($path, 'uploads/events/')) {
+            return route('media.events.image', basename($path));
+        }
+
+        if (str_starts_with($path, 'events/')) {
+            return route('media.events.image', basename($path));
+        }
+
+        if (str_starts_with($path, 'storage/events/')) {
+            return route('media.events.image', basename($path));
+        }
+
         if (str_starts_with($path, 'storage/') || str_starts_with($path, 'uploads/')) {
             return asset($path);
         }
