@@ -4,6 +4,7 @@ use Illuminate\Foundation\Inspiring;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 
 Artisan::command('inspire', function () {
@@ -29,3 +30,5 @@ Artisan::command('platform:create-admin {email} {--name=Platform Admin} {--passw
         $this->warn('Mot de passe généré à conserver maintenant: ' . $password);
     }
 })->purpose('Create or update a platform administrator account');
+
+Schedule::command('events:send-response-reminders --limit=300')->everyMinute()->withoutOverlapping();

@@ -19,6 +19,8 @@
     .status { border-radius:999px; display:inline-flex; font-size:.78rem; font-weight:600; justify-content:center; padding:6px 10px; }
     .status.active, .status.trialing { background:rgba(46,123,101,.12); color:#2e7b65; }
     .status.suspended, .status.cancelled { background:rgba(164,81,74,.13); color:#a4514a; }
+    .platform-ref-actions { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+    .platform-ref-actions a { align-items:center; border:1px solid var(--line); border-radius:12px; color:var(--ink); display:inline-flex; gap:8px; min-height:42px; padding:0 14px; text-decoration:none; }
     @media (max-width:1100px){ .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));} .table-responsive{border:0;} }
     @media (max-width:640px){ .metric-grid{grid-template-columns:1fr;} }
 </style>
@@ -28,6 +30,12 @@
 <div class="platform">
     <h1>Supervision plateforme</h1>
     <p class="platform-copy">Vue globale des organisations, volumes, revenus en attente et activité SaaS.</p>
+
+    <nav class="platform-ref-actions" aria-label="Référentiels plateforme">
+        <a href="{{ route('categories.index') }}"><i class="bi bi-tags"></i>Catégories d'événement</a>
+        <a href="{{ route('devises.index') }}"><i class="bi bi-currency-exchange"></i>Devises</a>
+        <a href="{{ route('localisations.index') }}"><i class="bi bi-globe2"></i>Pays & villes</a>
+    </nav>
 
     <section class="metric-grid">
         <article class="metric"><span>Organisations</span><strong>{{ $organizationsCount }}</strong></article>

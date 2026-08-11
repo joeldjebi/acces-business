@@ -167,6 +167,8 @@
         overflow-wrap: anywhere;
     }
 
+    .event-actions form { margin: 0; }
+
     .event-actions {
         background: var(--panel);
         border: 1px solid var(--line);
@@ -350,6 +352,27 @@
         gap: 18px;
     }
 
+    .side-accordion summary {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        list-style: none;
+    }
+
+    .side-accordion summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .side-accordion .accordion-chevron {
+        color: var(--gold);
+        transition: transform .2s ease;
+    }
+
+    .side-accordion[open] .accordion-chevron {
+        transform: rotate(180deg);
+    }
+
     .internal-note {
         background: #fff6df;
         border: 1px solid rgba(185, 137, 67, 0.26);
@@ -379,6 +402,8 @@
     .hero-aside {
         border-radius: 18px;
     }
+
+    .event-actions form { margin: 0; }
 
     .event-actions {
         background: transparent;
@@ -436,7 +461,9 @@
             padding: 20px;
         }
 
-        .event-actions {
+        .event-actions form { margin: 0; }
+
+    .event-actions {
             display: grid;
         }
 
@@ -507,6 +534,28 @@
                     <i class="bi bi-people"></i>
                     Inscriptions
                 </a>
+                <a href="{{ route('events.confirmed-attendees', $event) }}" class="event-btn">
+                    <i class="bi bi-person-check"></i>
+                    Présences confirmées
+                </a>
+                <a href="{{ route('events.check-in', $event) }}" class="event-btn">
+                    <i class="bi bi-qr-code-scan"></i>
+                    Check-in live
+                </a>
+                <form method="POST" action="{{ route('events.reminders.send', $event) }}">
+                    @csrf
+                    <button type="submit" class="event-btn">
+                        <i class="bi bi-bell"></i>
+                        Relancer les invités
+                    </button>
+                </form>
+                <form method="POST" action="{{ route('events.thank-you-sms.send', $event) }}" onsubmit="return confirm('Envoyer un SMS de remerciement aux participants déjà checkés ?');">
+                    @csrf
+                    <button type="submit" class="event-btn">
+                        <i class="bi bi-chat-dots"></i>
+                        SMS remerciement
+                    </button>
+                </form>
             @endif
         @endif
         <a href="{{ route('events.index') }}" class="event-btn">
@@ -656,10 +705,11 @@
         </main>
 
         <aside class="side-stack">
-            <section class="detail-panel">
-                <div class="panel-head">
+            <details class="detail-panel side-accordion">
+                <summary class="panel-head">
                     <h2>Planning</h2>
-                </div>
+                    <i class="bi bi-chevron-down accordion-chevron"></i>
+                </summary>
                 <div class="info-list">
                     <div class="info-row">
                         <span class="info-icon"><i class="bi bi-calendar3"></i></span>
@@ -694,13 +744,14 @@
                         </div>
                     @endif
                 </div>
-            </section>
+            </details>
 
             @if($event->lieu || $event->adresse_complete || $event->ville || $event->lien_google_map || $event->pays)
-                <section class="detail-panel">
-                    <div class="panel-head">
+                <details class="detail-panel side-accordion">
+                    <summary class="panel-head">
                         <h2>Localisation</h2>
-                    </div>
+                        <i class="bi bi-chevron-down accordion-chevron"></i>
+                    </summary>
                     <div class="info-list">
                         @if($event->lieu)
                             <div class="info-row">
@@ -760,13 +811,14 @@
                             </div>
                         @endif
                     </div>
-                </section>
+                </details>
             @endif
 
-            <section class="detail-panel">
-                <div class="panel-head">
+            <details class="detail-panel side-accordion">
+                <summary class="panel-head">
                     <h2>Tarification et capacité</h2>
-                </div>
+                    <i class="bi bi-chevron-down accordion-chevron"></i>
+                </summary>
                 <div class="info-list">
                     <div class="info-row">
                         <span class="info-icon"><i class="bi bi-currency-exchange"></i></span>
@@ -810,13 +862,14 @@
                         </div>
                     @endif
                 </div>
-            </section>
+            </details>
 
             @if($event->organisateur || $event->email_contact || $event->telephone || $event->site_web)
-                <section class="detail-panel">
-                    <div class="panel-head">
+                <details class="detail-panel side-accordion">
+                    <summary class="panel-head">
                         <h2>Organisation</h2>
-                    </div>
+                        <i class="bi bi-chevron-down accordion-chevron"></i>
+                    </summary>
                     <div class="info-list">
                         @if($event->organisateur)
                             <div class="info-row">

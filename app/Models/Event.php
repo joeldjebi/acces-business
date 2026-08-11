@@ -182,6 +182,11 @@ class Event extends Model
         return $this->hasMany(EventRegistration::class);
     }
 
+    public function registrationActivities(): HasMany
+    {
+        return $this->hasMany(EventRegistrationActivity::class);
+    }
+
     /**
      * Relation avec les vérifications OTP
      */

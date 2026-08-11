@@ -14,7 +14,8 @@ class ReferenceDataController extends Controller
 {
     public function categories()
     {
-        $categories = Category::forOrganization()
+        $categories = Category::query()
+            ->whereNull('organization_id')
             ->withCount('events')
             ->orderByDesc('statut')
             ->orderBy('libelle')
@@ -31,12 +32,12 @@ class ReferenceDataController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('categories', 'libelle')
-                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id)),
+                    ->where(fn ($query) => $query->whereNull('organization_id')),
             ],
         ]);
 
         Category::create([
-            'organization_id' => auth()->user()->organization_id,
+            'organization_id' => null,
             'libelle' => trim($validated['libelle']),
             'statut' => 1,
         ]);
@@ -47,13 +48,15 @@ class ReferenceDataController extends Controller
 
     public function updateCategory(Request $request, Category $category)
     {
+        $this->ensurePlatformRecord($category);
+
         $validated = $request->validate([
             'libelle' => [
                 'required',
                 'string',
                 'max:100',
                 Rule::unique('categories', 'libelle')
-                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))
+                    ->where(fn ($query) => $query->whereNull('organization_id'))
                     ->ignore($category->id),
             ],
             'statut' => ['nullable', 'boolean'],
@@ -70,6 +73,8 @@ class ReferenceDataController extends Controller
 
     public function destroyCategory(Category $category)
     {
+        $this->ensurePlatformRecord($category);
+
         if ($category->events()->exists()) {
             return redirect()->route('categories.index')
                 ->with('error', 'Impossible de supprimer une catégorie utilisée par des événements.');
@@ -83,7 +88,8 @@ class ReferenceDataController extends Controller
 
     public function devises()
     {
-        $devises = Devise::forOrganization()
+        $devises = Devise::query()
+            ->whereNull('organization_id')
             ->withCount('events')
             ->orderByDesc('statut')
             ->orderBy('libelle')
@@ -100,12 +106,12 @@ class ReferenceDataController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('devises', 'libelle')
-                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id)),
+                    ->where(fn ($query) => $query->whereNull('organization_id')),
             ],
         ]);
 
         Devise::create([
-            'organization_id' => auth()->user()->organization_id,
+            'organization_id' => null,
             'libelle' => strtoupper(trim($validated['libelle'])),
             'statut' => 1,
         ]);
@@ -116,13 +122,15 @@ class ReferenceDataController extends Controller
 
     public function updateDevise(Request $request, Devise $devise)
     {
+        $this->ensurePlatformRecord($devise);
+
         $validated = $request->validate([
             'libelle' => [
                 'required',
                 'string',
                 'max:100',
                 Rule::unique('devises', 'libelle')
-                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))
+                    ->where(fn ($query) => $query->whereNull('organization_id'))
                     ->ignore($devise->id),
             ],
             'statut' => ['nullable', 'boolean'],
@@ -139,6 +147,8 @@ class ReferenceDataController extends Controller
 
     public function destroyDevise(Devise $devise)
     {
+        $this->ensurePlatformRecord($devise);
+
         if ($devise->events()->exists()) {
             return redirect()->route('devises.index')
                 ->with('error', 'Impossible de supprimer une devise utilisée par des événements.');
@@ -152,13 +162,15 @@ class ReferenceDataController extends Controller
 
     public function localisations()
     {
-        $countries = Country::forOrganization()
+        $countries = Country::query()
+            ->whereNull('organization_id')
             ->withCount('cities')
             ->orderByDesc('statut')
             ->orderBy('nom')
             ->get();
 
-        $cities = City::forOrganization()
+        $cities = City::query()
+            ->whereNull('organization_id')
             ->with('country')
             ->orderByDesc('statut')
             ->orderBy('nom')
@@ -175,7 +187,7 @@ class ReferenceDataController extends Controller
                 'string',
                 'max:120',
                 Rule::unique('countries', 'nom')
-                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id)),
+                    ->where(fn ($query) => $query->whereNull('organization_id')),
             ],
             'indicatif' => ['nullable', 'string', 'max:12'],
             'currency' => ['nullable', 'string', 'max:12'],
@@ -183,7 +195,7 @@ class ReferenceDataController extends Controller
         ]);
 
         Country::create([
-            'organization_id' => auth()->user()->organization_id,
+            'organization_id' => null,
             'nom' => trim($validated['nom']),
             'indicatif' => $this->normalizeDialCode($validated['indicatif'] ?? null),
             'currency' => strtoupper(trim($validated['currency'] ?? '')),
@@ -197,13 +209,15 @@ class ReferenceDataController extends Controller
 
     public function updateCountry(Request $request, Country $country)
     {
+        $this->ensurePlatformRecord($country);
+
         $validated = $request->validate([
             'nom' => [
                 'required',
                 'string',
                 'max:120',
                 Rule::unique('countries', 'nom')
-                    ->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))
+                    ->where(fn ($query) => $query->whereNull('organization_id'))
                     ->ignore($country->id),
             ],
             'indicatif' => ['nullable', 'string', 'max:12'],
@@ -226,7 +240,9 @@ class ReferenceDataController extends Controller
 
     public function destroyCountry(Country $country)
     {
-        if ($country->cities()->exists() || Event::forOrganization()->where('pays', $country->nom)->exists()) {
+        $this->ensurePlatformRecord($country);
+
+        if ($country->cities()->exists() || Event::where('pays', $country->nom)->exists()) {
             return redirect()->route('localisations.index')
                 ->with('error', 'Impossible de supprimer un pays utilisé par des villes ou des événements.');
         }
@@ -240,20 +256,20 @@ class ReferenceDataController extends Controller
     public function storeCity(Request $request)
     {
         $validated = $request->validate([
-            'country_id' => ['required', Rule::exists('countries', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'country_id' => ['required', Rule::exists('countries', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'nom' => [
                 'required',
                 'string',
                 'max:120',
                 Rule::unique('cities', 'nom')
                     ->where(fn ($query) => $query
-                        ->where('organization_id', auth()->user()->organization_id)
+                        ->whereNull('organization_id')
                         ->where('country_id', $request->country_id)),
             ],
         ]);
 
         City::create([
-            'organization_id' => auth()->user()->organization_id,
+            'organization_id' => null,
             'country_id' => $validated['country_id'],
             'nom' => trim($validated['nom']),
             'statut' => 1,
@@ -265,15 +281,17 @@ class ReferenceDataController extends Controller
 
     public function updateCity(Request $request, City $city)
     {
+        $this->ensurePlatformRecord($city);
+
         $validated = $request->validate([
-            'country_id' => ['required', Rule::exists('countries', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'country_id' => ['required', Rule::exists('countries', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'nom' => [
                 'required',
                 'string',
                 'max:120',
                 Rule::unique('cities', 'nom')
                     ->where(fn ($query) => $query
-                        ->where('organization_id', auth()->user()->organization_id)
+                        ->whereNull('organization_id')
                         ->where('country_id', $request->country_id))
                     ->ignore($city->id),
             ],
@@ -292,7 +310,9 @@ class ReferenceDataController extends Controller
 
     public function destroyCity(City $city)
     {
-        if (Event::forOrganization()->where('ville', $city->nom)->exists()) {
+        $this->ensurePlatformRecord($city);
+
+        if (Event::where('ville', $city->nom)->exists()) {
             return redirect()->route('localisations.index')
                 ->with('error', 'Impossible de supprimer une ville utilisée par des événements.');
         }
@@ -301,6 +321,11 @@ class ReferenceDataController extends Controller
 
         return redirect()->route('localisations.index')
             ->with('success', 'Ville supprimée avec succès.');
+    }
+
+    private function ensurePlatformRecord($record): void
+    {
+        abort_unless(is_null($record->organization_id), 404);
     }
 
     private function normalizeDialCode(?string $value): ?string

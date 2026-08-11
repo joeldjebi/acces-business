@@ -12,10 +12,12 @@
         --gold: #b98943;
         max-width: 1060px;
         margin: 0 auto;
+        padding-bottom: 40px;
     }
 
     body {
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .rsvp-hero {
@@ -94,7 +96,7 @@
 
     .response-buttons {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
         margin: 12px 0 16px;
     }
@@ -143,8 +145,24 @@
         padding-top: 14px;
     }
 
-    .form-section.active {
+    .form-section.active,
+    .representative-section.active {
         display: block;
+    }
+
+    .representative-section {
+        display: none;
+        margin-top: 18px;
+        border: 1px solid rgba(185, 137, 67, .18);
+        border-radius: 20px;
+        background: rgba(185, 137, 67, .06);
+        padding: 16px;
+    }
+
+    .representative-section .section-note {
+        color: var(--muted);
+        margin-top: -4px;
+        margin-bottom: 14px;
     }
 
     .form-control {
@@ -239,28 +257,33 @@
 
         <form id="response-form" method="POST" action="{{ route('events.submit-response', $event) }}">
             @csrf
-            <input type="hidden" name="reponse" id="reponse-input" required>
+            <input type="hidden" name="reponse" id="reponse-input" value="{{ old('reponse') }}" required>
 
             <h2 class="h5 mb-3">Votre réponse</h2>
             <div class="response-buttons">
-                <div class="response-btn present" data-value="present">
+                <div class="response-btn present {{ old('reponse') === 'present' ? 'selected' : '' }}" data-value="present">
                     <i class="bi bi-check-circle" style="color: #2e7b65;"></i>
                     <h3>Je serai présent(e)</h3>
                     <p>Votre présence est confirmée.</p>
                 </div>
-                <div class="response-btn peut-etre" data-value="peut_etre">
+                <div class="response-btn peut-etre {{ old('reponse') === 'peut_etre' ? 'selected' : '' }}" data-value="peut_etre">
                     <i class="bi bi-question-circle" style="color: #b98943;"></i>
                     <h3>Peut-être</h3>
                     <p>Vous recevrez quand même votre carte.</p>
                 </div>
-                <div class="response-btn absent" data-value="absent">
+                <div class="response-btn absent {{ old('reponse') === 'absent' ? 'selected' : '' }}" data-value="absent">
                     <i class="bi bi-x-circle" style="color: #a4514a;"></i>
                     <h3>Je ne pourrai pas venir</h3>
                     <p>Votre absence sera enregistrée.</p>
                 </div>
+                <div class="response-btn represented {{ old('reponse') === 'represente' ? 'selected' : '' }}" data-value="represente">
+                    <i class="bi bi-person-badge" style="color: #725322;"></i>
+                    <h3>Me faire représenter</h3>
+                    <p>Indiquez la personne qui assistera à votre place.</p>
+                </div>
             </div>
 
-            <div class="form-section" id="info-form">
+            <div class="form-section {{ old('reponse') ? 'active' : '' }}" id="info-form">
                 <h2 class="h5 mb-3">Vos informations</h2>
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -285,6 +308,33 @@
                     </div>
                 </div>
 
+                <div class="representative-section {{ old('reponse') === 'represente' ? 'active' : '' }}" id="representative-form">
+                    <h2 class="h5 mb-1">Informations du représentant</h2>
+                    <p class="section-note">Ces informations seront visibles par l’organisateur afin de garder une trace claire de votre représentation.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="representant_nom" class="form-label">Nom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control representative-required" id="representant_nom" name="representant_nom" value="{{ old('representant_nom') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="representant_prenoms" class="form-label">Prénoms <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control representative-required" id="representant_prenoms" name="representant_prenoms" value="{{ old('representant_prenoms') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="representant_fonction" class="form-label">Fonction <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control representative-required" id="representant_fonction" name="representant_fonction" value="{{ old('representant_fonction') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="representant_contact" class="form-label">Contact <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control representative-required" id="representant_contact" name="representant_contact" value="{{ old('representant_contact') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="representant_email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control representative-required" id="representant_email" name="representant_email" value="{{ old('representant_email') }}">
+                        </div>
+                    </div>
+                </div>
+
                 <button type="submit" class="submit-btn mt-4">
                     <i class="bi bi-check2-circle me-2"></i>Enregistrer ma réponse
                 </button>
@@ -298,6 +348,16 @@
     const responseButtons = document.querySelectorAll('.response-btn');
     const reponseInput = document.getElementById('reponse-input');
     const infoForm = document.getElementById('info-form');
+    const representativeForm = document.getElementById('representative-form');
+    const representativeRequiredFields = document.querySelectorAll('.representative-required');
+
+    function syncRepresentativeFields(value) {
+        const isRepresented = value === 'represente';
+        representativeForm.classList.toggle('active', isRepresented);
+        representativeRequiredFields.forEach(field => {
+            field.required = isRepresented;
+        });
+    }
 
     responseButtons.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -305,8 +365,11 @@
             this.classList.add('selected');
             reponseInput.value = this.dataset.value;
             infoForm.classList.add('active');
+            syncRepresentativeFields(this.dataset.value);
         });
     });
+
+    syncRepresentativeFields(reponseInput.value);
 </script>
 @endpush
 @endsection

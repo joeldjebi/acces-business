@@ -54,6 +54,27 @@ Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('pl
     Route::put('/communication-packages/{package}', [PlatformAdminController::class, 'updateCommunicationPackage'])->name('communication-packages.update');
 });
 
+
+Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->group(function () {
+    Route::get('/categories-evenement', [ReferenceDataController::class, 'categories'])->name('categories.index');
+    Route::post('/categories-evenement', [ReferenceDataController::class, 'storeCategory'])->name('categories.store');
+    Route::put('/categories-evenement/{category}', [ReferenceDataController::class, 'updateCategory'])->name('categories.update');
+    Route::delete('/categories-evenement/{category}', [ReferenceDataController::class, 'destroyCategory'])->name('categories.destroy');
+
+    Route::get('/devises', [ReferenceDataController::class, 'devises'])->name('devises.index');
+    Route::post('/devises', [ReferenceDataController::class, 'storeDevise'])->name('devises.store');
+    Route::put('/devises/{devise}', [ReferenceDataController::class, 'updateDevise'])->name('devises.update');
+    Route::delete('/devises/{devise}', [ReferenceDataController::class, 'destroyDevise'])->name('devises.destroy');
+
+    Route::get('/localisations', [ReferenceDataController::class, 'localisations'])->name('localisations.index');
+    Route::post('/pays', [ReferenceDataController::class, 'storeCountry'])->name('countries.store');
+    Route::put('/pays/{country}', [ReferenceDataController::class, 'updateCountry'])->name('countries.update');
+    Route::delete('/pays/{country}', [ReferenceDataController::class, 'destroyCountry'])->name('countries.destroy');
+    Route::post('/villes', [ReferenceDataController::class, 'storeCity'])->name('cities.store');
+    Route::put('/villes/{city}', [ReferenceDataController::class, 'updateCity'])->name('cities.update');
+    Route::delete('/villes/{city}', [ReferenceDataController::class, 'destroyCity'])->name('cities.destroy');
+});
+
 // Routes protégées
 Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/dashboard', function () {
@@ -69,6 +90,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::get('/saas/facturation', [SaasSettingsController::class, 'billing'])->name('saas.billing');
         Route::put('/saas/facturation', [SaasSettingsController::class, 'updateBilling'])->name('saas.billing.update');
         Route::get('/saas/communications', [SaasSettingsController::class, 'communications'])->name('saas.communications');
+        Route::put('/saas/communications/reminders', [SaasSettingsController::class, 'updateReminderSettings'])->name('saas.communications.reminders.update');
         Route::post('/saas/communications', [SaasSettingsController::class, 'purchaseCommunicationCredits'])->name('saas.communications.purchase');
         Route::get('/saas/branding', [SaasSettingsController::class, 'branding'])->name('saas.branding');
         Route::put('/saas/branding', [SaasSettingsController::class, 'updateBranding'])->name('saas.branding.update');
@@ -84,26 +106,6 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::delete('/events/destroy-all', [EventController::class, 'destroyAll'])->name('events.destroy-all');
     Route::resource('events', EventController::class);
 
-    Route::middleware('role:super_admin,admin,manager')->group(function () {
-        Route::get('/categories-evenement', [ReferenceDataController::class, 'categories'])->name('categories.index');
-        Route::post('/categories-evenement', [ReferenceDataController::class, 'storeCategory'])->name('categories.store');
-        Route::put('/categories-evenement/{category}', [ReferenceDataController::class, 'updateCategory'])->name('categories.update');
-        Route::delete('/categories-evenement/{category}', [ReferenceDataController::class, 'destroyCategory'])->name('categories.destroy');
-
-        Route::get('/devises', [ReferenceDataController::class, 'devises'])->name('devises.index');
-        Route::post('/devises', [ReferenceDataController::class, 'storeDevise'])->name('devises.store');
-        Route::put('/devises/{devise}', [ReferenceDataController::class, 'updateDevise'])->name('devises.update');
-        Route::delete('/devises/{devise}', [ReferenceDataController::class, 'destroyDevise'])->name('devises.destroy');
-
-        Route::get('/localisations', [ReferenceDataController::class, 'localisations'])->name('localisations.index');
-        Route::post('/pays', [ReferenceDataController::class, 'storeCountry'])->name('countries.store');
-        Route::put('/pays/{country}', [ReferenceDataController::class, 'updateCountry'])->name('countries.update');
-        Route::delete('/pays/{country}', [ReferenceDataController::class, 'destroyCountry'])->name('countries.destroy');
-        Route::post('/villes', [ReferenceDataController::class, 'storeCity'])->name('cities.store');
-        Route::put('/villes/{city}', [ReferenceDataController::class, 'updateCity'])->name('cities.update');
-        Route::delete('/villes/{city}', [ReferenceDataController::class, 'destroyCity'])->name('cities.destroy');
-    });
-
     // Routes pour les inscriptions et accès aux événements
     Route::post('/events/{event}/register', [EventRegistrationController::class, 'store'])->name('events.register');
 
@@ -113,6 +115,15 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::post('/events/{event}/send-link', [EventAccessController::class, 'sendLink'])->name('events.send-link.store');
         Route::delete('/events/{event}/send-link/{accessLink}', [EventAccessController::class, 'destroyLink'])->name('events.send-link.destroy');
         Route::get('/events/{event}/registrations', [EventRegistrationController::class, 'index'])->name('events.registrations');
+        Route::get('/events/{event}/registrations/{registration}/detail', [EventRegistrationController::class, 'registrationDetail'])->name('events.registrations.show');
+        Route::get('/events/{event}/confirmed-attendees', [EventRegistrationController::class, 'confirmedAttendees'])->name('events.confirmed-attendees');
+        Route::get('/events/{event}/confirmed-attendees/{registration}', [EventRegistrationController::class, 'confirmedAttendeeDetail'])->name('events.confirmed-attendees.show');
+        Route::get('/events/{event}/check-in', [EventRegistrationController::class, 'checkInDashboard'])->name('events.check-in');
+        Route::post('/events/{event}/check-in/token', [EventRegistrationController::class, 'checkInByToken'])->name('events.check-in.token');
+        Route::post('/events/{event}/registrations/{registration}/check-in', [EventRegistrationController::class, 'checkIn'])->name('events.registrations.check-in');
+        Route::post('/events/{event}/reminders/send', [EventRegistrationController::class, 'sendReminders'])->name('events.reminders.send');
+        Route::post('/events/{event}/thank-you-sms/send', [EventRegistrationController::class, 'sendThankYouSms'])->name('events.thank-you-sms.send');
+        Route::post('/events/{event}/registrations/{registration}/representative/resend', [EventRegistrationController::class, 'resendRepresentativeConfirmation'])->name('events.registrations.representative.resend');
     });
 });
 
@@ -127,17 +138,13 @@ Route::post('/events/{event}/verify-otp', [EventOtpController::class, 'verifyOtp
 Route::get('/events/{event}/respond', [EventRegistrationController::class, 'showResponseForm'])->name('events.respond');
 Route::post('/events/{event}/respond', [EventRegistrationController::class, 'submitResponse'])->name('events.submit-response');
 Route::get('/events/{event}/response-confirmation', [EventRegistrationController::class, 'showResponseConfirmation'])->name('events.response-confirmation');
+Route::get('/representations/{token}/confirm', [EventRegistrationController::class, 'showRepresentativeConfirmation'])->name('representations.confirm');
+Route::post('/representations/{token}/confirm', [EventRegistrationController::class, 'confirmRepresentative'])->name('representations.confirm.store');
 
 // Route publique pour télécharger la carte d'invitation PDF (sécurisée par token unique)
 Route::get('/invitation/download/{token}', [EventRegistrationController::class, 'downloadInvitationCard'])->name('invitation.download');
+Route::get('/wallet/apple/{token}.pkpass', [EventRegistrationController::class, 'downloadAppleWalletPass'])->name('wallet.apple');
 
 // Route pour vérifier le QR code (publique)
-Route::get('/events/verify-qr/{token}', function ($token) {
-    $registration = \App\Models\EventRegistration::where('token_unique', $token)->first();
-
-    if (!$registration) {
-        return view('events.qr-invalid');
-    }
-
-    return view('events.qr-verified', compact('registration'));
-})->name('events.verify-qr');
+Route::get('/events/verify-qr/{token}', [EventRegistrationController::class, 'verifyQr'])->name('events.verify-qr');
+Route::post('/events/verify-qr/{token}/check-in', [EventRegistrationController::class, 'checkInFromQr'])->middleware(['auth', 'tenant', 'role:super_admin,admin'])->name('events.verify-qr.check-in');

@@ -69,7 +69,7 @@ class EventController extends Controller
             ->withQueryString();
 
         // Récupérer les données pour les filtres
-        $categories = Category::forOrganization()->active()->get();
+        $categories = Category::whereNull('organization_id')->active()->orderBy('libelle')->get();
         $visibilites = Visibilite::active()->get();
         $users = User::where('organization_id', auth()->user()->organization_id)->get();
         $quota = SaasUsage::forOrganization(auth()->user()->organization);
@@ -87,12 +87,12 @@ class EventController extends Controller
                 ->with('error', SaasUsage::limitMessage(auth()->user()->organization, 'events'));
         }
 
-        $categories = Category::forOrganization()->active()->get();
-        $devises = Devise::forOrganization()->active()->get();
+        $categories = Category::whereNull('organization_id')->active()->orderBy('libelle')->get();
+        $devises = Devise::whereNull('organization_id')->active()->orderBy('libelle')->get();
         $typeTarifications = TypeTarification::active()->get();
         $visibilites = Visibilite::active()->get();
-        $countries = Country::forOrganization()->active()->orderBy('nom')->get();
-        $cities = City::forOrganization()->active()->with('country')->orderBy('nom')->get();
+        $countries = Country::whereNull('organization_id')->active()->orderBy('nom')->get();
+        $cities = City::whereNull('organization_id')->active()->with('country')->orderBy('nom')->get();
 
         return view('events.create', compact('categories', 'devises', 'typeTarifications', 'visibilites', 'countries', 'cities'));
     }
@@ -107,7 +107,7 @@ class EventController extends Controller
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
-            'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'date_debut' => 'required|date',
             'heure_debut' => 'required',
             'date_fin' => 'required|date|after_or_equal:date_debut',
@@ -133,7 +133,7 @@ class EventController extends Controller
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'required|exists:type_de_tarifications,id',
             'prix' => 'nullable|numeric|min:0',
-            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -189,7 +189,7 @@ class EventController extends Controller
             'titre' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
-            'category_id' => ['nullable', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'category_id' => ['nullable', Rule::exists('categories', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'date_debut' => 'nullable|date',
             'heure_debut' => 'nullable',
             'date_fin' => 'nullable|date',
@@ -215,7 +215,7 @@ class EventController extends Controller
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'nullable|exists:type_de_tarifications,id',
             'prix' => 'nullable|numeric|min:0',
-            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -266,7 +266,7 @@ class EventController extends Controller
             ? $validated[$key]
             : $fallback;
 
-        $categoryId = $value('category_id', $draft?->category_id) ?? Category::forOrganization()->active()->value('id');
+        $categoryId = $value('category_id', $draft?->category_id) ?? Category::whereNull('organization_id')->active()->value('id');
         $visibiliteId = $value('visibilite_id', $draft?->visibilite_id) ?? Visibilite::active()->value('id');
         $typeTarificationId = $value('type_tarification_id', $draft?->type_tarification_id) ?? TypeTarification::active()->value('id');
 
@@ -383,12 +383,12 @@ class EventController extends Controller
      */
     public function edit(Event $event)
     {
-        $categories = Category::forOrganization()->active()->get();
-        $devises = Devise::forOrganization()->active()->get();
+        $categories = Category::whereNull('organization_id')->active()->orderBy('libelle')->get();
+        $devises = Devise::whereNull('organization_id')->active()->orderBy('libelle')->get();
         $typeTarifications = TypeTarification::active()->get();
         $visibilites = Visibilite::active()->get();
-        $countries = Country::forOrganization()->active()->orderBy('nom')->get();
-        $cities = City::forOrganization()->active()->with('country')->orderBy('nom')->get();
+        $countries = Country::whereNull('organization_id')->active()->orderBy('nom')->get();
+        $cities = City::whereNull('organization_id')->active()->with('country')->orderBy('nom')->get();
 
         return view('events.edit', compact('event', 'categories', 'devises', 'typeTarifications', 'visibilites', 'countries', 'cities'));
     }
@@ -402,7 +402,7 @@ class EventController extends Controller
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
-            'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'date_debut' => 'required|date',
             'heure_debut' => 'required',
             'date_fin' => 'required|date|after_or_equal:date_debut',
@@ -428,7 +428,7 @@ class EventController extends Controller
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'required|exists:type_de_tarifications,id',
             'prix' => 'nullable|numeric|min:0',
-            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
+            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

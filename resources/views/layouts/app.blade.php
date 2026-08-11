@@ -439,6 +439,24 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('categories.index') }}" class="{{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                    <i class="bi bi-tags"></i>
+                    <span>Catégories d'événement</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('devises.index') }}" class="{{ request()->routeIs('devises.*') ? 'active' : '' }}">
+                    <i class="bi bi-currency-exchange"></i>
+                    <span>Devises</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('localisations.index') }}" class="{{ request()->routeIs('localisations.*') || request()->routeIs('countries.*') || request()->routeIs('cities.*') ? 'active' : '' }}">
+                    <i class="bi bi-globe2"></i>
+                    <span>Pays & villes</span>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('platform.invitation-cards') }}" class="{{ request()->routeIs('platform.invitation-cards') ? 'active' : '' }}">
                     <i class="bi bi-postcard"></i>
                     <span>Cartes invitation</span>
@@ -469,26 +487,6 @@
                     <span>Événements</span>
                 </a>
             </li>
-            @if(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin() || auth()->user()->isManager())
-            <li>
-                <a href="{{ route('categories.index') }}" class="{{ request()->routeIs('categories.*') ? 'active' : '' }}">
-                    <i class="bi bi-tags"></i>
-                    <span>Catégories d'événement</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('devises.index') }}" class="{{ request()->routeIs('devises.*') ? 'active' : '' }}">
-                    <i class="bi bi-currency-exchange"></i>
-                    <span>Devises</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('localisations.index') }}" class="{{ request()->routeIs('localisations.*') || request()->routeIs('countries.*') || request()->routeIs('cities.*') ? 'active' : '' }}">
-                    <i class="bi bi-globe2"></i>
-                    <span>Pays & villes</span>
-                </a>
-            </li>
-            @endif
             @if(auth()->user()->isSuperAdmin())
             <li>
                 <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active' : '' }}">

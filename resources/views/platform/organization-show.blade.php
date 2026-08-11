@@ -156,7 +156,7 @@
 
             <section class="panel" id="plan">
                 <h2 class="section-title">Modules client</h2>
-                <p class="muted">Vue synthétique des espaces client: catégories, devises, pays & villes, utilisateurs, plans, facturation et branding.</p>
+                <p class="muted">Vue synthétique: référentiels plateforme utilisés par les clients, utilisateurs, plans, facturation et branding.</p>
                 <div class="module-grid">
                     <div class="module-card" id="categories"><span class="muted">Catégories d'événement</span><strong>{{ $categories->count() }}</strong></div>
                     <div class="module-card" id="devises"><span class="muted">Devises</span><strong>{{ $devises->count() }}</strong></div>
@@ -233,8 +233,8 @@
             </section>
 
             <section class="panel">
-                <h2 class="section-title">Référentiels</h2>
-                <p class="muted">Catégories, devises et localisations configurées.</p>
+                <h2 class="section-title">Référentiels plateforme</h2>
+                <p class="muted">Données globales gérées uniquement par le Platform admin et utilisées par cette organisation.</p>
                 <div class="mb-3">
                     <strong>Catégories</strong>
                     <div class="muted">{{ $categories->pluck('libelle')->take(8)->implode(', ') ?: 'Aucune catégorie' }}</div>

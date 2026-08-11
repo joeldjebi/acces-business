@@ -9,6 +9,15 @@
         $organizationLogo = $design['organization_logo'] ?? null;
         $signatureText = $design['signature_text'] ?? '';
         $signatureLogo = $design['signature_logo'] ?? null;
+        $isRepresentativeCard = $registration->statut_reponse === 'represente' && $registration->representant_statut === 'confirme';
+        $cardGuestName = $isRepresentativeCard
+            ? (trim(($registration->representant_prenoms ?? '') . ' ' . ($registration->representant_nom ?? '')) ?: $registration->representant_email)
+            : ($registration->nom_complet ?: $registration->email);
+        $cardGuestMeta = $isRepresentativeCard
+            ? ($registration->representant_fonction ?: '')
+            : (($registration->fonction ?: '') . ($registration->fonction && $registration->entreprise ? ' · ' : '') . ($registration->entreprise ?: ''));
+        $walletAppleUrl = $walletLinks['apple'] ?? null;
+        $walletGoogleUrl = $walletLinks['google'] ?? null;
     @endphp
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,11 +46,12 @@
                     </tr>
                     <tr>
                         <td style="padding:34px;">
-                            <p style="margin:0 0 20px; font-size:16px; line-height:1.7;">Bonjour <strong>{{ $registration->nom_complet ?: $registration->email }}</strong>,</p>
-                            @if($registration->entreprise || $registration->fonction)
-                                <p style="margin:-10px 0 20px; color:#746f65; font-size:14px;">
-                                    {{ $registration->fonction ?: '' }}{{ $registration->fonction && $registration->entreprise ? ' · ' : '' }}{{ $registration->entreprise ?: '' }}
-                                </p>
+                            <p style="margin:0 0 20px; font-size:16px; line-height:1.7;">Bonjour <strong>{{ $cardGuestName }}</strong>,</p>
+                            @if($cardGuestMeta)
+                                <p style="margin:-10px 0 20px; color:#746f65; font-size:14px;">{{ $cardGuestMeta }}</p>
+                            @endif
+                            @if($isRepresentativeCard)
+                                <p style="margin:-10px 0 20px; color:#725322; font-size:14px;">Représente {{ $registration->nom_complet ?: $registration->email }}</p>
                             @endif
                             <p style="margin:0 0 24px; color:#625b51; font-size:16px; line-height:1.7;">Votre invitation est confirmée. Présentez le QR code ci-dessous à l’entrée de l’événement.</p>
 
@@ -74,7 +84,24 @@
                             </div>
 
                             <div style="text-align:center; margin:28px 0 0;">
-                                <a href="{{ route('invitation.download', ['token' => $registration->token_unique]) }}" style="display:inline-block; background:{{ $primary }}; color:#ffffff; text-decoration:none; padding:14px 24px; border-radius:999px; font-weight:bold;">Télécharger la carte PDF</a>
+                                <a href="{{ route('invitation.download', ['token' => $registration->token_unique]) }}" style="display:inline-block; background:{{ $primary }}; color:#ffffff; text-decoration:none; padding:14px 24px; border-radius:999px; font-weight:bold; margin:4px;">Télécharger la carte PDF</a>
+                                @if($walletAppleUrl)
+                                    <a href="{{ $walletAppleUrl }}" style="display:inline-block; background:#111111; color:#ffffff; text-decoration:none; padding:14px 24px; border-radius:999px; font-weight:bold; margin:4px;">Ajouter à Apple Wallet</a>
+                                @endif
+                                @if($walletGoogleUrl)
+                                    <a href="{{ $walletGoogleUrl }}" style="display:inline-block; background:#ffffff; color:#171713; border:1px solid #ded6c8; text-decoration:none; padding:14px 24px; border-radius:999px; font-weight:bold; margin:4px;">Ajouter à Google Wallet</a>
+                                @endif
+                            </div>
+
+                            <div style="background:#f8f4ec; border-radius:16px; margin:22px 0 0; padding:16px;">
+                                <p style="margin:0 0 10px; color:#746f65; font-size:13px; line-height:1.6;">Si les boutons ne fonctionnent pas, copiez directement les liens ci-dessous :</p>
+                                <p style="margin:0 0 8px; color:#171713; font-size:13px; line-height:1.6;"><strong>PDF :</strong><br><span style="color:#8a6128; word-break:break-all;">{{ route('invitation.download', ['token' => $registration->token_unique]) }}</span></p>
+                                @if($walletAppleUrl)
+                                    <p style="margin:0 0 8px; color:#171713; font-size:13px; line-height:1.6;"><strong>Apple Wallet :</strong><br><span style="color:#8a6128; word-break:break-all;">{{ $walletAppleUrl }}</span></p>
+                                @endif
+                                @if($walletGoogleUrl)
+                                    <p style="margin:0; color:#171713; font-size:13px; line-height:1.6;"><strong>Google Wallet :</strong><br><span style="color:#8a6128; word-break:break-all;">{{ $walletGoogleUrl }}</span></p>
+                                @endif
                             </div>
                         </td>
                     </tr>

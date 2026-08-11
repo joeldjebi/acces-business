@@ -10,10 +10,12 @@ use Illuminate\Support\Str;
 class InvitationCardService
 {
     protected $mailjetService;
+    protected $walletPassService;
 
-    public function __construct(MailjetService $mailjetService)
+    public function __construct(MailjetService $mailjetService, WalletPassService $walletPassService)
     {
         $this->mailjetService = $mailjetService;
+        $this->walletPassService = $walletPassService;
     }
 
     /**
@@ -91,6 +93,7 @@ class InvitationCardService
             'qrCodeImageUrl' => $qrCodeImageUrl,
             'qrCodeUrl' => $qrCodeUrl,
             'cardDesign' => $cardDesign,
+            'walletLinks' => $this->walletPassService->linksFor($registration),
         ])->render();
 
         return $html;
@@ -104,8 +107,16 @@ class InvitationCardService
         $event = $registration->event;
         $cardDesign = $this->cardDesignForEvent($event);
 
+        $isRepresentativeCard = $registration->statut_reponse === 'represente' && $registration->representant_statut === 'confirme';
+        $recipientName = $isRepresentativeCard
+            ? (trim(($registration->representant_prenoms ?? '') . ' ' . ($registration->representant_nom ?? '')) ?: $registration->representant_email)
+            : ($registration->nom_complet ?: $registration->email);
+
         $text = "INVITATION\n\n";
-        $text .= "Bonjour " . $registration->nom_complet . ",\n\n";
+        $text .= "Bonjour " . $recipientName . ",\n\n";
+        if ($isRepresentativeCard) {
+            $text .= "Vous représentez " . ($registration->nom_complet ?: $registration->email) . ".\n\n";
+        }
         $text .= "Vous êtes invité(e) à l'événement :\n";
         $text .= $event->titre . "\n\n";
         $text .= "Date : " . $event->date_debut->format('d/m/Y') . " - " . $event->date_fin->format('d/m/Y') . "\n";
@@ -261,6 +272,63 @@ class InvitationCardService
     /**
      * Envoie la carte d'invitation par email (méthode simplifiée)
      */
+    public function sendRepresentativeInvitationCard(EventRegistration $registration): bool
+    {
+        try {
+            $registration->loadMissing('event');
+            $event = $registration->event;
+
+            if (!$event || !$registration->representant_email) {
+                $registration->update([
+                    'representant_carte_envoyee' => false,
+                    'representant_carte_erreur' => !$event ? 'Événement introuvable.' : 'Email du représentant manquant.',
+                ]);
+                return false;
+            }
+
+            $html = $this->generateInvitationCardHtml($registration);
+            $text = $this->generateInvitationCardText($registration);
+            $subject = "Votre carte d'invitation - " . $event->titre;
+            $toName = trim(($registration->representant_prenoms ?? '') . ' ' . ($registration->representant_nom ?? '')) ?: $registration->representant_email;
+
+            $result = $this->mailjetService->sendSimpleEmail(
+                $registration->representant_email,
+                $toName,
+                $subject,
+                $text,
+                $html
+            );
+
+            $success = (bool) ($result['success'] ?? false);
+            $registration->update([
+                'representant_carte_envoyee' => $success,
+                'representant_carte_envoyee_le' => $success ? now() : null,
+                'representant_carte_erreur' => $success ? null : ($result['message'] ?? 'Erreur inconnue lors de l’envoi de la carte.'),
+            ]);
+
+            \Log::info('Envoi carte d\'invitation au représentant', [
+                'registration_id' => $registration->id,
+                'representant_email' => $registration->representant_email,
+                'success' => $success,
+                'message' => $result['message'] ?? null,
+            ]);
+
+            return $success;
+        } catch (\Exception $e) {
+            $registration->update([
+                'representant_carte_envoyee' => false,
+                'representant_carte_erreur' => $e->getMessage(),
+            ]);
+
+            \Log::error('Exception lors de l\'envoi de la carte au représentant', [
+                'registration_id' => $registration->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
     public function sendInvitationCard(EventRegistration $registration): bool
     {
         // Ne pas renvoyer si déjà envoyée (sauf pour forcer le renvoi)

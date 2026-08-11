@@ -125,6 +125,7 @@ class SaasSettingsController extends Controller
     public function communications()
     {
         $organization = auth()->user()->organization;
+        $settings = $organization->settings ?? [];
 
         return view('saas.communications', [
             'organization' => $organization,
@@ -137,7 +138,27 @@ class SaasSettingsController extends Controller
                 ->get(),
             'paymentOperators' => $this->paymentOperators(),
             'channels' => $this->communicationChannels(),
+            'reminderSettings' => $settings['response_reminders'] ?? [],
         ]);
+    }
+
+    public function updateReminderSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'enabled' => ['nullable', 'boolean'],
+            'time' => ['required', 'date_format:H:i'],
+        ]);
+
+        $organization = auth()->user()->organization;
+        $settings = $organization->settings ?? [];
+        $settings['response_reminders'] = [
+            'enabled' => $request->boolean('enabled'),
+            'time' => $validated['time'] ?: '08:00',
+        ];
+
+        $organization->update(['settings' => $settings]);
+
+        return back()->with('success', 'Planification des relances mise à jour.');
     }
 
     public function purchaseCommunicationCredits(Request $request)

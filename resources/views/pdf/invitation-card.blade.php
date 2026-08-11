@@ -9,6 +9,13 @@
         $organizationLogo = $design['organization_logo'] ?? null;
         $signatureText = $design['signature_text'] ?? '';
         $signatureLogo = $design['signature_logo'] ?? null;
+        $isRepresentativeCard = $registration->statut_reponse === 'represente' && $registration->representant_statut === 'confirme';
+        $cardGuestName = $isRepresentativeCard
+            ? (trim(($registration->representant_prenoms ?? '') . ' ' . ($registration->representant_nom ?? '')) ?: $registration->representant_email)
+            : ($registration->nom_complet ?: $registration->email);
+        $cardGuestMeta = $isRepresentativeCard
+            ? ($registration->representant_fonction ?: '')
+            : (($registration->fonction ?: '') . ($registration->fonction && $registration->entreprise ? ' · ' : '') . ($registration->entreprise ?: ''));
     @endphp
     <meta charset="UTF-8">
     <title>Carte d'Invitation - {{ $event->titre }}</title>
@@ -249,11 +256,12 @@
 
         <div class="body">
             <div class="guest">Invité</div>
-            <div class="name">{{ $registration->nom_complet ?: $registration->email }}</div>
-            @if($registration->entreprise || $registration->fonction)
-                <div class="guest-meta">
-                    {{ $registration->fonction ?: '' }}{{ $registration->fonction && $registration->entreprise ? ' · ' : '' }}{{ $registration->entreprise ?: '' }}
-                </div>
+            <div class="name">{{ $cardGuestName }}</div>
+            @if($cardGuestMeta)
+                <div class="guest-meta">{{ $cardGuestMeta }}</div>
+            @endif
+            @if($isRepresentativeCard)
+                <div class="guest-meta">Représente {{ $registration->nom_complet ?: $registration->email }}</div>
             @endif
 
             <div class="details">

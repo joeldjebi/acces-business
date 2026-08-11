@@ -42,4 +42,34 @@ return [
         'from_name' => env('MAILJET_FROM_NAME', env('APP_NAME')),
     ],
 
+    'mailjet_sms' => [
+        'token' => env('MAILJET_SMS_TOKEN'),
+        'sender' => env('MAILJET_SMS_SENDER', env('APP_NAME', 'My Signal')),
+    ],
+
+    'apple_wallet' => [
+        'pass_type_identifier' => env('APPLE_PASS_TYPE_IDENTIFIER'),
+        'team_identifier' => env('APPLE_TEAM_IDENTIFIER'),
+        'organization_name' => env('APPLE_WALLET_ORGANIZATION_NAME', env('APP_NAME')),
+        'description' => env('APPLE_WALLET_DESCRIPTION', 'Carte d’invitation'),
+        'logo_text' => env('APPLE_WALLET_LOGO_TEXT', env('APP_NAME')),
+        'foreground_color' => env('APPLE_WALLET_FOREGROUND_COLOR', 'rgb(255, 255, 255)'),
+        'background_color' => env('APPLE_WALLET_BACKGROUND_COLOR', 'rgb(201, 162, 39)'),
+        'label_color' => env('APPLE_WALLET_LABEL_COLOR', 'rgb(255, 255, 255)'),
+        'certificate_path' => env('APPLE_PASS_CERT_PATH'),
+        'key_path' => env('APPLE_PASS_KEY_PATH'),
+        'key_password' => env('APPLE_PASS_KEY_PASSWORD'),
+        'wwdr_path' => env('APPLE_WWDR_CERT_PATH'),
+        'asset_path' => env('APPLE_PASS_ASSET_PATH', 'resources/wallet/apple'),
+    ],
+
+    'google_wallet' => [
+        'issuer_id' => env('GOOGLE_WALLET_ISSUER_ID'),
+        'class_id' => env('GOOGLE_WALLET_CLASS_ID'),
+        'service_account_path' => env('GOOGLE_WALLET_SERVICE_ACCOUNT_PATH'),
+        'background_color' => env('GOOGLE_WALLET_BACKGROUND_COLOR', '#C9A227'),
+        'logo_url' => env('GOOGLE_WALLET_LOGO_URL'),
+        'watermark_url' => env('GOOGLE_WALLET_WATERMARK_URL'),
+    ],
+
 ];

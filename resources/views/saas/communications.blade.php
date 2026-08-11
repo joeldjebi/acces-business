@@ -26,6 +26,10 @@
 @endpush
 
 @section('content')
+@php
+    $reminderEnabled = old('enabled', ($reminderSettings['enabled'] ?? true)) ? true : false;
+    $reminderTime = old('time', $reminderSettings['time'] ?? '08:00');
+@endphp
 <div class="comm-page">
     <header class="comm-header">
         <div>
@@ -54,6 +58,32 @@
                 <div class="muted">{{ number_format($balance?->purchased ?? 0, 0, ',', ' ') }} acheté(s) · {{ number_format($balance?->used ?? 0, 0, ',', ' ') }} utilisé(s)</div>
             </article>
         @endforeach
+    </section>
+
+    <section class="panel mb-3">
+        <div class="d-flex flex-wrap justify-content-between gap-3 align-items-end">
+            <div>
+                <h2 class="h5 mb-1">Relances automatiques</h2>
+                <p class="muted mb-0">Planifiez l’heure quotidienne à laquelle vos invités en attente seront relancés.</p>
+            </div>
+            <form method="POST" action="{{ route('saas.communications.reminders.update') }}" class="row g-2 align-items-end">
+                @csrf
+                @method('PUT')
+                <div class="col-auto">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="reminder_enabled" name="enabled" value="1" {{ $reminderEnabled ? 'checked' : '' }}>
+                        <label class="form-check-label" for="reminder_enabled">Activer</label>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label" for="reminder_time">Heure</label>
+                    <input id="reminder_time" type="time" name="time" class="form-control" value="{{ $reminderTime }}" required>
+                </div>
+                <div class="col-auto d-grid">
+                    <button class="btn btn-dark" type="submit"><i class="bi bi-save me-2"></i>Enregistrer</button>
+                </div>
+            </form>
+        </div>
     </section>
 
     <div class="purchase-grid">
