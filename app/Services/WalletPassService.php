@@ -249,29 +249,54 @@ class WalletPassService
     private function signManifest(string $manifestPath, string $signaturePath): void
     {
         $config = config('services.apple_wallet');
-        $cert = 'file://' . base_path($config['certificate_path']);
-        $key = ['file://' . base_path($config['key_path']), $config['key_password'] ?: ''];
-        $wwdr = base_path($config['wwdr_path']);
-        $tempSignature = $signaturePath . '.pem';
-
-        $signed = openssl_pkcs7_sign(
+        $command = [
+            'openssl',
+            'smime',
+            '-binary',
+            '-sign',
+            '-certfile',
+            base_path($config['wwdr_path']),
+            '-signer',
+            base_path($config['certificate_path']),
+            '-inkey',
+            base_path($config['key_path']),
+            '-in',
             $manifestPath,
-            $tempSignature,
-            $cert,
-            $key,
-            [],
-            PKCS7_BINARY | PKCS7_DETACHED,
-            $wwdr
-        );
+            '-out',
+            $signaturePath,
+            '-outform',
+            'DER',
+        ];
 
-        if (!$signed) {
-            throw new \RuntimeException('Signature Apple Wallet impossible. Vérifiez les certificats et la clé privée.');
+        if (!empty($config['key_password'])) {
+            $command[] = '-passin';
+            $command[] = 'pass:' . $config['key_password'];
         }
 
-        $content = file_get_contents($tempSignature);
-        $parts = preg_split('/\R\R/', $content, 2);
-        file_put_contents($signaturePath, $parts[1] ?? $content);
-        unlink($tempSignature);
+        $process = proc_open($command, [
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ], $pipes);
+
+        if (!is_resource($process)) {
+            throw new \RuntimeException('OpenSSL est indisponible pour signer le pass Apple Wallet.');
+        }
+
+        $output = stream_get_contents($pipes[1]);
+        $error = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $exitCode = proc_close($process);
+
+        if ($exitCode !== 0 || !is_file($signaturePath) || filesize($signaturePath) === 0) {
+            Log::error('Signature Apple Wallet impossible.', [
+                'exit_code' => $exitCode,
+                'output' => trim($output),
+                'error' => trim($error),
+            ]);
+
+            throw new \RuntimeException('Signature Apple Wallet impossible. Vérifiez les certificats Apple, la clé privée et le mot de passe.');
+        }
     }
 
     private function jwt(array $claims, string $privateKey): string
