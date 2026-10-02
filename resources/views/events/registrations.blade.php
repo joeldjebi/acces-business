@@ -90,6 +90,32 @@
         border-radius: 12px;
         min-height: 40px;
     }
+
+    .communication-panel {
+        background: #fff;
+        border: 1px solid #e5ded2;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .communication-panel__head {
+        align-items: center;
+        background: #171713;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 22px;
+    }
+
+    .communication-panel__body { padding: 22px; }
+    .communication-panel .form-control,
+    .communication-panel .form-select { border-color: #ded6c8; min-height: 42px; }
+    .channel-choice { display: flex; gap: 8px; }
+    .channel-choice input { position: absolute; opacity: 0; pointer-events: none; }
+    .channel-choice label { border: 1px solid #cfc7ba; cursor: pointer; padding: 9px 14px; }
+    .channel-choice input:checked + label { background: #171713; border-color: #171713; color: #fff; }
 </style>
 @endpush
 
@@ -141,6 +167,87 @@
             <p class="text-muted">Représentés</p>
         </div>
     </div>
+
+    <section class="communication-panel">
+        <div class="communication-panel__head">
+            <div>
+                <h2 class="h5 mb-1">Envoyer une communication</h2>
+                <div class="small text-white-50">Email ou SMS ciblé selon la réponse des inscrits.</div>
+            </div>
+            <div class="text-end">
+                <div class="small text-white-50">Crédits SMS disponibles</div>
+                <strong>{{ number_format($smsBalance->remaining, 0, ',', ' ') }}</strong>
+            </div>
+        </div>
+        <div class="communication-panel__body">
+            <form method="POST" action="{{ route('events.registrations.communications.send', $event) }}" enctype="multipart/form-data" id="bulkCommunicationForm">
+                @csrf
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label d-block">Canal</label>
+                        <div class="channel-choice">
+                            <input type="radio" name="channel" id="channelEmail" value="email" @checked(old('channel', 'email') === 'email')>
+                            <label for="channelEmail"><i class="bi bi-envelope me-1"></i>Email</label>
+                            <input type="radio" name="channel" id="channelSms" value="sms" @checked(old('channel') === 'sms')>
+                            <label for="channelSms"><i class="bi bi-chat-dots me-1"></i>SMS</label>
+                        </div>
+                        @error('channel')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="communicationAudience" class="form-label">Destinataires</label>
+                        <select class="form-select" id="communicationAudience" name="audience" required>
+                            <option value="all" @selected(old('audience') === 'all')>Tout le monde</option>
+                            <option value="present" @selected(old('audience') === 'present')>Ceux qui ont accepté</option>
+                            <option value="absent" @selected(old('audience') === 'absent')>Ceux qui ont refusé</option>
+                            <option value="peut_etre" @selected(old('audience') === 'peut_etre')>Ceux qui ne savent pas encore</option>
+                            <option value="represente" @selected(old('audience') === 'represente')>Ceux qui se font représenter</option>
+                        </select>
+                        @error('audience')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-lg-4" id="communicationSubjectGroup">
+                        <label for="communicationSubject" class="form-label">Objet de l’email</label>
+                        <input type="text" class="form-control" id="communicationSubject" name="subject" value="{{ old('subject') }}" maxlength="255">
+                        @error('subject')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-12">
+                        <label for="communicationMessage" class="form-label">Message</label>
+                        <textarea class="form-control" id="communicationMessage" name="message" rows="4" maxlength="2000" required>{{ old('message') }}</textarea>
+                        @error('message')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-lg-8">
+                        <label for="communicationAttachment" class="form-label">Fichier facultatif</label>
+                        <input type="file" class="form-control" id="communicationAttachment" name="attachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                        <div class="form-text" id="attachmentHelp">Le fichier sera joint à l’email. Taille maximale : 10 Mo.</div>
+                        @error('attachment')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-lg-4 d-flex align-items-end justify-content-lg-end">
+                        <button type="submit" class="btn btn-dark" onclick="return confirm('Confirmer la création de cette campagne ?');">
+                            <i class="bi bi-send me-1"></i>Envoyer la campagne
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            @if($broadcasts->isNotEmpty())
+                <div class="table-responsive mt-4">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>Date</th><th>Canal</th><th>Cible</th><th>Résultat</th><th>Statut</th></tr></thead>
+                        <tbody>
+                        @foreach($broadcasts as $broadcast)
+                            <tr>
+                                <td>{{ $broadcast->created_at->format('d/m/Y H:i') }}</td>
+                                <td>{{ strtoupper($broadcast->channel) }}</td>
+                                <td>{{ ['all' => 'Tout le monde', 'present' => 'Accepté', 'absent' => 'Refusé', 'peut_etre' => 'Peut-être', 'represente' => 'Représenté'][$broadcast->audience] ?? $broadcast->audience }}</td>
+                                <td>{{ $broadcast->sent_count }} envoyé(s) · {{ $broadcast->failed_count }} échec(s) / {{ $broadcast->recipient_count }}</td>
+                                <td><span class="badge {{ $broadcast->status === 'completed' ? 'bg-success' : ($broadcast->status === 'failed' ? 'bg-danger' : 'bg-secondary') }}">{{ ['pending' => 'En attente', 'processing' => 'En cours', 'completed' => 'Terminé', 'failed' => 'Échec'][$broadcast->status] ?? $broadcast->status }}</span></td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </section>
 
     <form method="GET" class="filter-card">
         <div class="row g-3 align-items-end">
@@ -326,3 +433,28 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    (() => {
+        const email = document.getElementById('channelEmail');
+        const sms = document.getElementById('channelSms');
+        const subjectGroup = document.getElementById('communicationSubjectGroup');
+        const subject = document.getElementById('communicationSubject');
+        const attachmentHelp = document.getElementById('attachmentHelp');
+
+        function updateCommunicationChannel() {
+            const isEmail = email.checked;
+            subjectGroup.hidden = !isEmail;
+            subject.required = isEmail;
+            attachmentHelp.textContent = isEmail
+                ? 'Le fichier sera joint à l’email. Taille maximale : 10 Mo.'
+                : 'Un lien sécurisé vers le fichier sera ajouté automatiquement au SMS. Taille maximale : 10 Mo.';
+        }
+
+        email.addEventListener('change', updateCommunicationChannel);
+        sms.addEventListener('change', updateCommunicationChannel);
+        updateCommunicationChannel();
+    })();
+</script>
+@endpush

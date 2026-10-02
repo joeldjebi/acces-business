@@ -49,6 +49,11 @@
 
                             <p style="margin:22px 0 8px; color:#746f65; font-size:13px;">Si le bouton ne fonctionne pas, copiez ce lien :</p>
                             <p style="margin:0; color:#8a6128; font-size:13px; word-break:break-all;">{{ $accessLink->access_url }}</p>
+                            @if($event->date_limite_inscription)
+                                <p style="margin:16px 0 0; color:#746f65; font-size:13px;">
+                                    Ce lien est valable jusqu’au <strong>{{ $event->date_limite_inscription->format('d/m/Y') }}</strong> inclus.
+                                </p>
+                            @endif
                         </td>
                     </tr>
                     <tr>

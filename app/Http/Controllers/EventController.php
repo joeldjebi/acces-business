@@ -12,8 +12,11 @@ use App\Models\TypeTarification;
 use App\Models\User;
 use App\Models\Visibilite;
 use App\Support\SaasUsage;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -22,6 +25,56 @@ use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
 {
+    public function geocodeLocation(Request $request)
+    {
+        $validated = $request->validate([
+            'q' => ['required', 'string', 'min:3', 'max:255'],
+        ]);
+
+        $location = trim($validated['q']);
+        try {
+            $result = Cache::remember('event-geocode:v2:' . sha1(mb_strtolower($location)), now()->addDays(30), function () use ($location) {
+                $response = Http::acceptJson()
+                    ->withHeaders([
+                        'User-Agent' => config('app.name', 'Acces Business') . ' (' . config('app.url') . ')',
+                    ])
+                    ->timeout(8)
+                    ->get('https://nominatim.openstreetmap.org/search', [
+                        'q' => $location,
+                        'format' => 'jsonv2',
+                        'limit' => 5,
+                        'addressdetails' => 1,
+                    ]);
+
+                if (!$response->successful() || empty($response->json())) {
+                    return null;
+                }
+
+                return collect($response->json())
+                    ->map(fn ($place) => [
+                        'latitude' => (float) $place['lat'],
+                        'longitude' => (float) $place['lon'],
+                        'display_name' => $place['display_name'] ?? $location,
+                        'name' => $place['name'] ?? strtok($place['display_name'] ?? $location, ','),
+                    ])
+                    ->values()
+                    ->all();
+            });
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'message' => 'Le service de localisation est momentanément indisponible.',
+            ], 503);
+        }
+
+        if (empty($result)) {
+            return response()->json(['message' => 'Lieu introuvable. Précisez davantage le nom du lieu.'], 404);
+        }
+
+        return response()->json(['results' => $result]);
+    }
+
     /**
      * Affiche la liste des événements
      */
@@ -103,11 +156,17 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
+        $this->normalizeEventDateTimes($request);
+
         $validated = $request->validate([
             'draft_event_id' => ['nullable', Rule::exists('events', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
+            'programme_pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'social_links' => 'nullable|array',
+            'social_links.*.label' => 'nullable|required_with:social_links.*.url|string|max:100',
+            'social_links.*.url' => 'nullable|required_with:social_links.*.label|url|max:1000',
             'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'date_debut' => 'required|date',
             'heure_debut' => 'required',
@@ -126,19 +185,22 @@ class EventController extends Controller
             'email_contact' => 'nullable|email',
             'telephone' => 'nullable|string|max:20',
             'site_web' => 'nullable|url',
-            'statut' => ['required', Rule::in(['brouillon', 'publie', 'annule', 'termine', 'reporte'])],
+            'statut' => ['required', Rule::in(['brouillon', 'publie'])],
             'visibilite_id' => 'required|exists:visibilites,id',
             'date_publication' => 'nullable|date',
             'capacite_maximale' => 'nullable|integer|min:1',
             'inscription_requise' => 'boolean',
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'required|exists:type_de_tarifications,id',
-            'prix' => 'nullable|numeric|min:0',
-            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
+            'prix' => ['nullable', 'numeric', 'min:0', Rule::requiredIf(fn () => $this->isPaidTarification($request->input('type_tarification_id')))],
+            'devise_id' => ['nullable', Rule::requiredIf(fn () => $this->isPaidTarification($request->input('type_tarification_id'))), Rule::exists('devises', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        $this->validateEventChronology($validated);
+        $validated = $this->normalizeEventLinks($this->normalizePricing($validated));
 
         $draft = null;
         if ($request->filled('draft_event_id')) {
@@ -169,6 +231,14 @@ class EventController extends Controller
             $validated['image'] = $this->storeEventImage($request->file('image'));
         }
 
+        if ($request->hasFile('programme_pdf')) {
+            if ($draft && $draft->programme_pdf) {
+                $this->deleteEventProgramme($draft->programme_pdf);
+            }
+
+            $validated['programme_pdf'] = $this->storeEventProgramme($request->file('programme_pdf'));
+        }
+
         // Ajout de l'utilisateur créateur
         $validated['organization_id'] = auth()->user()->organization_id;
         $validated['user_id'] = auth()->id();
@@ -185,11 +255,17 @@ class EventController extends Controller
 
     public function saveDraft(Request $request)
     {
+        $this->normalizeEventDateTimes($request);
+
         $validated = $request->validate([
             'draft_event_id' => ['nullable', Rule::exists('events', 'id')->where(fn ($query) => $query->where('organization_id', auth()->user()->organization_id))],
             'titre' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
+            'programme_pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'social_links' => 'nullable|array',
+            'social_links.*.label' => 'nullable|required_with:social_links.*.url|string|max:100',
+            'social_links.*.url' => 'nullable|required_with:social_links.*.label|url|max:1000',
             'category_id' => ['nullable', Rule::exists('categories', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'date_debut' => 'nullable|date',
             'heure_debut' => 'nullable',
@@ -222,6 +298,8 @@ class EventController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        $validated = $this->normalizeEventLinks($this->normalizePricing($validated));
+
         $draft = null;
         if ($request->filled('draft_event_id')) {
             $draft = Event::where('id', $request->draft_event_id)
@@ -245,6 +323,14 @@ class EventController extends Controller
             }
 
             $data['image'] = $this->storeEventImage($request->file('image'));
+        }
+
+        if ($request->hasFile('programme_pdf')) {
+            if ($draft && $draft->programme_pdf) {
+                $this->deleteEventProgramme($draft->programme_pdf);
+            }
+
+            $data['programme_pdf'] = $this->storeEventProgramme($request->file('programme_pdf'));
         }
 
         if ($draft) {
@@ -313,9 +399,45 @@ class EventController extends Controller
         Storage::disk('public')->delete($path);
     }
 
+    private function storeEventProgramme(UploadedFile $file): string
+    {
+        $directory = public_path('uploads/events/programmes');
+
+        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+            throw ValidationException::withMessages([
+                'programme_pdf' => 'Le dossier des programmes d’événement n’a pas pu être créé.',
+            ]);
+        }
+
+        $filename = Str::random(40) . '.pdf';
+        $path = 'uploads/events/programmes/' . $filename;
+        $file->move($directory, $filename);
+        @chmod(public_path($path), 0664);
+
+        if (!is_file(public_path($path))) {
+            throw ValidationException::withMessages([
+                'programme_pdf' => 'Le déroulé de l’événement n’a pas pu être enregistré.',
+            ]);
+        }
+
+        return $path;
+    }
+
+    private function deleteEventProgramme(?string $path): void
+    {
+        if (!$path || !str_starts_with(ltrim($path, '/'), 'uploads/events/programmes/')) {
+            return;
+        }
+
+        $fullPath = public_path(ltrim($path, '/'));
+        if (is_file($fullPath)) {
+            @unlink($fullPath);
+        }
+    }
+
     private function draftPayload(array $validated, ?Event $draft = null): array
     {
-        unset($validated['draft_event_id'], $validated['image']);
+        unset($validated['draft_event_id'], $validated['image'], $validated['programme_pdf']);
 
         $value = fn (string $key, mixed $fallback = null) => array_key_exists($key, $validated)
             ? $validated[$key]
@@ -340,6 +462,7 @@ class EventController extends Controller
             'titre' => $title,
             'description' => $value('description', $draft?->description),
             'video_url' => $value('video_url', $draft?->video_url),
+            'social_links' => $value('social_links', $draft?->social_links),
             'category_id' => $categoryId,
             'date_debut' => $dateDebut,
             'heure_debut' => $value('heure_debut', $draft?->heure_debut) ?? '00:00',
@@ -453,10 +576,16 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
+        $this->normalizeEventDateTimes($request);
+
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
+            'programme_pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'social_links' => 'nullable|array',
+            'social_links.*.label' => 'nullable|required_with:social_links.*.url|string|max:100',
+            'social_links.*.url' => 'nullable|required_with:social_links.*.label|url|max:1000',
             'category_id' => ['required', Rule::exists('categories', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'date_debut' => 'required|date',
             'heure_debut' => 'required',
@@ -475,19 +604,22 @@ class EventController extends Controller
             'email_contact' => 'nullable|email',
             'telephone' => 'nullable|string|max:20',
             'site_web' => 'nullable|url',
-            'statut' => ['required', Rule::in(['brouillon', 'publie', 'annule', 'termine', 'reporte'])],
+            'statut' => ['required', Rule::in(['brouillon', 'publie'])],
             'visibilite_id' => 'required|exists:visibilites,id',
             'date_publication' => 'nullable|date',
             'capacite_maximale' => 'nullable|integer|min:1',
             'inscription_requise' => 'boolean',
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'required|exists:type_de_tarifications,id',
-            'prix' => 'nullable|numeric|min:0',
-            'devise_id' => ['nullable', Rule::exists('devises', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
+            'prix' => ['nullable', 'numeric', 'min:0', Rule::requiredIf(fn () => $this->isPaidTarification($request->input('type_tarification_id')))],
+            'devise_id' => ['nullable', Rule::requiredIf(fn () => $this->isPaidTarification($request->input('type_tarification_id'))), Rule::exists('devises', 'id')->where(fn ($query) => $query->whereNull('organization_id'))],
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        $this->validateEventChronology($validated);
+        $validated = $this->normalizeEventLinks($this->normalizePricing($validated));
 
         // Génération du slug si le titre a changé
         if ($event->titre !== $validated['titre']) {
@@ -503,10 +635,89 @@ class EventController extends Controller
             $validated['image'] = $this->storeEventImage($request->file('image'));
         }
 
+        if ($request->hasFile('programme_pdf')) {
+            if ($event->programme_pdf) {
+                $this->deleteEventProgramme($event->programme_pdf);
+            }
+
+            $validated['programme_pdf'] = $this->storeEventProgramme($request->file('programme_pdf'));
+        }
+
         $event->update($validated);
 
         return redirect()->route('events.index')
             ->with('success', 'Événement mis à jour avec succès.');
+    }
+
+    private function normalizeEventDateTimes(Request $request): void
+    {
+        $normalized = [];
+
+        foreach (['debut', 'fin'] as $suffix) {
+            $value = $request->input('date_' . $suffix . '_at');
+            if (!$value) {
+                continue;
+            }
+
+            try {
+                $dateTime = Carbon::createFromFormat('Y-m-d\\TH:i', $value);
+                $normalized['date_' . $suffix] = $dateTime->toDateString();
+                $normalized['heure_' . $suffix] = $dateTime->format('H:i');
+            } catch (\Throwable) {
+                // La validation Laravel retournera un message sur la date invalide.
+            }
+        }
+
+        if ($normalized) {
+            $request->merge($normalized);
+        }
+    }
+
+    private function isPaidTarification(mixed $typeTarificationId): bool
+    {
+        return TypeTarification::whereKey($typeTarificationId)
+            ->whereRaw('LOWER(libelle) = ?', ['payant'])
+            ->exists();
+    }
+
+    private function normalizePricing(array $validated): array
+    {
+        if (!$this->isPaidTarification($validated['type_tarification_id'] ?? null)) {
+            $validated['prix'] = null;
+            $validated['devise_id'] = null;
+        }
+
+        return $validated;
+    }
+
+    private function normalizeEventLinks(array $validated): array
+    {
+        if (!array_key_exists('social_links', $validated)) {
+            return $validated;
+        }
+
+        $validated['social_links'] = collect($validated['social_links'] ?? [])
+            ->filter(fn ($link) => filled($link['label'] ?? null) && filled($link['url'] ?? null))
+            ->map(fn ($link) => [
+                'label' => trim($link['label']),
+                'url' => trim($link['url']),
+            ])
+            ->values()
+            ->all();
+
+        return $validated;
+    }
+
+    private function validateEventChronology(array $validated): void
+    {
+        $start = Carbon::parse($validated['date_debut'] . ' ' . $validated['heure_debut']);
+        $end = Carbon::parse($validated['date_fin'] . ' ' . $validated['heure_fin']);
+
+        if ($end->lessThan($start)) {
+            throw ValidationException::withMessages([
+                'date_fin' => 'La date et l’heure de fin doivent être postérieures à la date et l’heure de début.',
+            ]);
+        }
     }
 
     /**
@@ -517,6 +728,10 @@ class EventController extends Controller
         // Supprimer l'image si elle existe
         if ($event->image) {
             $this->deleteEventImage($event->image);
+        }
+
+        if ($event->programme_pdf) {
+            $this->deleteEventProgramme($event->programme_pdf);
         }
 
         $event->delete();
@@ -543,6 +758,13 @@ class EventController extends Controller
             ->filter()
             ->values();
 
+        $programmePaths = Event::withTrashed()
+            ->forOrganization()
+            ->whereNotNull('programme_pdf')
+            ->pluck('programme_pdf')
+            ->filter()
+            ->values();
+
         $qrCodePaths = EventRegistration::whereIn('event_id', $eventIds)
             ->whereNotNull('qr_code_path')
             ->pluck('qr_code_path')
@@ -557,6 +779,7 @@ class EventController extends Controller
         });
 
         $imagePaths->unique()->each(fn ($path) => $this->deleteEventImage($path));
+        $programmePaths->unique()->each(fn ($path) => $this->deleteEventProgramme($path));
 
         if ($qrCodePaths->isNotEmpty()) {
             Storage::disk('public')->delete($qrCodePaths->unique()->values()->all());

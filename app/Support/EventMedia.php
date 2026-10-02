@@ -24,6 +24,10 @@ class EventMedia
             return route('media.organizations.logo', basename($path));
         }
 
+        if (str_starts_with($path, 'uploads/events/programmes/')) {
+            return route('media.events.programme', basename($path));
+        }
+
         if (str_starts_with($path, 'organization-logos/')) {
             return route('media.organizations.logo', basename($path));
         }

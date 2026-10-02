@@ -414,7 +414,7 @@
 
                 <div class="step-item" data-step="4">
                     <div class="step-circle">4</div>
-                    <div class="step-label">Organisation</div>
+                    <div class="step-label">Contacts événement</div>
                 </div>
 
                 <div class="step-item" data-step="5">
@@ -536,6 +536,24 @@
                         <small class="form-text text-muted">YouTube, Vimeo ou lien vidéo externe.</small>
                     </div>
 
+                    <div class="form-group">
+                        <label for="programme_pdf" class="form-label">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            Déroulé de l’événement <span class="text-muted">(facultatif)</span>
+                        </label>
+                        <input type="file"
+                               class="form-control @error('programme_pdf') is-invalid @enderror"
+                               id="programme_pdf"
+                               name="programme_pdf"
+                               accept="application/pdf,.pdf">
+                        @error('programme_pdf')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <small class="form-text text-muted">Fichier PDF, 10 Mo maximum.</small>
+                    </div>
+
+                    @include('events.partials.social-links-fields')
+
                     <div class="step-actions">
                         <a href="{{ route('events.index') }}" class="btn btn-nav-secondary">
                             <i class="bi bi-x-circle me-1"></i>Annuler
@@ -555,11 +573,11 @@
                                     <i class="bi bi-calendar3"></i>
                                     Date de début <span class="text-danger">*</span>
                                 </label>
-                                <input type="date"
+                                <input type="datetime-local"
                                        class="form-control @error('date_debut') is-invalid @enderror"
                                        id="date_debut"
-                                       name="date_debut"
-                                       value="{{ old('date_debut') }}"
+                                       name="date_debut_at"
+                                       value="{{ old('date_debut_at') }}"
                                        required>
                                 @error('date_debut')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -569,55 +587,17 @@
 
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="heure_debut" class="form-label">
-                                    <i class="bi bi-clock"></i>
-                                    Heure de début <span class="text-danger">*</span>
-                                </label>
-                                <input type="time"
-                                       class="form-control @error('heure_debut') is-invalid @enderror"
-                                       id="heure_debut"
-                                       name="heure_debut"
-                                       value="{{ old('heure_debut') }}"
-                                       required>
-                                @error('heure_debut')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label for="date_fin" class="form-label">
                                     <i class="bi bi-calendar-check"></i>
                                     Date de fin <span class="text-danger">*</span>
                                 </label>
-                                <input type="date"
+                                <input type="datetime-local"
                                        class="form-control @error('date_fin') is-invalid @enderror"
                                        id="date_fin"
-                                       name="date_fin"
-                                       value="{{ old('date_fin') }}"
+                                       name="date_fin_at"
+                                       value="{{ old('date_fin_at') }}"
                                        required>
                                 @error('date_fin')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="heure_fin" class="form-label">
-                                    <i class="bi bi-clock-history"></i>
-                                    Heure de fin <span class="text-danger">*</span>
-                                </label>
-                                <input type="time"
-                                       class="form-control @error('heure_fin') is-invalid @enderror"
-                                       id="heure_fin"
-                                       name="heure_fin"
-                                       value="{{ old('heure_fin') }}"
-                                       required>
-                                @error('heure_fin')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -639,23 +619,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="lieu" class="form-label">
-                                    <i class="bi bi-geo-alt"></i>
-                                    Lieu
-                                </label>
-                                <input type="text"
-                                       class="form-control @error('lieu') is-invalid @enderror"
-                                       id="lieu"
-                                       name="lieu"
-                                       value="{{ old('lieu') }}">
-                                @error('lieu')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label for="ville" class="form-label">
                                     <i class="bi bi-building"></i>
                                     Ville
@@ -674,25 +637,6 @@
                                     @endif
                                 </select>
                                 @error('ville')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="code_postal" class="form-label">
-                                    <i class="bi bi-mailbox"></i>
-                                    Code postal
-                                </label>
-                                <input type="text"
-                                       class="form-control @error('code_postal') is-invalid @enderror"
-                                       id="code_postal"
-                                       name="code_postal"
-                                       value="{{ old('code_postal') }}">
-                                @error('code_postal')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -727,18 +671,30 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="adresse_complete" class="form-label">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            Adresse complète
-                        </label>
-                        <textarea class="form-control @error('adresse_complete') is-invalid @enderror"
-                                  id="adresse_complete"
-                                  name="adresse_complete"
-                                  rows="2">{{ old('adresse_complete') }}</textarea>
-                        @error('adresse_complete')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group position-relative">
+                                <label for="lieu" class="form-label">
+                                    <i class="bi bi-geo-alt"></i>
+                                    Lieu
+                                </label>
+                                <input type="text"
+                                       class="form-control @error('lieu') is-invalid @enderror"
+                                       id="lieu"
+                                       name="lieu"
+                                       value="{{ old('lieu') }}"
+                                       autocomplete="off"
+                                       aria-autocomplete="list"
+                                       aria-controls="venueSuggestions">
+                                <div id="venueSuggestions"
+                                     class="list-group position-absolute start-0 end-0 shadow-sm d-none"
+                                     style="z-index: 1050; max-height: 280px; overflow-y: auto;"
+                                     role="listbox"></div>
+                                @error('lieu')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -751,11 +707,14 @@
                                id="lien_google_map"
                                name="lien_google_map"
                                value="{{ old('lien_google_map') }}"
-                               placeholder="https://maps.google.com/...">
+                               placeholder="Généré automatiquement à partir du lieu"
+                               readonly>
+                        <input type="hidden" id="latitude" name="latitude" value="{{ old('latitude') }}">
+                        <input type="hidden" id="longitude" name="longitude" value="{{ old('longitude') }}">
                         @error('lien_google_map')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
-                        <small class="form-text text-muted">Collez ici le lien de partage Google Maps de l'adresse de l'événement</small>
+                        <small class="form-text text-muted" id="mapHelp">Sélectionnez la ville et le pays, puis saisissez un lieu précis.</small>
                     </div>
 
                     <div class="step-actions">
@@ -768,7 +727,7 @@
                     </div>
                 </div>
 
-                <!-- Étape 4: Organisation -->
+                <!-- Étape 4: Contacts événement -->
                 <div class="form-step" data-step="4">
                     <div class="row">
                         <div class="col-md-6">
@@ -781,7 +740,7 @@
                                        class="form-control @error('organisateur') is-invalid @enderror"
                                        id="organisateur"
                                        name="organisateur"
-                                       value="{{ old('organisateur') }}">
+                                       value="{{ old('organisateur', auth()->user()->organization?->name) }}">
                                 @error('organisateur')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
@@ -856,7 +815,7 @@
                 <!-- Étape 5: Tarification -->
                 <div class="form-step" data-step="5">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-12">
                             <div class="form-group">
                                 <label for="type_tarification_id" class="form-label">
                                     <i class="bi bi-currency-exchange"></i>
@@ -879,7 +838,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6 paid-field">
                             <div class="form-group">
                                 <label for="prix" class="form-label">
                                     <i class="bi bi-cash-coin"></i>
@@ -898,7 +857,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6 paid-field">
                             <div class="form-group">
                                 <label for="devise_id" class="form-label">
                                     <i class="bi bi-currency-dollar"></i>
@@ -946,9 +905,6 @@
                                         required>
                                     <option value="brouillon" {{ old('statut', 'brouillon') == 'brouillon' ? 'selected' : '' }}>Brouillon</option>
                                     <option value="publie" {{ old('statut') == 'publie' ? 'selected' : '' }}>Publié</option>
-                                    <option value="annule" {{ old('statut') == 'annule' ? 'selected' : '' }}>Annulé</option>
-                                    <option value="termine" {{ old('statut') == 'termine' ? 'selected' : '' }}>Terminé</option>
-                                    <option value="reporte" {{ old('statut') == 'reporte' ? 'selected' : '' }}>Reporté</option>
                                 </select>
                                 @error('statut')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -1106,7 +1062,7 @@
         1: 'Informations de Base',
         2: 'Dates et Horaires',
         3: 'Localisation',
-        4: 'Organisation',
+        4: 'Contacts Événement',
         5: 'Tarification',
         6: 'Statut et Visibilité',
         7: 'Métadonnées'
@@ -1272,6 +1228,115 @@
 
     const citySelect = document.getElementById('ville');
     const countrySelect = document.getElementById('pays');
+    const venueInput = document.getElementById('lieu');
+    const mapLinkInput = document.getElementById('lien_google_map');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const mapHelp = document.getElementById('mapHelp');
+    const venueSuggestions = document.getElementById('venueSuggestions');
+    const geocodeUrl = @json(route('events.geocode'));
+    const pricingTypeSelect = document.getElementById('type_tarification_id');
+    const paidFields = document.querySelectorAll('.paid-field');
+    let geocodeTimer;
+    let geocodeController;
+
+    function hideVenueSuggestions() {
+        venueSuggestions.classList.add('d-none');
+        venueSuggestions.replaceChildren();
+    }
+
+    function selectVenue(place) {
+        venueInput.value = place.name;
+        latitudeInput.value = place.latitude;
+        longitudeInput.value = place.longitude;
+        mapLinkInput.value = `https://www.google.com/maps?q=${place.latitude},${place.longitude}`;
+        mapHelp.textContent = `Lieu sélectionné : ${place.display_name}`;
+        hideVenueSuggestions();
+    }
+
+    function renderVenueSuggestions(results) {
+        venueSuggestions.replaceChildren();
+
+        results.forEach(place => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'list-group-item list-group-item-action text-start';
+            button.setAttribute('role', 'option');
+
+            const title = document.createElement('strong');
+            title.className = 'd-block';
+            title.textContent = place.name;
+
+            const address = document.createElement('small');
+            address.className = 'text-muted';
+            address.textContent = place.display_name;
+
+            button.append(title, address);
+            button.addEventListener('click', () => selectVenue(place));
+            venueSuggestions.appendChild(button);
+        });
+
+        venueSuggestions.classList.toggle('d-none', results.length === 0);
+    }
+
+    async function searchVenues() {
+        const location = venueInput?.value.trim();
+        if (!location || location.length < 3) {
+            mapLinkInput.value = '';
+            latitudeInput.value = '';
+            longitudeInput.value = '';
+            hideVenueSuggestions();
+            mapHelp.textContent = 'Sélectionnez la ville et le pays, puis saisissez un lieu précis.';
+            return;
+        }
+
+        geocodeController?.abort();
+        geocodeController = new AbortController();
+        mapHelp.textContent = 'Recherche des coordonnées avec OpenStreetMap...';
+        const query = [location, citySelect?.value, countrySelect?.value]
+            .filter(Boolean)
+            .join(', ');
+
+        try {
+            const response = await fetch(`${geocodeUrl}?q=${encodeURIComponent(query)}`, {
+                headers: { 'Accept': 'application/json' },
+                signal: geocodeController.signal,
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Lieu introuvable.');
+
+            renderVenueSuggestions(data.results || []);
+            mapHelp.textContent = 'Sélectionnez le lieu correspondant dans la liste.';
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            mapLinkInput.value = '';
+            latitudeInput.value = '';
+            longitudeInput.value = '';
+            hideVenueSuggestions();
+            mapHelp.textContent = error.message;
+        }
+    }
+
+    function scheduleVenueGeocoding() {
+        clearTimeout(geocodeTimer);
+        mapLinkInput.value = '';
+        latitudeInput.value = '';
+        longitudeInput.value = '';
+        geocodeTimer = setTimeout(searchVenues, 500);
+    }
+
+    function updatePricingFields() {
+        const selectedLabel = pricingTypeSelect?.selectedOptions[0]?.textContent.trim().toLowerCase();
+        const isPaid = selectedLabel === 'payant';
+
+        paidFields.forEach(field => {
+            field.hidden = !isPaid;
+            field.querySelectorAll('input, select').forEach(input => {
+                input.disabled = !isPaid;
+                input.required = isPaid;
+            });
+        });
+    }
 
     citySelect?.addEventListener('change', function() {
         const selectedCountry = this.selectedOptions[0]?.dataset.country;
@@ -1279,8 +1344,23 @@
         if (selectedCountry && countrySelect && !countrySelect.value) {
             countrySelect.value = selectedCountry;
         }
+
+        if (venueInput.value.trim()) scheduleVenueGeocoding();
     });
 
+    countrySelect?.addEventListener('change', () => {
+        if (venueInput.value.trim()) scheduleVenueGeocoding();
+    });
+
+    venueInput?.addEventListener('input', scheduleVenueGeocoding);
+    document.addEventListener('click', event => {
+        if (!venueInput.contains(event.target) && !venueSuggestions.contains(event.target)) {
+            hideVenueSuggestions();
+        }
+    });
+    pricingTypeSelect?.addEventListener('change', updatePricingFields);
+
+    updatePricingFields();
     updateProgress();
     window.addEventListener('resize', updateProgress);
 

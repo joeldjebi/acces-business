@@ -20,6 +20,8 @@ class Event extends Model
         'slug',
         'image',
         'video_url',
+        'programme_pdf',
+        'social_links',
         'category_id',
         'user_id',
         'date_debut',
@@ -64,6 +66,7 @@ class Event extends Model
         'longitude' => 'decimal:8',
         'capacite_maximale' => 'integer',
         'vues' => 'integer',
+        'social_links' => 'array',
     ];
 
     /**
@@ -164,6 +167,12 @@ class Event extends Model
     public function isPublished(): bool
     {
         return $this->statut === 'publie';
+    }
+
+    public function registrationDeadlineHasPassed(): bool
+    {
+        return $this->date_limite_inscription
+            && now()->greaterThan($this->date_limite_inscription->copy()->endOfDay());
     }
 
     /**

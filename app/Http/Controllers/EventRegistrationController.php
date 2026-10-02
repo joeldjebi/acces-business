@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\EventAccessLink;
+use App\Models\CommunicationCreditBalance;
+use App\Models\EventBroadcast;
 use App\Models\EventRegistration;
+use App\Jobs\SendEventBroadcast;
 use App\Services\EventCommunicationService;
 use App\Services\EventRegistrationActivityLogger;
 use App\Services\InvitationCardService;
 use App\Services\MailjetService;
 use App\Services\WalletPassService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EventRegistrationController extends Controller
 {
@@ -113,6 +119,10 @@ class EventRegistrationController extends Controller
      */
     public function showResponseForm(Request $request, Event $event)
     {
+        if ($event->registrationDeadlineHasPassed()) {
+            return response()->view('events.invitation-expired', compact('event'), 410);
+        }
+
         // Charger la relation visibilite si elle n'est pas déjà chargée
         $event->load('visibilite');
 
@@ -158,6 +168,10 @@ class EventRegistrationController extends Controller
      */
     public function submitResponse(Request $request, Event $event)
     {
+        if ($event->registrationDeadlineHasPassed()) {
+            return response()->view('events.invitation-expired', compact('event'), 410);
+        }
+
         $validated = $request->validate([
             'reponse' => 'required|in:present,peut_etre,absent,represente',
             'nom' => 'required|string|max:255',
@@ -508,7 +522,116 @@ class EventRegistrationController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('events.registrations', compact('event', 'registrations', 'stats'));
+        $smsBalance = CommunicationCreditBalance::firstOrCreate(
+            ['organization_id' => $event->organization_id, 'channel' => 'sms'],
+            ['purchased' => 0, 'used' => 0]
+        );
+        $broadcasts = EventBroadcast::where('event_id', $event->id)
+            ->forOrganization($event->organization_id)
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('events.registrations', compact('event', 'registrations', 'stats', 'smsBalance', 'broadcasts'));
+    }
+
+    public function sendBulkCommunication(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'channel' => ['required', Rule::in(['email', 'sms'])],
+            'audience' => ['required', Rule::in(['all', 'present', 'absent', 'peut_etre', 'represente'])],
+            'subject' => ['nullable', 'required_if:channel,email', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:2000'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:10240'],
+        ]);
+
+        $query = EventRegistration::where('event_id', $event->id)
+            ->forOrganization($event->organization_id);
+
+        if ($validated['audience'] !== 'all') {
+            $query->where('statut_reponse', $validated['audience']);
+        }
+
+        $query->whereNotNull($validated['channel'] === 'email' ? 'email' : 'telephone')
+            ->where($validated['channel'] === 'email' ? 'email' : 'telephone', '!=', '');
+        $recipientIds = $query->pluck('id')->all();
+
+        if (!$recipientIds) {
+            return back()->withInput()->with('error', 'Aucun destinataire ne possède les coordonnées nécessaires pour cet envoi.');
+        }
+
+        $attachmentPath = null;
+        $attachmentName = null;
+        $attachmentMime = null;
+        $attachmentToken = null;
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $attachmentName = $file->getClientOriginalName();
+            $attachmentMime = $file->getMimeType() ?: 'application/octet-stream';
+            $attachmentToken = Str::random(48);
+            $attachmentPath = $file->storeAs(
+                'event-communications',
+                $attachmentToken . '.' . strtolower($file->getClientOriginalExtension()),
+                'local'
+            );
+        }
+
+        try {
+            $broadcast = DB::transaction(function () use ($event, $validated, $recipientIds, $attachmentPath, $attachmentName, $attachmentMime, $attachmentToken) {
+                if ($validated['channel'] === 'sms') {
+                    $balance = CommunicationCreditBalance::where('organization_id', $event->organization_id)
+                        ->where('channel', 'sms')
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$balance || $balance->remaining < count($recipientIds)) {
+                        throw new \RuntimeException('Crédits SMS insuffisants pour les ' . count($recipientIds) . ' destinataires sélectionnés.');
+                    }
+
+                    $balance->increment('used', count($recipientIds));
+                }
+
+                return EventBroadcast::create([
+                    'organization_id' => $event->organization_id,
+                    'event_id' => $event->id,
+                    'user_id' => auth()->id(),
+                    'channel' => $validated['channel'],
+                    'audience' => $validated['audience'],
+                    'subject' => $validated['subject'] ?? null,
+                    'message' => $validated['message'],
+                    'attachment_path' => $attachmentPath,
+                    'attachment_name' => $attachmentName,
+                    'attachment_mime' => $attachmentMime,
+                    'attachment_token' => $attachmentToken,
+                    'recipient_ids' => $recipientIds,
+                    'recipient_count' => count($recipientIds),
+                    'status' => 'pending',
+                ]);
+            });
+        } catch (\RuntimeException $exception) {
+            if ($attachmentPath) {
+                Storage::disk('local')->delete($attachmentPath);
+            }
+
+            return back()->withInput()->with('error', $exception->getMessage());
+        }
+
+        SendEventBroadcast::dispatch($broadcast->id);
+
+        return back()->with('success', 'Campagne créée pour ' . count($recipientIds) . ' destinataire(s). L’envoi est traité en arrière-plan.');
+    }
+
+    public function downloadCommunicationAttachment(string $token)
+    {
+        $broadcast = EventBroadcast::where('attachment_token', $token)->firstOrFail();
+        abort_unless($broadcast->attachment_path && Storage::disk('local')->exists($broadcast->attachment_path), 404);
+
+        return Storage::disk('local')->download(
+            $broadcast->attachment_path,
+            $broadcast->attachment_name ?: basename($broadcast->attachment_path),
+            ['Content-Type' => $broadcast->attachment_mime ?: 'application/octet-stream']
+        );
     }
 
     /**

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 // Routes publiques
 Route::get('/media/events/{filename}', [MediaController::class, 'eventImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.events.image');
+Route::get('/media/event-programmes/{filename}', [MediaController::class, 'eventProgramme'])->where('filename', '[A-Za-z0-9._-]+\.pdf')->name('media.events.programme');
 Route::get('/media/organizations/{filename}', [MediaController::class, 'organizationLogo'])->where('filename', '[A-Za-z0-9._-]+')->name('media.organizations.logo');
 Route::get('/media/landing/{filename}', [MediaController::class, 'landingImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.landing.image');
 
@@ -112,6 +113,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     });
 
     // Gestion des événements (tous les utilisateurs authentifiés)
+    Route::get('/events/geocode-location', [EventController::class, 'geocodeLocation'])
+        ->middleware('throttle:30,1')
+        ->name('events.geocode');
     Route::post('/events/draft', [EventController::class, 'saveDraft'])->name('events.draft');
     Route::delete('/events/destroy-all', [EventController::class, 'destroyAll'])->name('events.destroy-all');
     Route::resource('events', EventController::class);
@@ -125,6 +129,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::post('/events/{event}/send-link', [EventAccessController::class, 'sendLink'])->name('events.send-link.store');
         Route::delete('/events/{event}/send-link/{accessLink}', [EventAccessController::class, 'destroyLink'])->name('events.send-link.destroy');
         Route::get('/events/{event}/registrations', [EventRegistrationController::class, 'index'])->name('events.registrations');
+        Route::post('/events/{event}/registrations/communications', [EventRegistrationController::class, 'sendBulkCommunication'])->name('events.registrations.communications.send');
         Route::get('/events/{event}/registrations/{registration}/detail', [EventRegistrationController::class, 'registrationDetail'])->name('events.registrations.show');
         Route::get('/events/{event}/confirmed-attendees', [EventRegistrationController::class, 'confirmedAttendees'])->name('events.confirmed-attendees');
         Route::get('/events/{event}/confirmed-attendees/{registration}', [EventRegistrationController::class, 'confirmedAttendeeDetail'])->name('events.confirmed-attendees.show');
@@ -153,6 +158,7 @@ Route::post('/representations/{token}/confirm', [EventRegistrationController::cl
 
 // Route publique pour télécharger la carte d'invitation PDF (sécurisée par token unique)
 Route::get('/invitation/download/{token}', [EventRegistrationController::class, 'downloadInvitationCard'])->name('invitation.download');
+Route::get('/event-communications/files/{token}', [EventRegistrationController::class, 'downloadCommunicationAttachment'])->name('event-communications.attachment');
 Route::get('/wallet/apple/{token}.pkpass', [EventRegistrationController::class, 'downloadAppleWalletPass'])->name('wallet.apple');
 
 // Route pour vérifier le QR code (publique)

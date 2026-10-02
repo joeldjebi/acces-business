@@ -73,6 +73,10 @@ class EventAccessController extends Controller
      */
     public function sendLink(Request $request, Event $event)
     {
+        if ($event->registrationDeadlineHasPassed()) {
+            return redirect()->back()->with('error', 'La date limite d’inscription est dépassée. Aucun nouveau lien ne peut être envoyé.');
+        }
+
         $validated = $request->validate([
             'email' => 'nullable|required_without:csv_file|email|max:255',
             'nom' => 'nullable|string|max:255',
@@ -113,6 +117,26 @@ class EventAccessController extends Controller
 
         if ($contacts->isEmpty()) {
             return redirect()->back()->with('error', 'Aucun email valide fourni.');
+        }
+
+        if ($event->capacite_maximale) {
+            $alreadyInvited = EventAccessLink::forOrganization($event->organization_id)
+                ->where('event_id', $event->id)
+                ->pluck('email_destinataire')
+                ->map(fn ($email) => strtolower($email))
+                ->unique();
+
+            $newInvitationCount = $contacts
+                ->reject(fn ($contact) => $alreadyInvited->contains(strtolower($contact['email'])))
+                ->count();
+            $remainingCapacity = max(0, $event->capacite_maximale - $alreadyInvited->count());
+
+            if ($newInvitationCount > $remainingCapacity) {
+                return redirect()->back()->with(
+                    'error',
+                    "Capacité maximale atteinte : il reste {$remainingCapacity} place(s), mais l’envoi contient {$newInvitationCount} nouvelle(s) invitation(s)."
+                );
+            }
         }
 
         if (!SaasUsage::canAdd($event->organization, 'invitations', $contacts->count())) {
@@ -158,6 +182,9 @@ class EventAccessController extends Controller
                 $text .= "Vous êtes invité(e) à participer à l'événement \"" . $event->titre . "\".\n\n";
                 $text .= "Cliquez sur le lien ci-dessous pour accéder à l'événement :\n";
                 $text .= $accessLink->access_url . "\n\n";
+                if ($event->date_limite_inscription) {
+                    $text .= 'Ce lien est valable jusqu’au ' . $event->date_limite_inscription->format('d/m/Y') . " inclus.\n\n";
+                }
                 if ($validated['message']) {
                     $text .= $validated['message'] . "\n\n";
                 }
@@ -218,14 +245,21 @@ class EventAccessController extends Controller
                 ->with('error', 'Lien d\'accès invalide.');
         }
 
+        if ($event->registrationDeadlineHasPassed()) {
+            return response()->view('events.invitation-expired', compact('event'), 410);
+        }
+
         // Marquer le lien comme utilisé
         if (!$accessLink->est_utilise) {
             $accessLink->markAsUsed();
         }
 
-        $event->load(['visibilite']);
+        session([
+            'otp_verified_' . $event->id => true,
+            'otp_email_' . $event->id => $accessLink->email_destinataire,
+        ]);
 
-        return view('events.verify-access', compact('event', 'accessLink'));
+        return redirect()->route('events.respond', $event);
     }
 
     /**

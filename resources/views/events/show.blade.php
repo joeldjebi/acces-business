@@ -590,8 +590,35 @@
                     <div class="description-text">
                         {!! nl2br(e($event->description ?: 'Aucune description renseignée.')) !!}
                     </div>
+                    @if($event->programme_pdf)
+                        <div class="mt-4">
+                            <a href="{{ \App\Support\EventMedia::storageUrl($event->programme_pdf) }}" target="_blank" rel="noopener" class="event-btn">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                                Ouvrir le déroulé de l’événement
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </section>
+
+            @if(!empty($event->social_links))
+                <section class="detail-panel">
+                    <div class="panel-head">
+                        <h2>Réseaux sociaux et liens</h2>
+                        <p>Retrouvez l’événement sur ses différentes plateformes.</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($event->social_links as $socialLink)
+                                <a href="{{ $socialLink['url'] }}" target="_blank" rel="noopener noreferrer" class="event-btn">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                    {{ $socialLink['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </section>
+            @endif
 
             @if($event->tags)
                 <section class="detail-panel">

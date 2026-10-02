@@ -60,4 +60,18 @@ class MediaController extends Controller
 
         abort(404);
     }
+
+    public function eventProgramme(string $filename)
+    {
+        abort_unless(preg_match('/^[A-Za-z0-9._-]+\.pdf$/i', $filename), 404);
+
+        $path = public_path('uploads/events/programmes/' . $filename);
+        abort_unless(is_file($path), 404);
+
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
+    }
 }
