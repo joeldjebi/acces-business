@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BillingInvoice;
 use App\Models\CommunicationCreditBalance;
 use App\Models\CommunicationPackage;
+use App\Support\InvitationExperience;
 use App\Support\SaasPlans;
 use App\Support\SaasUsage;
 use Illuminate\Http\Request;
@@ -247,6 +248,11 @@ class SaasSettingsController extends Controller
         return view('saas.branding', [
             'organization' => $organization,
             'branding' => $settings['branding'] ?? [],
+            'experience' => InvitationExperience::organization($organization),
+            'platformExperience' => InvitationExperience::platform(),
+            'templates' => InvitationExperience::templates(),
+            'canUseCustomMusic' => InvitationExperience::canUseCustomMusic($organization),
+            'customMusicDeniedReason' => InvitationExperience::customMusicDeniedReason($organization),
         ]);
     }
 
@@ -277,6 +283,66 @@ class SaasSettingsController extends Controller
         $organization->save();
 
         return back()->with('success', 'Branding mis à jour.');
+    }
+
+    public function updateInvitationExperience(Request $request)
+    {
+        $organization = auth()->user()->organization;
+        $templates = array_keys(InvitationExperience::templates());
+
+        $validated = $request->validate([
+            'enabled' => 'nullable|boolean',
+            'template' => ['required', Rule::in($templates)],
+            'music_source' => ['required', Rule::in(InvitationExperience::MUSIC_SOURCES)],
+            'music' => 'nullable|file|mimetypes:' . InvitationExperience::AUDIO_MIMETYPES . '|max:' . InvitationExperience::AUDIO_MAX_KB,
+            'music_title' => 'nullable|string|max:120',
+            'rights_confirmed' => 'nullable|boolean',
+            'remove_music' => 'nullable|boolean',
+        ]);
+
+        $canUseCustomMusic = InvitationExperience::canUseCustomMusic($organization);
+        if (!$canUseCustomMusic && ($validated['music_source'] === 'custom' || $request->hasFile('music'))) {
+            return back()->withInput()->withErrors(['music_source' => InvitationExperience::customMusicDeniedReason($organization)]);
+        }
+
+        if ($request->hasFile('music') && !$request->boolean('rights_confirmed')) {
+            return back()->withInput()->withErrors(['rights_confirmed' => 'Confirmez que vous disposez des droits de diffusion sur ce morceau.']);
+        }
+
+        $current = InvitationExperience::organization($organization);
+        $music = $current['custom_music'];
+        $title = $current['custom_music_title'];
+
+        if ($request->boolean('remove_music')) {
+            InvitationExperience::deleteMusic($music);
+            $music = null;
+            $title = null;
+        }
+
+        if ($request->hasFile('music')) {
+            InvitationExperience::deleteMusic($music);
+            $music = InvitationExperience::storeMusic($request->file('music'));
+            $title = $validated['music_title'] ?: pathinfo($request->file('music')->getClientOriginalName(), PATHINFO_FILENAME);
+        } elseif ($music && !empty($validated['music_title'])) {
+            $title = $validated['music_title'];
+        }
+
+        if ($validated['music_source'] === 'custom' && !$music) {
+            return back()->withInput()->withErrors(['music' => 'Ajoutez un fichier audio pour utiliser votre propre musique.']);
+        }
+
+        $settings = $organization->settings ?? [];
+        $settings['invitation_experience'] = [
+            'enabled' => $request->boolean('enabled'),
+            'template' => $validated['template'],
+            'music_source' => $validated['music_source'],
+            'custom_music' => $music,
+            'custom_music_title' => $music ? $title : null,
+            'rights_confirmed_at' => $request->hasFile('music') ? now()->toIso8601String() : ($settings['invitation_experience']['rights_confirmed_at'] ?? null),
+        ];
+        $organization->update(['settings' => $settings]);
+
+        return redirect()->to(route('saas.branding') . '#experience')->with('success', 'Expérience d’invitation mise à jour.');
     }
 
     private function storeOrganizationLogo(UploadedFile $logo): string

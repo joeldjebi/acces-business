@@ -22,6 +22,7 @@ class Event extends Model
         'video_url',
         'programme_pdf',
         'social_links',
+        'invitation_experience',
         'category_id',
         'user_id',
         'date_debut',
@@ -67,6 +68,7 @@ class Event extends Model
         'capacite_maximale' => 'integer',
         'vues' => 'integer',
         'social_links' => 'array',
+        'invitation_experience' => 'array',
     ];
 
     /**

@@ -12,6 +12,7 @@ use App\Models\TypeTarification;
 use App\Models\User;
 use App\Models\Visibilite;
 use App\Support\SaasUsage;
+use App\Support\InvitationExperience;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +82,7 @@ class EventController extends Controller
     public function index(Request $request)
     {
         $query = Event::with(['category', 'user', 'visibilite', 'typeTarification', 'devise'])
+            ->withCount('registrations')
             ->forOrganization();
 
         // Filtre par recherche (titre)
@@ -127,8 +129,12 @@ class EventController extends Controller
         $visibilites = Visibilite::active()->get();
         $users = User::where('organization_id', auth()->user()->organization_id)->get();
         $quota = SaasUsage::forOrganization(auth()->user()->organization);
+        $statusCounts = Event::forOrganization()
+            ->selectRaw('statut, count(*) as total')
+            ->groupBy('statut')
+            ->pluck('total', 'statut');
 
-        return view('events.index', compact('events', 'categories', 'visibilites', 'users', 'quota'));
+        return view('events.index', compact('events', 'categories', 'visibilites', 'users', 'quota', 'statusCounts'));
     }
 
     /**
@@ -197,10 +203,14 @@ class EventController extends Controller
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'invitation_experience' => 'nullable|array',
+            'invitation_experience.template' => ['nullable', Rule::in(InvitationExperience::eventTemplateOptions())],
+            'invitation_experience.music' => ['nullable', Rule::in(InvitationExperience::eventMusicOptions())],
         ]);
 
         $this->validateEventChronology($validated);
         $validated = $this->normalizeEventLinks($this->normalizePricing($validated));
+        $validated['invitation_experience'] = InvitationExperience::sanitizeEventChoice($validated['invitation_experience'] ?? null, auth()->user()->organization);
 
         $draft = null;
         if ($request->filled('draft_event_id')) {
@@ -296,6 +306,9 @@ class EventController extends Controller
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'invitation_experience' => 'nullable|array',
+            'invitation_experience.template' => ['nullable', Rule::in(InvitationExperience::eventTemplateOptions())],
+            'invitation_experience.music' => ['nullable', Rule::in(InvitationExperience::eventMusicOptions())],
         ]);
 
         $validated = $this->normalizeEventLinks($this->normalizePricing($validated));
@@ -316,6 +329,9 @@ class EventController extends Controller
         }
 
         $data = $this->draftPayload($validated, $draft);
+        if (array_key_exists('invitation_experience', $validated)) {
+            $data['invitation_experience'] = InvitationExperience::sanitizeEventChoice($validated['invitation_experience'], auth()->user()->organization);
+        }
 
         if ($request->hasFile('image')) {
             if ($draft && $draft->image) {
@@ -616,6 +632,9 @@ class EventController extends Controller
             'tags' => 'nullable|string|max:255',
             'notes_internes' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'invitation_experience' => 'nullable|array',
+            'invitation_experience.template' => ['nullable', Rule::in(InvitationExperience::eventTemplateOptions())],
+            'invitation_experience.music' => ['nullable', Rule::in(InvitationExperience::eventMusicOptions())],
         ]);
 
         $this->validateEventChronology($validated);
@@ -641,6 +660,10 @@ class EventController extends Controller
             }
 
             $validated['programme_pdf'] = $this->storeEventProgramme($request->file('programme_pdf'));
+        }
+
+        if (array_key_exists('invitation_experience', $validated)) {
+            $validated['invitation_experience'] = InvitationExperience::sanitizeEventChoice($validated['invitation_experience'], $event->organization);
         }
 
         $event->update($validated);

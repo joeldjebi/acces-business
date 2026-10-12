@@ -44,6 +44,7 @@ class SaasPlans
                     'users' => 3,
                     'invitations' => 500,
                 ],
+                'capabilities' => ['custom_music' => true],
                 'features' => [
                     'Événements publics et privés',
                     'Invitations par lien',
@@ -62,6 +63,7 @@ class SaasPlans
                     'users' => 12,
                     'invitations' => 5000,
                 ],
+                'capabilities' => ['custom_music' => true],
                 'features' => [
                     'Tout Starter',
                     'Branding organisation avancé',
@@ -80,6 +82,7 @@ class SaasPlans
                     'users' => null,
                     'invitations' => null,
                 ],
+                'capabilities' => ['custom_music' => true],
                 'features' => [
                     'Tout Business',
                     'Volumes illimités',
@@ -109,6 +112,11 @@ class SaasPlans
             : $plan['monthly_price'];
     }
 
+    public static function allows(array $plan, string $capability): bool
+    {
+        return (bool) ($plan['capabilities'][$capability] ?? false);
+    }
+
     public static function formatPrice(int $amount, string $currency = 'XOF'): string
     {
         return number_format($amount, 0, ',', ' ') . ' ' . $currency;
@@ -128,6 +136,9 @@ class SaasPlans
                 'invitations' => $plan->invitations_limit,
             ],
             'features' => $plan->features ?: [],
+            'capabilities' => [
+                'custom_music' => (bool) ($plan->allows_custom_music ?? false),
+            ],
             'is_active' => $plan->is_active,
         ];
     }

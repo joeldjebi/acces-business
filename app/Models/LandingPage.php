@@ -49,6 +49,14 @@ class LandingPage extends Model
         return Route::has('media.landing.image') ? route('media.landing.image', $filename) : asset('images/landing/' . $filename);
     }
 
+    public const JOURNEY_SCREENS = [
+        'invitation' => 'Email d’invitation',
+        'response' => 'Choix de réponse',
+        'card' => 'Carte QR',
+        'wallet' => 'Carte dans le Wallet',
+        'checkin' => 'Entrée validée',
+    ];
+
     public static function defaults(): array
     {
         return [
@@ -87,6 +95,26 @@ class LandingPage extends Model
                 ['label' => 'Confirmés', 'value' => '184', 'enabled' => true],
                 ['label' => 'Check-in', 'value' => '92', 'enabled' => true],
                 ['label' => 'Représ.', 'value' => '17', 'enabled' => true],
+            ],
+            'journey' => [
+                'enabled' => true,
+                'eyebrow' => 'Le parcours invité',
+                'title' => 'De l’invitation à l’entrée, une expérience sans couture.',
+                'body' => 'Chaque étape est pensée pour vos invités : élégante, rapide et sans friction. Et pour vous, entièrement tracée.',
+            ],
+            'journey_steps' => [
+                ['icon' => 'bi-envelope-open', 'title' => 'Une invitation personnelle', 'body' => 'Chaque invité reçoit par email un lien unique, à vos couleurs, vers son invitation.', 'screen' => 'invitation', 'enabled' => true],
+                ['icon' => 'bi-hand-index-thumb', 'title' => 'Une réponse en un geste', 'body' => 'Présent, peut-être ou absent. Indisponible ? L’invité désigne un représentant.', 'screen' => 'response', 'enabled' => true],
+                ['icon' => 'bi-qr-code', 'title' => 'Une carte nominative', 'body' => 'Dès la confirmation, une carte avec QR code unique est générée et envoyée.', 'screen' => 'card', 'enabled' => true],
+                ['icon' => 'bi-wallet2', 'title' => 'Dans Apple Wallet et Google Wallet', 'body' => 'Un geste depuis l’email suffit pour ajouter la carte au Wallet de son iPhone ou de son smartphone Android.', 'screen' => 'wallet', 'enabled' => true],
+                ['icon' => 'bi-check2-circle', 'title' => 'Une entrée validée', 'body' => 'Le jour J, un scan suffit. Les doubles entrées sont bloquées et vous suivez les arrivées en direct.', 'screen' => 'checkin', 'enabled' => true],
+            ],
+            'demo' => [
+                'event_name' => 'Gala Business 2026',
+                'event_date' => '24 oct. · 19:00',
+                'event_place' => 'Abidjan, Plateau',
+                'guest_name' => 'Marie Koffi',
+                'guest_tier' => 'VIP',
             ],
             'features_section' => [
                 'enabled' => true,
@@ -130,6 +158,15 @@ class LandingPage extends Model
                 'image_alt' => 'Carte d’invitation dans un wallet mobile',
                 'caption_title' => 'Invitation toujours à portée de main',
                 'caption_text' => 'QR, date, lieu et accès mobile.',
+                'apple_label' => 'Apple Wallet',
+                'apple_text' => 'iPhone et Apple Watch',
+                'google_label' => 'Google Wallet',
+                'google_text' => 'Smartphones Android',
+                'items' => [
+                    'Ajout direct depuis l’email de confirmation.',
+                    'QR unique toujours à portée de main, sans pièce jointe.',
+                    'Disponible pour l’invité comme pour son représentant.',
+                ],
             ],
             'pricing_section' => [
                 'enabled' => true,

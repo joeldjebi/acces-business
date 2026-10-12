@@ -1,436 +1,291 @@
 @extends('layouts.app')
 
-@section('title', 'Inscriptions - ' . $event->titre)
+@section('title', 'Inscriptions · ' . $event->titre)
+
+@php
+    $presents = $stats['present'] ?? 0;
+    $peutEtre = $stats['peut_etre'] ?? 0;
+    $absents = $stats['absent'] ?? 0;
+    $representes = $stats['represente'] ?? 0;
+    $total = $stats['total'] ?? $registrations->total();
+    $pct = fn ($value) => $total ? round($value / $total * 100) : 0;
+
+    $responseLabels = ['present' => 'Présent', 'peut_etre' => 'Peut-être', 'absent' => 'Absent', 'represente' => 'Représenté', 'en_attente' => 'En attente'];
+    $responseTones = ['present' => 'success', 'peut_etre' => 'info', 'absent' => 'danger', 'represente' => 'gold', 'en_attente' => ''];
+    $audienceLabels = ['all' => 'Tout le monde', 'present' => 'Accepté', 'absent' => 'Refusé', 'peut_etre' => 'Peut-être', 'represente' => 'Représenté'];
+    $broadcastStatus = ['pending' => ['En attente', ''], 'processing' => ['En cours', 'info'], 'completed' => ['Terminé', 'success'], 'failed' => ['Échec', 'danger']];
+    $repStatus = function ($registration) {
+        return match ($registration->representant_statut) {
+            'confirme' => ['Confirmé le ' . ($registration->representant_confirme_le?->format('d/m/Y H:i') ?: '—'), 'success'],
+            'mail_envoye' => ['Lien envoyé le ' . ($registration->representant_mail_envoye_le?->format('d/m/Y H:i') ?: '—') . ', en attente', 'warning'],
+            'mail_echec' => ['Envoi échoué · ' . ($registration->representant_mail_erreur ?: 'erreur inconnue'), 'danger'],
+            default => ['En attente d’envoi', ''],
+        };
+    };
+    $advancedActive = collect(request()->only(['representative_status', 'card']))->filter()->isNotEmpty();
+    $openComposer = $errors->hasAny(['channel', 'audience', 'subject', 'message', 'attachment']) || old('message');
+@endphp
 
 @push('styles')
 <style>
-    .registrations-container {
-        max-width: 1200px;
-        margin: 30px auto;
+    .reg-page { margin: 0 auto; max-width: 1400px; }
+    .reg-page *, .reg-page *::before, .reg-page *::after { min-width: 0; }
+
+    .composer { margin-bottom: 20px; overflow: hidden; }
+    .composer-head { align-items: center; background: radial-gradient(80% 140% at 0% 0%, rgba(185, 137, 67, .35), transparent 60%), #171713; color: #fff; cursor: pointer; display: flex; gap: 16px; justify-content: space-between; padding: 18px 22px; }
+    .composer-head h2 { color: #fff; font-size: 1rem; font-weight: 650; margin: 0; }
+    .composer-head p { color: rgba(255, 255, 255, .6); font-size: .8rem; margin: 3px 0 0; }
+    .composer-credits { text-align: right; }
+    .composer-credits small { color: rgba(255, 255, 255, .55); display: block; font-size: .72rem; }
+    .composer-credits strong { color: #d8b978; font-size: 1.3rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; }
+    .composer-toggle { align-items: center; background: rgba(255, 255, 255, .1); border-radius: 50%; display: flex; flex: 0 0 34px; height: 34px; justify-content: center; transition: transform .4s var(--app-ease); }
+    .composer-head[aria-expanded="true"] .composer-toggle { transform: rotate(180deg); }
+    .channel-choice { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 3px; padding: 4px; }
+    .channel-choice input { opacity: 0; pointer-events: none; position: absolute; }
+    .channel-choice label { border-radius: 999px; color: var(--app-muted); cursor: pointer; font-size: .86rem; font-weight: 600; margin: 0; padding: 8px 16px; transition: background .2s, color .2s; }
+    .channel-choice input:checked + label { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
+    .channel-choice input:focus-visible + label { box-shadow: 0 0 0 4px var(--app-gold-soft); }
+    .history { border-top: 1px solid var(--app-line); margin-top: 22px; padding-top: 18px; }
+    .history h3 { color: var(--app-ink); font-size: .86rem; font-weight: 650; margin-bottom: 8px; }
+
+    .filters-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding: 16px 22px; }
+    .resp-tabs { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 2px; max-width: 100%; overflow-x: auto; padding: 3px; scrollbar-width: none; }
+    .resp-tabs a { border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 7px 12px; text-decoration: none; white-space: nowrap; }
+    .resp-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
+    .rep-box { background: var(--app-bg); border-radius: 12px; font-size: .78rem; line-height: 1.5; margin-top: 8px; max-width: 320px; padding: 10px 12px; white-space: normal; }
+    .rep-box strong { color: var(--app-ink); display: block; font-size: .82rem; }
+    .rep-box .rep-line { align-items: flex-start; color: var(--app-muted); display: flex; gap: 6px; margin-top: 3px; }
+    .rep-box .rep-line i { margin-top: 2px; }
+    .rep-ok { color: var(--app-green) !important; }
+    .rep-ko { color: var(--app-red) !important; }
+
+    @media (max-width: 991.98px) {
+        .reg-table thead { display: none; }
+        .reg-table tr { border-bottom: 1px solid var(--app-line); display: grid; gap: 8px; grid-template-columns: 1fr auto; padding: 14px 18px; }
+        .reg-table td { border: 0 !important; padding: 0 !important; }
+        .reg-table td.col-response { grid-column: 1 / -1; }
+        .reg-table td.col-hide { display: none; }
+        .reg-table td.col-actions { grid-column: 2; grid-row: 1; }
     }
-
-    .stats-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .stat-card {
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        text-align: center;
-    }
-
-    .stat-card h3 {
-        font-size: 2.5rem;
-        font-weight: bold;
-        margin: 10px 0;
-    }
-
-    .stat-card.present h3 { color: #10b981; }
-    .stat-card.peut-etre h3 { color: #f59e0b; }
-    .stat-card.absent h3 { color: #ef4444; }
-    .stat-card.represente h3 { color: #b98943; }
-    .stat-card.total h3 { color: #667eea; }
-
-    .badge-response {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .badge-response.present {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
-    .badge-response.peut_etre {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge-response.absent {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .badge-response.represente {
-        background: #f4e8d2;
-        color: #725322;
-    }
-
-    .representative-details {
-        color: #6b6258;
-        font-size: .85rem;
-        line-height: 1.45;
-        margin-top: 6px;
-    }
-
-    .badge-response.en_attente {
-        background: #f3f4f6;
-        color: #374151;
-    }
-
-    .filter-card {
-        background: #fff;
-        border: 1px solid #e5ded2;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        margin-bottom: 24px;
-        padding: 18px;
-    }
-
-    .filter-card .form-control,
-    .filter-card .form-select {
-        border-color: #ded6c8;
-        border-radius: 12px;
-        min-height: 40px;
-    }
-
-    .communication-panel {
-        background: #fff;
-        border: 1px solid #e5ded2;
-        border-radius: 8px;
-        margin-bottom: 24px;
-        overflow: hidden;
-    }
-
-    .communication-panel__head {
-        align-items: center;
-        background: #171713;
-        color: #fff;
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 18px 22px;
-    }
-
-    .communication-panel__body { padding: 22px; }
-    .communication-panel .form-control,
-    .communication-panel .form-select { border-color: #ded6c8; min-height: 42px; }
-    .channel-choice { display: flex; gap: 8px; }
-    .channel-choice input { position: absolute; opacity: 0; pointer-events: none; }
-    .channel-choice label { border: 1px solid #cfc7ba; cursor: pointer; padding: 9px 14px; }
-    .channel-choice input:checked + label { background: #171713; border-color: #171713; color: #fff; }
 </style>
 @endpush
 
 @section('content')
-<div class="registrations-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Inscriptions - {{ $event->titre }}</h1>
-        <a href="{{ route('events.show', $event) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Retour à l'événement
-        </a>
-    </div>
+<div class="reg-page">
+    <x-app.event-header :event="$event" active="registrations" />
 
-    @php
-        $presents = $stats['present'] ?? 0;
-        $peutEtre = $stats['peut_etre'] ?? 0;
-        $absents = $stats['absent'] ?? 0;
-        $representes = $stats['represente'] ?? 0;
-        $total = $stats['total'] ?? $registrations->total();
-    @endphp
+    <section class="ui-stats">
+        @foreach([
+            ['label' => 'Total', 'value' => $total, 'icon' => 'bi-people', 'accent' => 'var(--app-ink)', 'pct' => null],
+            ['label' => 'Présents', 'value' => $presents, 'icon' => 'bi-check-circle', 'accent' => 'var(--app-green)', 'pct' => $pct($presents)],
+            ['label' => 'Peut-être', 'value' => $peutEtre, 'icon' => 'bi-question-circle', 'accent' => 'var(--app-blue)', 'pct' => $pct($peutEtre)],
+            ['label' => 'Absents', 'value' => $absents, 'icon' => 'bi-x-circle', 'accent' => 'var(--app-red)', 'pct' => $pct($absents)],
+            ['label' => 'Représentés', 'value' => $representes, 'icon' => 'bi-person-badge', 'accent' => 'var(--app-gold)', 'pct' => $pct($representes)],
+        ] as $stat)
+            <article class="ui-stat" style="--accent: {{ $stat['accent'] }}">
+                <div class="ui-stat-top">{{ $stat['label'] }}<i class="bi {{ $stat['icon'] }}"></i></div>
+                <strong>{{ number_format($stat['value'], 0, ',', ' ') }}</strong>
+                @if($stat['pct'] !== null)
+                    <small>{{ $stat['pct'] }}% des inscrits</small>
+                    <div class="ui-meter"><span style="width: {{ $stat['pct'] }}%"></span></div>
+                @else
+                    <small>Réponses enregistrées</small>
+                @endif
+            </article>
+        @endforeach
+    </section>
 
-    <div class="stats-cards">
-        <div class="stat-card total">
-            <i class="bi bi-people" style="font-size: 2rem; color: #667eea;"></i>
-            <h3>{{ $total }}</h3>
-            <p class="text-muted">Total inscrits</p>
-        </div>
-
-        <div class="stat-card present">
-            <i class="bi bi-check-circle" style="font-size: 2rem; color: #10b981;"></i>
-            <h3>{{ $presents }}</h3>
-            <p class="text-muted">Présents</p>
-        </div>
-
-        <div class="stat-card peut-etre">
-            <i class="bi bi-question-circle" style="font-size: 2rem; color: #f59e0b;"></i>
-            <h3>{{ $peutEtre }}</h3>
-            <p class="text-muted">Peut-être</p>
-        </div>
-
-        <div class="stat-card absent">
-            <i class="bi bi-x-circle" style="font-size: 2rem; color: #ef4444;"></i>
-            <h3>{{ $absents }}</h3>
-            <p class="text-muted">Absents</p>
-        </div>
-
-        <div class="stat-card represente">
-            <i class="bi bi-person-badge" style="font-size: 2rem; color: #b98943;"></i>
-            <h3>{{ $representes }}</h3>
-            <p class="text-muted">Représentés</p>
-        </div>
-    </div>
-
-    <section class="communication-panel">
-        <div class="communication-panel__head">
-            <div>
-                <h2 class="h5 mb-1">Envoyer une communication</h2>
-                <div class="small text-white-50">Email ou SMS ciblé selon la réponse des inscrits.</div>
+    <section class="ui-card composer">
+        <div class="composer-head" data-bs-toggle="collapse" data-bs-target="#composerBody" role="button" aria-expanded="{{ $openComposer ? 'true' : 'false' }}" aria-controls="composerBody">
+            <div class="d-flex align-items-center gap-3">
+                <span class="composer-toggle"><i class="bi bi-chevron-down"></i></span>
+                <div>
+                    <h2>Envoyer une communication</h2>
+                    <p>Email ou SMS ciblé selon la réponse des inscrits.</p>
+                </div>
             </div>
-            <div class="text-end">
-                <div class="small text-white-50">Crédits SMS disponibles</div>
-                <strong>{{ number_format($smsBalance->remaining, 0, ',', ' ') }}</strong>
-            </div>
+            <div class="composer-credits"><small>Crédits SMS</small><strong>{{ number_format($smsBalance->remaining, 0, ',', ' ') }}</strong></div>
         </div>
-        <div class="communication-panel__body">
-            <form method="POST" action="{{ route('events.registrations.communications.send', $event) }}" enctype="multipart/form-data" id="bulkCommunicationForm">
-                @csrf
-                <div class="row g-3">
-                    <div class="col-lg-4">
-                        <label class="form-label d-block">Canal</label>
-                        <div class="channel-choice">
-                            <input type="radio" name="channel" id="channelEmail" value="email" @checked(old('channel', 'email') === 'email')>
-                            <label for="channelEmail"><i class="bi bi-envelope me-1"></i>Email</label>
-                            <input type="radio" name="channel" id="channelSms" value="sms" @checked(old('channel') === 'sms')>
-                            <label for="channelSms"><i class="bi bi-chat-dots me-1"></i>SMS</label>
+        <div @class(['collapse', 'show' => $openComposer]) id="composerBody">
+            <div class="ui-card-body pt-4">
+                <form method="POST" action="{{ route('events.registrations.communications.send', $event) }}" enctype="multipart/form-data" id="bulkCommunicationForm">
+                    @csrf
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <span class="form-label d-block">Canal</span>
+                            <div class="channel-choice">
+                                <input type="radio" name="channel" id="channelEmail" value="email" @checked(old('channel', 'email') === 'email')>
+                                <label for="channelEmail"><i class="bi bi-envelope me-1"></i>Email</label>
+                                <input type="radio" name="channel" id="channelSms" value="sms" @checked(old('channel') === 'sms')>
+                                <label for="channelSms"><i class="bi bi-chat-dots me-1"></i>SMS</label>
+                            </div>
+                            @error('channel')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         </div>
-                        @error('channel')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        <div class="col-lg-4">
+                            <label for="communicationAudience" class="form-label">Destinataires</label>
+                            <select class="form-select" id="communicationAudience" name="audience" required>
+                                <option value="all" @selected(old('audience') === 'all')>Tout le monde</option>
+                                <option value="present" @selected(old('audience') === 'present')>Ceux qui ont accepté</option>
+                                <option value="absent" @selected(old('audience') === 'absent')>Ceux qui ont refusé</option>
+                                <option value="peut_etre" @selected(old('audience') === 'peut_etre')>Ceux qui ne savent pas encore</option>
+                                <option value="represente" @selected(old('audience') === 'represente')>Ceux qui se font représenter</option>
+                            </select>
+                            @error('audience')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-lg-4" id="communicationSubjectGroup">
+                            <label for="communicationSubject" class="form-label">Objet de l’email</label>
+                            <input type="text" class="form-control" id="communicationSubject" name="subject" value="{{ old('subject') }}" maxlength="255">
+                            @error('subject')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-12">
+                            <label for="communicationMessage" class="form-label">Message</label>
+                            <textarea class="form-control" id="communicationMessage" name="message" rows="4" maxlength="2000" required>{{ old('message') }}</textarea>
+                            <div class="d-flex justify-content-end"><small class="text-muted mt-1" id="messageCount">0 / 2000</small></div>
+                            @error('message')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-lg-8">
+                            <label for="communicationAttachment" class="form-label">Fichier <span class="text-muted fw-normal">(facultatif)</span></label>
+                            <input type="file" class="form-control" id="communicationAttachment" name="attachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                            <div class="form-text" id="attachmentHelp">Le fichier sera joint à l’email. Taille maximale : 10 Mo.</div>
+                            @error('attachment')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-lg-4 d-flex align-items-end justify-content-lg-end">
+                            <button type="submit" class="ui-btn ui-btn-primary" onclick="return confirm('Confirmer la création de cette campagne ?');"><i class="bi bi-send"></i>Envoyer la campagne</button>
+                        </div>
                     </div>
-                    <div class="col-lg-4">
-                        <label for="communicationAudience" class="form-label">Destinataires</label>
-                        <select class="form-select" id="communicationAudience" name="audience" required>
-                            <option value="all" @selected(old('audience') === 'all')>Tout le monde</option>
-                            <option value="present" @selected(old('audience') === 'present')>Ceux qui ont accepté</option>
-                            <option value="absent" @selected(old('audience') === 'absent')>Ceux qui ont refusé</option>
-                            <option value="peut_etre" @selected(old('audience') === 'peut_etre')>Ceux qui ne savent pas encore</option>
-                            <option value="represente" @selected(old('audience') === 'represente')>Ceux qui se font représenter</option>
-                        </select>
-                        @error('audience')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-lg-4" id="communicationSubjectGroup">
-                        <label for="communicationSubject" class="form-label">Objet de l’email</label>
-                        <input type="text" class="form-control" id="communicationSubject" name="subject" value="{{ old('subject') }}" maxlength="255">
-                        @error('subject')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-12">
-                        <label for="communicationMessage" class="form-label">Message</label>
-                        <textarea class="form-control" id="communicationMessage" name="message" rows="4" maxlength="2000" required>{{ old('message') }}</textarea>
-                        @error('message')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-lg-8">
-                        <label for="communicationAttachment" class="form-label">Fichier facultatif</label>
-                        <input type="file" class="form-control" id="communicationAttachment" name="attachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
-                        <div class="form-text" id="attachmentHelp">Le fichier sera joint à l’email. Taille maximale : 10 Mo.</div>
-                        @error('attachment')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-lg-4 d-flex align-items-end justify-content-lg-end">
-                        <button type="submit" class="btn btn-dark" onclick="return confirm('Confirmer la création de cette campagne ?');">
-                            <i class="bi bi-send me-1"></i>Envoyer la campagne
-                        </button>
-                    </div>
-                </div>
-            </form>
+                </form>
 
-            @if($broadcasts->isNotEmpty())
-                <div class="table-responsive mt-4">
-                    <table class="table table-sm align-middle mb-0">
-                        <thead><tr><th>Date</th><th>Canal</th><th>Cible</th><th>Résultat</th><th>Statut</th></tr></thead>
-                        <tbody>
-                        @foreach($broadcasts as $broadcast)
-                            <tr>
-                                <td>{{ $broadcast->created_at->format('d/m/Y H:i') }}</td>
-                                <td>{{ strtoupper($broadcast->channel) }}</td>
-                                <td>{{ ['all' => 'Tout le monde', 'present' => 'Accepté', 'absent' => 'Refusé', 'peut_etre' => 'Peut-être', 'represente' => 'Représenté'][$broadcast->audience] ?? $broadcast->audience }}</td>
-                                <td>{{ $broadcast->sent_count }} envoyé(s) · {{ $broadcast->failed_count }} échec(s) / {{ $broadcast->recipient_count }}</td>
-                                <td><span class="badge {{ $broadcast->status === 'completed' ? 'bg-success' : ($broadcast->status === 'failed' ? 'bg-danger' : 'bg-secondary') }}">{{ ['pending' => 'En attente', 'processing' => 'En cours', 'completed' => 'Terminé', 'failed' => 'Échec'][$broadcast->status] ?? $broadcast->status }}</span></td>
-                            </tr>
-                        @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                @if($broadcasts->isNotEmpty())
+                    <div class="history">
+                        <h3>Campagnes récentes</h3>
+                        <div class="table-responsive">
+                            <table class="ui-table">
+                                <thead><tr><th>Date</th><th>Canal</th><th>Cible</th><th>Résultat</th><th>Statut</th></tr></thead>
+                                <tbody>
+                                    @foreach($broadcasts as $broadcast)
+                                        @php [$bLabel, $bTone] = $broadcastStatus[$broadcast->status] ?? [$broadcast->status, '']; @endphp
+                                        <tr>
+                                            <td>{{ $broadcast->created_at->format('d/m/Y H:i') }}</td>
+                                            <td><span class="ui-pill"><i class="bi {{ $broadcast->channel === 'sms' ? 'bi-chat-dots' : 'bi-envelope' }}"></i>{{ strtoupper($broadcast->channel) }}</span></td>
+                                            <td>{{ $audienceLabels[$broadcast->audience] ?? $broadcast->audience }}</td>
+                                            <td>{{ $broadcast->sent_count }} envoyé(s) · {{ $broadcast->failed_count }} échec(s) / {{ $broadcast->recipient_count }}</td>
+                                            <td><span class="ui-pill dot {{ $bTone }}">{{ $bLabel }}</span></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
+            </div>
         </div>
     </section>
 
-    <form method="GET" class="filter-card">
-        <div class="row g-3 align-items-end">
-            <div class="col-lg-3 col-md-6">
-                <label class="form-label">Recherche</label>
-                <input type="search" name="search" class="form-control" value="{{ request('search') }}" placeholder="Nom, email, téléphone...">
-            </div>
-            <div class="col-lg-2 col-md-6">
-                <label class="form-label">Réponse</label>
-                <select name="response" class="form-select">
-                    <option value="">Toutes</option>
-                    <option value="en_attente" @selected(request('response') === 'en_attente')>En attente</option>
-                    <option value="present" @selected(request('response') === 'present')>Présent</option>
-                    <option value="peut_etre" @selected(request('response') === 'peut_etre')>Peut-être</option>
-                    <option value="absent" @selected(request('response') === 'absent')>Absent</option>
-                    <option value="represente" @selected(request('response') === 'represente')>Représenté</option>
-                </select>
-            </div>
-            <div class="col-lg-2 col-md-6">
-                <label class="form-label">Représentant</label>
-                <select name="representative_status" class="form-select">
-                    <option value="">Tous</option>
+    <section class="ui-card" style="overflow: hidden">
+        <div class="filters-bar">
+            <nav class="resp-tabs" aria-label="Filtrer par réponse">
+                @foreach(['' => 'Toutes'] + $responseLabels as $value => $label)
+                    <a href="{{ route('events.registrations', array_merge([$event], array_filter(array_merge(request()->except(['response', 'page']), ['response' => $value])))) }}" @class(['is-active' => (string) request('response', '') === (string) $value])>{{ $label }}</a>
+                @endforeach
+            </nav>
+            <form method="GET" class="ui-toolbar" style="flex: 1 1 420px; justify-content: flex-end">
+                @if(request('response'))<input type="hidden" name="response" value="{{ request('response') }}">@endif
+                <label class="ui-search mb-0" style="max-width: 280px">
+                    <i class="bi bi-search"></i>
+                    <input type="search" name="search" class="form-control" value="{{ request('search') }}" placeholder="Nom, email, téléphone…" aria-label="Rechercher">
+                </label>
+                <select name="representative_status" class="form-select" aria-label="Statut du représentant">
+                    <option value="">Représentant</option>
                     <option value="en_attente" @selected(request('representative_status') === 'en_attente')>En attente</option>
                     <option value="mail_envoye" @selected(request('representative_status') === 'mail_envoye')>Mail envoyé</option>
                     <option value="mail_echec" @selected(request('representative_status') === 'mail_echec')>Mail échoué</option>
                     <option value="confirme" @selected(request('representative_status') === 'confirme')>Confirmé</option>
                 </select>
-            </div>
-            <div class="col-lg-2 col-md-6">
-                <label class="form-label">Carte</label>
-                <select name="card" class="form-select">
-                    <option value="">Toutes</option>
+                <select name="card" class="form-select" aria-label="Carte">
+                    <option value="">Carte</option>
                     <option value="sent" @selected(request('card') === 'sent')>Envoyée</option>
                     <option value="not_sent" @selected(request('card') === 'not_sent')>Non envoyée</option>
                 </select>
-            </div>
-            <div class="col-lg-1 col-md-6">
-                <label class="form-label">Par page</label>
-                <select name="per_page" class="form-select">
+                <select name="per_page" class="form-select" aria-label="Par page">
                     @foreach([10, 20, 50, 100] as $size)
-                        <option value="{{ $size }}" @selected((int) request('per_page', 20) === $size)>{{ $size }}</option>
+                        <option value="{{ $size }}" @selected((int) request('per_page', 20) === $size)>{{ $size }} / page</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="col-lg-2 col-md-6 d-flex gap-2">
-                <button type="submit" class="btn btn-dark flex-fill"><i class="bi bi-funnel me-1"></i>Filtrer</button>
-                <a href="{{ route('events.registrations', $event) }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
-            </div>
+                <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm">Filtrer</button>
+                @if(collect(request()->only(['search', 'response', 'representative_status', 'card']))->filter()->isNotEmpty())
+                    <a href="{{ route('events.registrations', $event) }}" class="ui-btn ui-btn-soft ui-btn-sm" title="Réinitialiser"><i class="bi bi-arrow-counterclockwise"></i></a>
+                @endif
+            </form>
         </div>
-    </form>
 
-    <div class="card">
-        <div class="card-body">
+        @if($registrations->count())
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Nom</th>
-                            <th>Email</th>
-                            <th>Téléphone</th>
-                            <th>Entreprise</th>
-                            <th>Fonction</th>
-                            <th>Réponse</th>
-                            <th>Date d'inscription</th>
-                            <th>Carte envoyée</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+                <table class="ui-table reg-table">
+                    <thead><tr><th>Invité</th><th>Organisation</th><th>Réponse</th><th>Inscrit le</th><th>Carte</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
-                        @forelse($registrations as $registration)
-                        <tr>
-                            <td>
-                                <strong>{{ $registration->nom_complet ?: '-' }}</strong>
-                            </td>
-                            <td>{{ $registration->email }}</td>
-                            <td>{{ $registration->telephone ?: '-' }}</td>
-                            <td>{{ $registration->entreprise ?: '-' }}</td>
-                            <td>{{ $registration->fonction ?: '-' }}</td>
-                            <td>
-                                <span class="badge-response {{ $registration->statut_reponse }}">
-                                    @if($registration->statut_reponse === 'present')
-                                        Présent
-                                    @elseif($registration->statut_reponse === 'peut_etre')
-                                        Peut-être
-                                    @elseif($registration->statut_reponse === 'absent')
-                                        Absent
-                                    @elseif($registration->statut_reponse === 'represente')
-                                        Représenté
-                                    @else
-                                        En attente
-                                    @endif
-                                </span>
-                                @if($registration->statut_reponse === 'represente')
-                                    <div class="representative-details">
-                                        <strong>Représentant :</strong> {{ trim(($registration->representant_prenoms ?? '') . ' ' . ($registration->representant_nom ?? '')) ?: '-' }}<br>
-                                        {{ $registration->representant_fonction ?: '-' }} · {{ $registration->representant_contact ?: '-' }}<br>
-                                        {{ $registration->representant_email ?: '-' }}<br>
-                                        <strong>Statut :</strong>
-                                        @if($registration->representant_statut === 'confirme')
-                                            confirmé le {{ $registration->representant_confirme_le?->format('d/m/Y H:i') ?: '-' }}
-                                        @elseif($registration->representant_statut === 'mail_envoye')
-                                            mail envoyé le {{ $registration->representant_mail_envoye_le?->format('d/m/Y H:i') ?: '-' }}, en attente de confirmation
-                                        @elseif($registration->representant_statut === 'mail_echec')
-                                            mail non envoyé · {{ $registration->representant_mail_erreur ?: 'erreur inconnue' }}
-                                        @else
-                                            en attente d’envoi
-                                        @endif<br>
-                                        <strong>Carte représentant :</strong>
-                                        @if($registration->representant_carte_envoyee)
-                                            envoyée le {{ $registration->representant_carte_envoyee_le?->format('d/m/Y H:i') ?: '-' }}
-                                        @elseif($registration->representant_carte_erreur)
-                                            non envoyée · {{ $registration->representant_carte_erreur }}
-                                        @else
-                                            non envoyée
-                                        @endif<br>
-                                        <strong>Notification invité :</strong>
-                                        @if($registration->represente_notification_envoyee)
-                                            envoyée le {{ $registration->represente_notification_envoyee_le?->format('d/m/Y H:i') ?: '-' }}
-                                        @elseif($registration->represente_notification_erreur)
-                                            non envoyée · {{ $registration->represente_notification_erreur }}
-                                        @else
-                                            non envoyée
-                                        @endif
+                        @foreach($registrations as $registration)
+                            <tr>
+                                <td>
+                                    <div class="ui-person">
+                                        <span class="ui-avatar">{{ strtoupper(mb_substr($registration->prenom ?: $registration->nom ?: $registration->email, 0, 1)) }}</span>
+                                        <div><strong>{{ $registration->nom_complet ?: '—' }}</strong><small>{{ $registration->email }}{{ $registration->telephone ? ' · ' . $registration->telephone : '' }}</small></div>
                                     </div>
-                                @endif
-                            </td>
-                            <td>{{ $registration->date_inscription->format('d/m/Y H:i') }}</td>
-                            <td>
-                                @if($registration->carte_envoyee)
-                                    <span class="badge bg-success">
-                                        <i class="bi bi-check-circle me-1"></i>Oui
-                                    </span>
-                                @else
-                                    <span class="badge bg-secondary">
-                                        <i class="bi bi-x-circle me-1"></i>Non
-                                    </span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex gap-1">
-                                    <a href="{{ route('events.verify-qr', $registration->token_unique) }}"
-                                       target="_blank"
-                                       class="btn btn-sm btn-outline-info"
-                                       data-bs-toggle="tooltip"
-                                       title="Voir le QR code">
-                                        <i class="bi bi-qr-code"></i>
-                                    </a>
-                                    <a href="{{ route('events.registrations.show', [$event, $registration]) }}"
-                                       class="btn btn-sm btn-outline-primary"
-                                       data-bs-toggle="tooltip"
-                                       title="Voir le détail">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @if($registration->statut_reponse === 'represente' && $registration->representant_statut !== 'confirme')
-                                        <form method="POST" action="{{ route('events.registrations.representative.resend', [$event, $registration]) }}">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" title="Renvoyer le lien au représentant">
-                                                <i class="bi bi-envelope-arrow-up"></i>
-                                            </button>
-                                        </form>
+                                </td>
+                                <td class="col-hide">{{ $registration->entreprise ?: '—' }}<span class="ui-sub">{{ $registration->fonction }}</span></td>
+                                <td class="col-response">
+                                    <span class="ui-pill dot {{ $responseTones[$registration->statut_reponse] ?? '' }}">{{ $responseLabels[$registration->statut_reponse] ?? 'En attente' }}</span>
+                                    @if($registration->statut_reponse === 'represente')
+                                        @php [$repLabel, $repTone] = $repStatus($registration); @endphp
+                                        <div class="rep-box">
+                                            <strong><i class="bi bi-person-badge me-1"></i>{{ trim(($registration->representant_prenoms ?? '') . ' ' . ($registration->representant_nom ?? '')) ?: 'Représentant' }}</strong>
+                                            <div class="rep-line"><i class="bi bi-briefcase"></i>{{ $registration->representant_fonction ?: '—' }} · {{ $registration->representant_contact ?: '—' }}</div>
+                                            <div class="rep-line"><i class="bi bi-envelope"></i>{{ $registration->representant_email ?: '—' }}</div>
+                                            <div @class(['rep-line', 'rep-ok' => $repTone === 'success', 'rep-ko' => $repTone === 'danger'])><i class="bi bi-link-45deg"></i>{{ $repLabel }}</div>
+                                            <div @class(['rep-line', 'rep-ok' => $registration->representant_carte_envoyee, 'rep-ko' => !$registration->representant_carte_envoyee && $registration->representant_carte_erreur])><i class="bi bi-postcard"></i>
+                                                Carte : @if($registration->representant_carte_envoyee) envoyée le {{ $registration->representant_carte_envoyee_le?->format('d/m/Y H:i') ?: '—' }} @elseif($registration->representant_carte_erreur) non envoyée · {{ $registration->representant_carte_erreur }} @else non envoyée @endif
+                                            </div>
+                                            <div @class(['rep-line', 'rep-ok' => $registration->represente_notification_envoyee, 'rep-ko' => !$registration->represente_notification_envoyee && $registration->represente_notification_erreur])><i class="bi bi-bell"></i>
+                                                Invité notifié : @if($registration->represente_notification_envoyee) le {{ $registration->represente_notification_envoyee_le?->format('d/m/Y H:i') ?: '—' }} @elseif($registration->represente_notification_erreur) non · {{ $registration->represente_notification_erreur }} @else non @endif
+                                            </div>
+                                        </div>
                                     @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="9" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                                <p class="mt-2">Aucune inscription pour le moment.</p>
-                            </td>
-                        </tr>
-                        @endforelse
+                                </td>
+                                <td class="col-hide">{{ $registration->date_inscription->format('d/m/Y') }}<span class="ui-sub">{{ $registration->date_inscription->format('H:i') }}</span></td>
+                                <td class="col-hide">
+                                    @if($registration->carte_envoyee)
+                                        <span class="ui-pill success"><i class="bi bi-check2"></i>Envoyée</span>
+                                    @else
+                                        <span class="ui-pill">Non envoyée</span>
+                                    @endif
+                                </td>
+                                <td class="col-actions">
+                                    <div class="ui-actions">
+                                        <a href="{{ route('events.verify-qr', $registration->token_unique) }}" target="_blank" class="ui-icon-btn" title="Voir le QR code"><i class="bi bi-qr-code"></i></a>
+                                        @if($registration->statut_reponse === 'represente' && $registration->representant_statut !== 'confirme')
+                                            <form method="POST" action="{{ route('events.registrations.representative.resend', [$event, $registration]) }}">
+                                                @csrf
+                                                <button type="submit" class="ui-icon-btn" title="Renvoyer le lien au représentant"><i class="bi bi-envelope-arrow-up"></i></button>
+                                            </form>
+                                        @endif
+                                        <a href="{{ route('events.registrations.show', [$event, $registration]) }}" class="ui-btn ui-btn-soft ui-btn-sm">Détail <i class="bi bi-chevron-right"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
-
             @if($registrations->hasPages())
-            <div class="d-flex justify-content-center mt-4">
-                {{ $registrations->links() }}
-            </div>
+                <div class="ui-pager">{{ $registrations->links('pagination::bootstrap-5') }}</div>
             @endif
-        </div>
-    </div>
+        @else
+            <div class="ui-empty">
+                <i class="bi bi-inbox"></i>
+                <strong>Aucune inscription</strong>
+                {{ collect(request()->only(['search', 'response', 'representative_status', 'card']))->filter()->isNotEmpty() ? 'Aucun inscrit ne correspond à ces critères.' : 'Les réponses de vos invités apparaîtront ici.' }}
+            </div>
+        @endif
+    </section>
 </div>
 @endsection
 
@@ -442,6 +297,8 @@
         const subjectGroup = document.getElementById('communicationSubjectGroup');
         const subject = document.getElementById('communicationSubject');
         const attachmentHelp = document.getElementById('attachmentHelp');
+        const message = document.getElementById('communicationMessage');
+        const counter = document.getElementById('messageCount');
 
         function updateCommunicationChannel() {
             const isEmail = email.checked;
@@ -452,9 +309,13 @@
                 : 'Un lien sécurisé vers le fichier sera ajouté automatiquement au SMS. Taille maximale : 10 Mo.';
         }
 
+        const updateCount = () => counter.textContent = `${message.value.length} / 2000`;
+
         email.addEventListener('change', updateCommunicationChannel);
         sms.addEventListener('change', updateCommunicationChannel);
+        message.addEventListener('input', updateCount);
         updateCommunicationChannel();
+        updateCount();
     })();
 </script>
 @endpush

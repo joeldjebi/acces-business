@@ -54,3 +54,10 @@
         <label class="form-check-label" for="{{ $prefix }}active">Plan actif et disponible pour les clients</label>
     </div>
 </div>
+<div class="col-12">
+    <div class="form-check">
+        <input type="hidden" name="allows_custom_music" value="0">
+        <input class="form-check-input" type="checkbox" name="allows_custom_music" value="1" id="{{ $prefix }}music" {{ old('allows_custom_music', $plan->allows_custom_music ?? true) ? 'checked' : '' }}>
+        <label class="form-check-label" for="{{ $prefix }}music">Autoriser la musique d’invitation personnalisée (abonnement payé requis)</label>
+    </div>
+</div>

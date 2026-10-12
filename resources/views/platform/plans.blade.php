@@ -83,6 +83,11 @@
                                     <input form="plan-update-{{ $plan->id }}" class="form-check-input" type="checkbox" name="is_active" value="1" id="plan-active-{{ $plan->id }}" {{ $plan->is_active ? 'checked' : '' }}>
                                     <label class="form-check-label" for="plan-active-{{ $plan->id }}">Actif</label>
                                 </div>
+                                <input form="plan-update-{{ $plan->id }}" type="hidden" name="allows_custom_music" value="0">
+                                <div class="form-check mb-2">
+                                    <input form="plan-update-{{ $plan->id }}" class="form-check-input" type="checkbox" name="allows_custom_music" value="1" id="plan-music-{{ $plan->id }}" {{ $plan->allows_custom_music ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="plan-music-{{ $plan->id }}">Musique perso.</label>
+                                </div>
                                 <span class="status-pill {{ $plan->is_active ? 'status-on' : 'status-off' }}">
                                     {{ $plan->is_active ? 'Disponible' : 'Masqué' }}
                                 </span>

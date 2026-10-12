@@ -19,10 +19,11 @@
     .panel-body { border-top:1px solid var(--line); padding:20px; }
     .grid { display:grid; gap:14px; grid-template-columns:repeat(2,minmax(0,1fr)); }
     .grid-3 { display:grid; gap:12px; grid-template-columns:repeat(3,minmax(0,1fr)); }
-    label { color:var(--ink); display:block; font-size:.82rem; font-weight:700; margin-bottom:6px; }
-    input[type="text"], input[type="url"], input[type="color"], textarea { border:1px solid var(--line); border-radius:12px; color:var(--ink); min-height:42px; padding:10px 12px; width:100%; }
+    label { color:var(--ink); display:block; font-size:.8rem; font-weight:600; margin-bottom:6px; }
+    input[type="text"], input[type="url"], input[type="color"], textarea { background:#fff; border:1px solid rgba(23,23,19,.13); border-radius:10px; color:var(--ink); font-size:.875rem; min-height:40px; padding:8px 12px; width:100%; }
+    input[type="text"]:focus, input[type="url"]:focus, textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(185,137,67,.12); outline:0; }
     textarea { min-height:92px; resize:vertical; }
-    input[type="file"] { border:1px dashed var(--line); border-radius:12px; padding:12px; width:100%; }
+    input[type="file"] { border:1px dashed rgba(23,23,19,.2); border-radius:10px; font-size:.85rem; padding:8px 10px; width:100%; }
     .help { color:var(--muted); font-size:.82rem; margin-top:6px; }
     .preview-img { background:#f4eee4; border:1px solid var(--line); border-radius:14px; height:110px; object-fit:cover; width:180px; }
     .rows { display:grid; gap:10px; }
@@ -107,6 +108,23 @@
         </details>
 
         <details class="panel">
+            <summary><div class="panel-title"><i class="bi bi-phone"></i><div><strong>Parcours invité</strong><span>Étapes animées dans le téléphone et données de démonstration des cartes.</span></div></div><i class="bi bi-chevron-down"></i></summary>
+            <div class="panel-body">
+                @include('platform.partials.landing-section-fields', ['key' => 'journey', 'section' => $settings['journey'], 'label' => 'Afficher le parcours invité'])
+                <div class="help mb-3">Ancre de la section : <code>parcours</code> (utilisable dans le menu).</div>
+                <div class="rows" data-repeater="journey_steps">@foreach($settings['journey_steps'] ?? [] as $i => $item)@include('platform.partials.landing-row-journey-step', ['i' => $i, 'item' => $item])@endforeach</div><button type="button" class="mini-btn" data-add="journey_steps"><i class="bi bi-plus-lg"></i>Ajouter une étape</button>
+                <h2 class="h6 mt-4">Données de démonstration (téléphone et cartes Wallet)</h2>
+                <div class="grid">
+                    <div><label>Nom de l’événement</label><input type="text" name="settings[demo][event_name]" value="{{ $settings['demo']['event_name'] ?? '' }}"></div>
+                    <div><label>Date affichée</label><input type="text" name="settings[demo][event_date]" value="{{ $settings['demo']['event_date'] ?? '' }}"></div>
+                    <div><label>Lieu affiché</label><input type="text" name="settings[demo][event_place]" value="{{ $settings['demo']['event_place'] ?? '' }}"></div>
+                    <div><label>Nom de l’invité</label><input type="text" name="settings[demo][guest_name]" value="{{ $settings['demo']['guest_name'] ?? '' }}"></div>
+                    <div><label>Catégorie de l’invité</label><input type="text" name="settings[demo][guest_tier]" value="{{ $settings['demo']['guest_tier'] ?? '' }}"></div>
+                </div>
+            </div>
+        </details>
+
+        <details class="panel">
             <summary><div class="panel-title"><i class="bi bi-grid-3x3-gap"></i><div><strong>Fonctionnalités</strong><span>Titre de section et cartes fonctionnelles.</span></div></div><i class="bi bi-chevron-down"></i></summary>
             <div class="panel-body">
                 @include('platform.partials.landing-section-fields', ['key' => 'features_section', 'section' => $settings['features_section'], 'label' => 'Afficher les fonctionnalités'])
@@ -130,6 +148,11 @@
                     <div><label>Alt image</label><input type="text" name="settings[wallet][image_alt]" value="{{ $settings['wallet']['image_alt'] ?? '' }}"></div>
                     <div><label>Titre caption</label><input type="text" name="settings[wallet][caption_title]" value="{{ $settings['wallet']['caption_title'] ?? '' }}"></div>
                     <div><label>Texte caption</label><input type="text" name="settings[wallet][caption_text]" value="{{ $settings['wallet']['caption_text'] ?? '' }}"></div>
+                    <div><label>Apple - libellé</label><input type="text" name="settings[wallet][apple_label]" value="{{ $settings['wallet']['apple_label'] ?? '' }}"></div>
+                    <div><label>Apple - texte</label><input type="text" name="settings[wallet][apple_text]" value="{{ $settings['wallet']['apple_text'] ?? '' }}"></div>
+                    <div><label>Google - libellé</label><input type="text" name="settings[wallet][google_label]" value="{{ $settings['wallet']['google_label'] ?? '' }}"></div>
+                    <div><label>Google - texte</label><input type="text" name="settings[wallet][google_text]" value="{{ $settings['wallet']['google_text'] ?? '' }}"></div>
+                    <div style="grid-column:1/-1"><label>Points clés wallet, un par ligne</label><textarea name="settings[wallet][items]">{{ $lines($settings['wallet']['items'] ?? []) }}</textarea></div>
                 </div>
             </div>
         </details>
@@ -167,6 +190,7 @@
 <template id="tpl-navigation">@include('platform.partials.landing-row-navigation', ['i' => '__INDEX__', 'item' => ['label' => '', 'anchor' => '', 'enabled' => true]])</template>
 <template id="tpl-trust_items">@include('platform.partials.landing-row-icon-label', ['group' => 'trust_items', 'i' => '__INDEX__', 'item' => ['icon' => 'bi-check2', 'label' => '', 'enabled' => true]])</template>
 <template id="tpl-hero_metrics">@include('platform.partials.landing-row-metric', ['i' => '__INDEX__', 'item' => ['label' => '', 'value' => '', 'enabled' => true]])</template>
+<template id="tpl-journey_steps">@include('platform.partials.landing-row-journey-step', ['i' => '__INDEX__', 'item' => ['icon' => 'bi-check2', 'title' => '', 'body' => '', 'screen' => 'invitation', 'enabled' => true]])</template>
 <template id="tpl-features">@include('platform.partials.landing-row-feature', ['i' => '__INDEX__', 'item' => ['icon' => 'bi-check2', 'title' => '', 'body' => '', 'enabled' => true]])</template>
 <template id="tpl-plans">@include('platform.partials.landing-row-plan', ['i' => '__INDEX__', 'item' => ['name' => '', 'subtitle' => '', 'price' => '', 'items' => [], 'featured' => false, 'enabled' => true], 'lines' => $lines])</template>
 <template id="tpl-security_items">@include('platform.partials.landing-row-icon-label', ['group' => 'security][items', 'i' => '__INDEX__', 'item' => ['icon' => 'bi-shield-check', 'label' => '', 'enabled' => true]])</template>

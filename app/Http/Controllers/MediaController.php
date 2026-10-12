@@ -26,6 +26,22 @@ class MediaController extends Controller
         abort(404);
     }
 
+    public function music(string $filename)
+    {
+        abort_unless(preg_match('/^[A-Za-z0-9_-]+\.(mp3|m4a|aac|ogg|mp4)$/', $filename), 404);
+
+        $path = \App\Support\InvitationExperience::musicPath($filename);
+        abort_unless(is_file($path), 404);
+
+        $types = ['mp3' => 'audio/mpeg', 'm4a' => 'audio/mp4', 'mp4' => 'audio/mp4', 'aac' => 'audio/aac', 'ogg' => 'audio/ogg'];
+
+        return response()->file($path, [
+            'Content-Type' => $types[strtolower(pathinfo($filename, PATHINFO_EXTENSION))] ?? 'audio/mpeg',
+            'Cache-Control' => 'public, max-age=31536000, immutable',
+            'Accept-Ranges' => 'bytes',
+        ]);
+    }
+
     public function landingImage(string $filename)
     {
         abort_unless(preg_match('/^[A-Za-z0-9._-]+$/', $filename), 404);

@@ -45,6 +45,18 @@ class SaasUsage
         return max(0, (int) $limit - (int) ($quota['usage'][$resource] ?? 0));
     }
 
+    /**
+     * True when the organization has a settled, non-expired subscription
+     * (a trial or an expired period does not count as a paid plan).
+     */
+    public static function hasPaidSubscription(?Organization $organization): bool
+    {
+        return $organization !== null
+            && $organization->status === 'active'
+            && $organization->subscription_ends_at !== null
+            && $organization->subscription_ends_at->isFuture();
+    }
+
     public static function canAdd(?Organization $organization, string $resource, int $quantity = 1): bool
     {
         $remaining = self::remaining($organization, $resource);

@@ -395,6 +395,7 @@ class PlatformAdminController extends Controller
             'invitations_limit' => 'nullable|integer|min:1',
             'features_text' => 'nullable|string|max:2000',
             'is_active' => 'nullable|boolean',
+            'allows_custom_music' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0|max:65535',
         ]);
 
@@ -405,6 +406,7 @@ class PlatformAdminController extends Controller
             ->all();
 
         $validated['is_active'] = (bool) ($validated['is_active'] ?? false);
+        $validated['allows_custom_music'] = (bool) ($validated['allows_custom_music'] ?? false);
         $validated['sort_order'] = (int) ($validated['sort_order'] ?? 0);
 
         unset($validated['features_text']);

@@ -10,6 +10,7 @@ use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SaasSettingsController;
 use App\Http\Controllers\PlatformAdminController;
 use App\Http\Controllers\PlatformLandingController;
+use App\Http\Controllers\PlatformInvitationExperienceController;
 use App\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/media/events/{filename}', [MediaController::class, 'eventImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.events.image');
 Route::get('/media/event-programmes/{filename}', [MediaController::class, 'eventProgramme'])->where('filename', '[A-Za-z0-9._-]+\.pdf')->name('media.events.programme');
 Route::get('/media/organizations/{filename}', [MediaController::class, 'organizationLogo'])->where('filename', '[A-Za-z0-9._-]+')->name('media.organizations.logo');
+Route::get('/media/music/{filename}', [MediaController::class, 'music'])->where('filename', '[A-Za-z0-9_-]+\.(mp3|m4a|aac|ogg|mp4)')->name('media.music');
 Route::get('/media/landing/{filename}', [MediaController::class, 'landingImage'])->where('filename', '[A-Za-z0-9._-]+')->name('media.landing.image');
 
 Route::get('/', function () {
@@ -48,6 +50,8 @@ Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('pl
     Route::get('/invitation-cards', [PlatformAdminController::class, 'invitationCards'])->name('invitation-cards');
     Route::get('/landing', [PlatformLandingController::class, 'edit'])->name('landing.edit');
     Route::put('/landing', [PlatformLandingController::class, 'update'])->name('landing.update');
+    Route::get('/invitation-experience', [PlatformInvitationExperienceController::class, 'edit'])->name('invitation-experience.edit');
+    Route::put('/invitation-experience', [PlatformInvitationExperienceController::class, 'update'])->name('invitation-experience.update');
     Route::get('/organizations', [PlatformAdminController::class, 'organizations'])->name('organizations');
     Route::post('/organizations', [PlatformAdminController::class, 'storeOrganization'])->name('organizations.store');
     Route::delete('/organizations/purge', [PlatformAdminController::class, 'purgeOrganizations'])->name('organizations.purge');
@@ -105,6 +109,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::post('/saas/communications', [SaasSettingsController::class, 'purchaseCommunicationCredits'])->name('saas.communications.purchase');
         Route::get('/saas/branding', [SaasSettingsController::class, 'branding'])->name('saas.branding');
         Route::put('/saas/branding', [SaasSettingsController::class, 'updateBranding'])->name('saas.branding.update');
+        Route::put('/saas/branding/experience', [SaasSettingsController::class, 'updateInvitationExperience'])->name('saas.branding.experience.update');
     });
 
     // Routes d'accès (admin) - Doit être avant la route resource pour éviter les conflits

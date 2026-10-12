@@ -60,7 +60,7 @@ class PlatformLandingController extends Controller
 
     private function normalize(array $settings): array
     {
-        foreach (['navigation', 'trust_items', 'hero_metrics', 'features', 'plans', 'security.items', 'faqs'] as $key) {
+        foreach (['navigation', 'trust_items', 'hero_metrics', 'journey_steps', 'features', 'plans', 'security.items', 'faqs'] as $key) {
             $items = collect(Arr::get($settings, $key, []))
                 ->filter(fn ($item) => is_array($item) && $this->hasVisibleValue($item))
                 ->map(function ($item) {
@@ -71,6 +71,10 @@ class PlatformLandingController extends Controller
                         $item['items'] = $this->lines($item['items']);
                     }
 
+                    if (array_key_exists('screen', $item) && !array_key_exists($item['screen'], LandingPage::JOURNEY_SCREENS)) {
+                        $item['screen'] = array_key_first(LandingPage::JOURNEY_SCREENS);
+                    }
+
                     return $item;
                 })
                 ->values()
@@ -79,11 +83,13 @@ class PlatformLandingController extends Controller
             Arr::set($settings, $key, $items);
         }
 
-        if (isset($settings['representation']['items']) && is_string($settings['representation']['items'])) {
-            $settings['representation']['items'] = $this->lines($settings['representation']['items']);
+        foreach (['representation', 'wallet'] as $section) {
+            if (isset($settings[$section]['items']) && is_string($settings[$section]['items'])) {
+                $settings[$section]['items'] = $this->lines($settings[$section]['items']);
+            }
         }
 
-        foreach (['hero', 'features_section', 'representation', 'checkin', 'wallet', 'pricing_section', 'security', 'faq_section', 'cta'] as $section) {
+        foreach (['hero', 'journey', 'features_section', 'representation', 'checkin', 'wallet', 'pricing_section', 'security', 'faq_section', 'cta'] as $section) {
             $settings[$section]['enabled'] = isset($settings[$section]['enabled']) && (string) $settings[$section]['enabled'] === '1';
         }
 

@@ -8,10 +8,10 @@
     <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
         <label class="form-label mb-0">
             <i class="bi bi-share"></i>
-            Réseaux sociaux et liens utiles <span class="text-muted">(facultatif)</span>
+            Réseaux sociaux <span class="text-muted">(facultatif)</span>
         </label>
         <button type="button" class="btn btn-outline-dark btn-sm" id="addSocialLink">
-            <i class="bi bi-plus-lg me-1"></i>Ajouter un lien
+            <i class="bi bi-plus-lg me-1"></i>Ajouter un réseau
         </button>
     </div>
 
@@ -48,7 +48,7 @@
             </div>
         @endforeach
     </div>
-    <small class="form-text text-muted">Indiquez librement le libellé et l’adresse de chaque réseau ou lien.</small>
+    <small class="form-text text-muted">Indiquez le nom de chaque réseau (Facebook, Instagram, LinkedIn…) et l’adresse de votre page.</small>
 </div>
 
 <template id="socialLinkTemplate">

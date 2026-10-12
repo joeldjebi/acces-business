@@ -17,6 +17,7 @@ class SubscriptionPlan extends Model
         'users_limit',
         'invitations_limit',
         'features',
+        'allows_custom_music',
         'is_active',
         'sort_order',
     ];
@@ -28,6 +29,7 @@ class SubscriptionPlan extends Model
         'users_limit' => 'integer',
         'invitations_limit' => 'integer',
         'features' => 'array',
+        'allows_custom_music' => 'boolean',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];

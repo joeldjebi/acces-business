@@ -110,8 +110,20 @@ class EventRegistrationController extends Controller
         $message = session('success') ?: session('warning');
         $invitationToken = session('invitation_token');
         $email = session('registration_email');
+        $walletLinks = ['apple' => null, 'google' => null];
 
-        return view('events.response-confirmation', compact('event', 'message', 'invitationToken', 'email'));
+        if ($invitationToken) {
+            $registration = EventRegistration::where('event_id', $event->id)
+                ->where('token_unique', $invitationToken)
+                ->whereIn('statut_reponse', ['present', 'peut_etre'])
+                ->first();
+
+            if ($registration) {
+                $walletLinks = $this->walletPassService->linksFor($registration);
+            }
+        }
+
+        return view('events.response-confirmation', compact('event', 'message', 'invitationToken', 'email', 'walletLinks'));
     }
 
     /**
@@ -159,8 +171,9 @@ class EventRegistrationController extends Controller
 
         $event->load(['category', 'visibilite']);
         $inviteData = $this->inviteDataFor($event, $verifiedEmail);
+        $experience = \App\Support\InvitationExperience::forEvent($event);
 
-        return view('events.respond', compact('event', 'verifiedEmail', 'inviteData'));
+        return view('events.respond', compact('event', 'verifiedEmail', 'inviteData', 'experience'));
     }
 
     /**
