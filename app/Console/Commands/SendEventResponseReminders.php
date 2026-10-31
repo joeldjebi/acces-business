@@ -39,9 +39,21 @@ class SendEventResponseReminders extends Command
                     $sent++;
                 }
             }
+
+            $links = $eventCommunicationService->pendingLinkReminderQuery(null, $organization)
+                ->limit($limit)
+                ->get();
+
+            $eligible += $links->count();
+
+            foreach ($links as $link) {
+                if ($eventCommunicationService->sendLinkReminder($link, true)) {
+                    $sent++;
+                }
+            }
         }
 
-        $this->info($sent . ' relance(s) envoyée(s) sur ' . $eligible . ' inscription(s) éligible(s), ' . $organizations->count() . ' organisation(s) traitée(s).');
+        $this->info($sent . ' relance(s) envoyée(s) sur ' . $eligible . ' invité(s) éligible(s), ' . $organizations->count() . ' organisation(s) traitée(s).');
 
         return self::SUCCESS;
     }

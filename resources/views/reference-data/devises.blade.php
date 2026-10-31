@@ -282,7 +282,7 @@
                         <button form="update-devise-{{ $devise->id }}" type="submit" class="icon-btn" title="Enregistrer">
                             <i class="bi bi-check2"></i>
                         </button>
-                        <form action="{{ route('devises.destroy', $devise) }}" method="POST" onsubmit="return confirm('Supprimer cette devise ?');">
+                        <form action="{{ route('devises.destroy', $devise) }}" method="POST" data-confirm-title="Supprimer cette devise ?" data-confirm="Cette action est définitive.">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="icon-btn danger" title="Supprimer" {{ $devise->events_count > 0 ? 'disabled' : '' }}>

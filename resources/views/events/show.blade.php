@@ -7,6 +7,7 @@
     $canManageAccess = auth()->check() && (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin());
     $showInternalNotes = $event->notes_internes && $canManageAccess;
     $isPublicRegistrationOpen = optional($event->visibilite)->libelle === 'Public' && $event->statut === 'publie';
+    $places = \App\Support\EventCapacity::summary($event);
     $eventVideoEmbed = \App\Support\EventMedia::videoEmbedUrl($event->video_url);
     $image = \App\Support\EventMedia::storageUrl($event->image);
     $time = fn ($value) => $value ? \Illuminate\Support\Str::substr($value, 0, 5) : '--:--';
@@ -32,25 +33,23 @@
 
     .media { border-radius: var(--app-radius); overflow: hidden; position: relative; }
     .media img { aspect-ratio: 16 / 9; display: block; object-fit: cover; width: 100%; }
-    .media-placeholder { align-items: center; aspect-ratio: 16 / 7; background: radial-gradient(90% 120% at 0% 0%, rgba(185, 137, 67, .45), transparent 60%), #171713; color: rgba(216, 185, 120, .4); display: flex; font-size: 3.5rem; justify-content: center; }
     .description { color: var(--app-text); font-size: .98rem; line-height: 1.8; overflow-wrap: anywhere; }
     .description.is-empty { color: var(--app-muted); font-style: italic; }
     .link-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .link-chip { align-items: center; background: rgba(23, 23, 19, .05); border-radius: 999px; color: var(--app-ink); display: inline-flex; font-size: .84rem; font-weight: 500; gap: 7px; padding: 8px 14px; text-decoration: none; transition: background .2s; }
+    .link-chip { align-items: center; background: var(--app-soft); border-radius: 999px; color: var(--app-ink); display: inline-flex; font-size: .84rem; font-weight: 500; gap: 7px; padding: 8px 14px; text-decoration: none; transition: background .2s; }
     .link-chip:hover { background: rgba(23, 23, 19, .09); color: var(--app-ink); }
-    .link-chip i { color: var(--app-gold-deep); }
-    .internal-note { background: #fbf4e8; border: 1px solid rgba(185, 137, 67, .25); border-radius: 14px; color: #6b5126; font-size: .92rem; line-height: 1.7; padding: 14px 16px; }
+    .link-chip i { color: var(--app-muted); }
+    .internal-note { background: var(--app-soft); border-radius: 12px; color: var(--app-text); font-size: .92rem; line-height: 1.7; padding: 14px 16px; }
 
     .facts { display: grid; }
-    .fact { align-items: flex-start; border-top: 1px solid var(--app-line); display: grid; gap: 14px; grid-template-columns: 34px minmax(0, 1fr); padding: 13px 22px; }
+    .fact { align-items: baseline; border-top: 1px solid var(--app-line); display: grid; gap: 14px; grid-template-columns: 110px minmax(0, 1fr); padding: 12px 22px; }
     .fact:first-child { border-top: 0; }
-    .fact-icon { align-items: center; background: var(--app-gold-soft); border-radius: 10px; color: var(--app-gold-deep); display: flex; height: 34px; justify-content: center; width: 34px; }
-    .fact-label { color: var(--app-muted); font-size: .74rem; font-weight: 500; }
-    .fact-value { color: var(--app-ink); font-size: .9rem; font-weight: 600; line-height: 1.4; margin-top: 1px; overflow-wrap: anywhere; }
+    .fact-label { color: var(--app-muted); font-size: .82rem; }
+    .fact-value { color: var(--app-ink); font-size: .88rem; font-weight: 500; line-height: 1.4; margin-top: 1px; overflow-wrap: anywhere; }
     .fact-value small { color: var(--app-muted); display: block; font-weight: 400; }
     .fact-value a { color: var(--app-ink); text-decoration-color: rgba(185, 137, 67, .5); text-underline-offset: 3px; }
     .timeline-dates { align-items: stretch; display: grid; gap: 10px; grid-template-columns: 1fr auto 1fr; padding: 0 22px 18px; }
-    .tl-date { background: var(--app-bg); border-radius: 14px; padding: 12px 14px; }
+    .tl-date { background: var(--app-soft); border-radius: 14px; padding: 12px 14px; }
     .tl-date span { color: var(--app-muted); display: block; font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
     .tl-date strong { color: var(--app-ink); display: block; font-size: .95rem; font-weight: 650; margin-top: 4px; }
     .tl-date small { color: var(--app-muted); display: block; font-size: .8rem; }
@@ -78,7 +77,7 @@
                                 </form>
                             </li>
                             <li>
-                                <form method="POST" action="{{ route('events.thank-you-sms.send', $event) }}" onsubmit="return confirm('Envoyer un SMS de remerciement aux participants déjà checkés ?');">
+                                <form method="POST" action="{{ route('events.thank-you-sms.send', $event) }}" data-confirm-title="Envoyer le SMS de remerciement ?" data-confirm="Les participants déjà enregistrés à l’entrée recevront un SMS." data-confirm-button="Envoyer" data-confirm-tone="primary">
                                     @csrf
                                     <button type="submit" class="dropdown-item"><i class="bi bi-chat-heart"></i>SMS de remerciement</button>
                                 </form>
@@ -93,24 +92,24 @@
 
     @if($canManageAccess)
         <section class="ui-stats">
-            <article class="ui-stat" style="--accent: var(--app-blue)">
+            <article class="ui-stat">
                 <div class="ui-stat-top">Invitations envoyées<i class="bi bi-send"></i></div>
                 <strong>{{ number_format($invitations, 0, ',', ' ') }}</strong>
                 <small>Liens d’accès personnels</small>
             </article>
-            <article class="ui-stat" style="--accent: var(--app-gold)">
-                <div class="ui-stat-top">Inscrits<i class="bi bi-people"></i></div>
-                <strong>{{ number_format($registered, 0, ',', ' ') }}</strong>
-                <small>{{ $capacity ? 'sur ' . number_format($capacity, 0, ',', ' ') . ' places' : 'Capacité libre' }}</small>
-                @if($capacity)<div class="ui-meter"><span style="width: {{ min(100, round($registered / $capacity * 100)) }}%"></span></div>@endif
+            <article class="ui-stat">
+                <div class="ui-stat-top">Places attribuées<i class="bi bi-people"></i></div>
+                <strong>{{ number_format($places['occupied'], 0, ',', ' ') }}@if($capacity)<span class="text-muted fs-6 fw-semibold"> / {{ number_format($capacity, 0, ',', ' ') }}</span>@endif</strong>
+                <small>{{ $capacity ? ($places['remaining'] ? $places['remaining'] . ' place(s) disponible(s)' : 'Complet') : 'Capacité illimitée' }} · {{ $registered }} réponse(s)</small>
+                @if($capacity)<div class="ui-meter"><span style="width: {{ min(100, round($places['occupied'] / $capacity * 100)) }}%; {{ $places['remaining'] === 0 ? 'background: var(--app-red)' : '' }}"></span></div>@endif
             </article>
-            <article class="ui-stat" style="--accent: var(--app-green)">
+            <article class="ui-stat">
                 <div class="ui-stat-top">Confirmés<i class="bi bi-person-check"></i></div>
                 <strong>{{ number_format($confirmed, 0, ',', ' ') }}</strong>
                 <small>{{ $registered ? round($confirmed / $registered * 100) : 0 }}% des réponses</small>
                 <div class="ui-meter"><span style="width: {{ $registered ? round($confirmed / $registered * 100) : 0 }}%"></span></div>
             </article>
-            <article class="ui-stat" style="--accent: #7a5cc2">
+            <article class="ui-stat">
                 <div class="ui-stat-top">Check-in<i class="bi bi-qr-code-scan"></i></div>
                 <strong>{{ number_format($checkedIn, 0, ',', ' ') }}</strong>
                 <small>{{ $confirmed ? round($checkedIn / max(1, $confirmed) * 100) : 0 }}% des confirmés</small>
@@ -125,8 +124,6 @@
                 <div class="media">
                     @if($image)
                         <img src="{{ $image }}" alt="{{ $event->titre }}">
-                    @elseif(!$eventVideoEmbed)
-                        <div class="media-placeholder"><i class="bi bi-stars"></i></div>
                     @endif
                     @if($eventVideoEmbed)
                         <div class="ratio ratio-16x9"><iframe src="{{ $eventVideoEmbed }}" title="Vidéo de l'événement" allowfullscreen></iframe></div>
@@ -151,7 +148,7 @@
             @if(!empty($event->social_links) || $event->tags)
                 <section class="ui-card">
                     @if(!empty($event->social_links))
-                        <div class="ui-card-head"><div><h2>Réseaux sociaux</h2><p>Retrouvez l’événement sur ses différentes plateformes.</p></div></div>
+                        <div class="ui-card-head"><div><h2>Réseaux sociaux</h2></div></div>
                         <div class="ui-card-body pt-0">
                             <div class="link-chips">
                                 @foreach($event->social_links as $socialLink)
@@ -175,12 +172,16 @@
 
             @if($showInternalNotes)
                 <section class="ui-card">
-                    <div class="ui-card-head"><div><h2>Notes internes</h2><p>Visibles uniquement par les administrateurs.</p></div><i class="bi bi-lock text-muted"></i></div>
+                    <div class="ui-card-head"><div><h2>Notes internes</h2><p>Visibles uniquement par les administrateurs.</p></div></div>
                     <div class="ui-card-body pt-0"><div class="internal-note">{!! nl2br(e($event->notes_internes)) !!}</div></div>
                 </section>
             @endif
 
-            @if($isPublicRegistrationOpen)
+            @if($isPublicRegistrationOpen && $places['remaining'] === 0)
+                <section class="ui-card">
+                    <div class="ui-empty py-4"><i class="bi bi-people"></i><strong>Événement complet</strong>Toutes les places ont été attribuées.</div>
+                </section>
+            @elseif($isPublicRegistrationOpen)
                 <section class="ui-card">
                     <div class="ui-card-head has-border"><div><h2>S'inscrire à cet événement</h2><p>Une carte d'invitation sera envoyée après validation.</p></div></div>
                     <div class="ui-card-body">
@@ -234,7 +235,7 @@
                     <div class="tl-date"><span>Fin</span><strong>{{ $end ? $end->translatedFormat('d M Y') : 'À définir' }}</strong><small>{{ $time($event->heure_fin) }}</small></div>
                 </div>
                 @if($event->date_publication)
-                    <div class="facts"><div class="fact"><span class="fact-icon"><i class="bi bi-broadcast"></i></span><div><div class="fact-label">Publié le</div><div class="fact-value">{{ $event->date_publication->format('d/m/Y à H:i') }}</div></div></div></div>
+                    <div class="facts"><div class="fact"><div class="fact-label">Publié le</div><div class="fact-value">{{ $event->date_publication->format('d/m/Y à H:i') }}</div></div></div>
                 @endif
             </section>
 
@@ -245,7 +246,7 @@
                     </div>
                     <div class="facts">
                         <div class="fact">
-                            <span class="fact-icon"><i class="bi bi-geo-alt"></i></span>
+                            <div class="fact-label">Adresse</div>
                             <div>
                                 <div class="fact-value">{{ $event->lieu ?: 'Lieu à confirmer' }}
                                     @if($event->adresse_complete)<small>{{ $event->adresse_complete }}</small>@endif
@@ -253,9 +254,6 @@
                                 </div>
                             </div>
                         </div>
-                        @if($event->latitude && $event->longitude)
-                            <div class="fact"><span class="fact-icon"><i class="bi bi-crosshair"></i></span><div><div class="fact-label">Coordonnées</div><div class="fact-value">{{ $event->latitude }}, {{ $event->longitude }}</div></div></div>
-                        @endif
                     </div>
                 </section>
             @endif
@@ -263,10 +261,10 @@
             <section class="ui-card">
                 <div class="ui-card-head"><div><h2>Accès et tarification</h2></div></div>
                 <div class="facts">
-                    <div class="fact"><span class="fact-icon"><i class="bi bi-ticket-perforated"></i></span><div><div class="fact-label">Tarif</div><div class="fact-value">{{ $event->isFree() ? 'Gratuit' : number_format($event->prix, 0, ',', ' ') . ' ' . optional($event->devise)->libelle }}<small>{{ optional($event->typeTarification)->libelle ?? 'Type non défini' }}</small></div></div></div>
-                    <div class="fact"><span class="fact-icon"><i class="bi bi-people"></i></span><div><div class="fact-label">Capacité</div><div class="fact-value">{{ $event->capacite_maximale ? number_format($event->capacite_maximale, 0, ',', ' ') . ' personnes' : 'Illimitée' }}</div></div></div>
-                    <div class="fact"><span class="fact-icon"><i class="bi bi-clipboard-check"></i></span><div><div class="fact-label">Inscription</div><div class="fact-value">{{ $event->inscription_requise ? 'Requise' : 'Non requise' }}@if($event->inscription_requise && $event->date_limite_inscription)<small>Jusqu’au {{ $event->date_limite_inscription->format('d/m/Y') }}</small>@endif</div></div></div>
-                    <div class="fact"><span class="fact-icon"><i class="bi bi-eye"></i></span><div><div class="fact-label">Visibilité</div><div class="fact-value">{{ optional($event->visibilite)->libelle ?? 'Non définie' }}<small>{{ number_format($event->vues, 0, ',', ' ') }} vue(s)</small></div></div></div>
+                    <div class="fact"><div class="fact-label">Tarif</div><div class="fact-value">{{ $event->isFree() ? 'Gratuit' : number_format($event->prix, 0, ',', ' ') . ' ' . optional($event->devise)->libelle }}<small>{{ optional($event->typeTarification)->libelle ?? 'Type non défini' }}</small></div></div>
+                    <div class="fact"><div class="fact-label">Capacité</div><div class="fact-value">{{ $event->capacite_maximale ? number_format($event->capacite_maximale, 0, ',', ' ') . ' personnes' : 'Illimitée' }}@if($places['capacity'])<small>{{ $places['remaining'] ? $places['remaining'] . ' place(s) disponible(s)' : 'Complet' }}</small>@endif</div></div>
+                    <div class="fact"><div class="fact-label">Inscription</div><div class="fact-value">{{ $event->inscription_requise ? 'Requise' : 'Non requise' }}@if($event->inscription_requise && $event->date_limite_inscription)<small>Jusqu’au {{ $event->date_limite_inscription->format('d/m/Y') }}</small>@endif</div></div>
+                    <div class="fact"><div class="fact-label">Visibilité</div><div class="fact-value">{{ optional($event->visibilite)->libelle ?? 'Non définie' }}<small>{{ number_format($event->vues, 0, ',', ' ') }} vue(s)</small></div></div>
                 </div>
             </section>
 
@@ -274,15 +272,15 @@
                 <section class="ui-card">
                     <div class="ui-card-head"><div><h2>Contact</h2></div></div>
                     <div class="facts">
-                        @if($event->organisateur)<div class="fact"><span class="fact-icon"><i class="bi bi-person-badge"></i></span><div><div class="fact-label">Organisateur</div><div class="fact-value">{{ $event->organisateur }}</div></div></div>@endif
-                        @if($event->email_contact)<div class="fact"><span class="fact-icon"><i class="bi bi-envelope"></i></span><div><div class="fact-label">Email</div><div class="fact-value"><a href="mailto:{{ $event->email_contact }}">{{ $event->email_contact }}</a></div></div></div>@endif
-                        @if($event->telephone)<div class="fact"><span class="fact-icon"><i class="bi bi-telephone"></i></span><div><div class="fact-label">Téléphone</div><div class="fact-value"><a href="tel:{{ $event->telephone }}">{{ $event->telephone }}</a></div></div></div>@endif
-                        @if($event->site_web)<div class="fact"><span class="fact-icon"><i class="bi bi-link-45deg"></i></span><div><div class="fact-label">Site web</div><div class="fact-value"><a href="{{ $event->site_web }}" target="_blank" rel="noopener noreferrer">{{ $event->site_web }}</a></div></div></div>@endif
+                        @if($event->organisateur)<div class="fact"><div class="fact-label">Organisateur</div><div class="fact-value">{{ $event->organisateur }}</div></div>@endif
+                        @if($event->email_contact)<div class="fact"><div class="fact-label">Email</div><div class="fact-value"><a href="mailto:{{ $event->email_contact }}">{{ $event->email_contact }}</a></div></div>@endif
+                        @if($event->telephone)<div class="fact"><div class="fact-label">Téléphone</div><div class="fact-value"><a href="tel:{{ $event->telephone }}">{{ $event->telephone }}</a></div></div>@endif
+                        @if($event->site_web)<div class="fact"><div class="fact-label">Site web</div><div class="fact-value"><a href="{{ $event->site_web }}" target="_blank" rel="noopener noreferrer">{{ $event->site_web }}</a></div></div>@endif
                     </div>
                 </section>
             @endif
 
-            <p class="text-muted small px-1 mb-0"><i class="bi bi-person me-1"></i>Créé par {{ optional($event->user)->name ?? 'utilisateur inconnu' }}</p>
+            <p class="text-muted small px-1 mb-0">Créé par {{ optional($event->user)->name ?? 'utilisateur inconnu' }}</p>
         </aside>
     </div>
 </div>

@@ -22,7 +22,7 @@ class SmsService
                 'message_preview' => substr($message, 0, 80),
             ]);
 
-            return ['success' => false, 'message' => 'Configuration SMS manquante: MAILJET_SMS_TOKEN.'];
+            return ['success' => false, 'message' => 'Le SMS n’a pas pu être envoyé. Réessayez plus tard.'];
         }
 
         try {
@@ -50,7 +50,8 @@ class SmsService
             curl_close($ch);
 
             if ($curlError) {
-                return ['success' => false, 'message' => 'Erreur SMS cURL: ' . $curlError];
+                Log::error('SMS cURL', ['to' => $to, 'error' => $curlError]);
+                return ['success' => false, 'message' => 'Le SMS n’a pas pu être envoyé. Réessayez plus tard.'];
             }
 
             $data = json_decode((string) $response, true);
@@ -65,13 +66,13 @@ class SmsService
 
             return [
                 'success' => $success,
-                'message' => $success ? 'SMS envoyé avec succès.' : ($data['ErrorMessage'] ?? $data['message'] ?? 'Erreur lors de l’envoi SMS.'),
+                'message' => $success ? 'SMS envoyé.' : 'Le SMS n’a pas pu être envoyé. Réessayez plus tard.',
                 'data' => $data,
                 'http_code' => $httpCode,
             ];
         } catch (\Throwable $e) {
             Log::error('Exception SMS', ['to' => $to, 'error' => $e->getMessage()]);
-            return ['success' => false, 'message' => $e->getMessage()];
+            return ['success' => false, 'message' => 'Le SMS n’a pas pu être envoyé. Réessayez plus tard.'];
         }
     }
 }

@@ -16,17 +16,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="{{ $settings['theme']['background'] ?? '#fbf8f1' }}">
+    <meta name="theme-color" content="#ffffff">
     <title>@yield('title') · {{ $brandName }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
             --ink: {{ $settings['theme']['ink'] ?? '#171713' }};
             --gold: {{ $settings['theme']['gold'] ?? '#b98943' }};
-            --bg: {{ $settings['theme']['background'] ?? '#fbf8f1' }};
+            --bg: #ffffff;
             --muted: color-mix(in srgb, var(--ink) 55%, #fff);
             --line: color-mix(in srgb, var(--ink) 10%, transparent);
             --panel: #ffffff;
@@ -36,8 +33,8 @@
             --green: #2e7b65;
             --danger: #b4423b;
             --ease: cubic-bezier(.16, 1, .3, 1);
-            --display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-            --font: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
         *, *::before, *::after { box-sizing: border-box; min-width: 0; }
         html, body { height: 100%; overflow: hidden; }
@@ -45,13 +42,6 @@
         a { color: inherit; text-decoration: none; }
         h1, h2 { font-family: var(--display); letter-spacing: -.035em; margin: 0; }
 
-        /* Ambient background */
-        .ambient { inset: 0; overflow: hidden; pointer-events: none; position: fixed; z-index: 0; }
-        .blob { border-radius: 50%; filter: blur(70px); opacity: .55; position: absolute; }
-        .blob-a { animation: drift 18s ease-in-out infinite alternate; background: var(--gold-light); height: 46vmax; left: -12vmax; top: -16vmax; width: 46vmax; }
-        .blob-b { animation: drift 22s ease-in-out infinite alternate-reverse; background: color-mix(in srgb, var(--gold) 35%, #fff); bottom: -20vmax; height: 50vmax; right: -14vmax; width: 50vmax; }
-        .grid-lines { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 64px 64px; inset: 0; -webkit-mask-image: radial-gradient(circle at 50% 40%, #000, transparent 70%); mask-image: radial-gradient(circle at 50% 40%, #000, transparent 70%); opacity: .5; position: absolute; }
-        @keyframes drift { to { transform: translate(6vmax, 4vmax) scale(1.08); } }
 
         /* Shell: nav + one screen, never taller than the viewport */
         .shell { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100svh; position: relative; z-index: 1; }
@@ -93,7 +83,7 @@
 
         .visual { align-items: center; display: grid; height: 100%; justify-items: center; max-height: 640px; position: relative; width: clamp(240px, 21vw, 310px); }
         .visual > * { grid-area: 1 / 1; }
-        .disc { aspect-ratio: 1; background: radial-gradient(circle at 32% 28%, var(--gold-light), var(--gold) 58%, var(--gold-deep)); border-radius: 50%; width: 100%; }
+        .disc { aspect-ratio: 1; background: var(--gold); border-radius: 50%; width: 100%; }
         .orbit { animation: spin 70s linear infinite; aspect-ratio: 1; border: 1.5px dashed color-mix(in srgb, var(--gold) 55%, transparent); border-radius: 50%; position: relative; width: 128%; }
         .orbit::before { background: var(--gold); border-radius: 50%; box-shadow: 0 0 0 6px var(--gold-soft); content: ""; height: 12px; left: 50%; position: absolute; top: -6px; width: 12px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -134,7 +124,7 @@
         .check input { accent-color: var(--ink); height: 16px; margin: 0; width: 16px; }
         .alert { align-items: flex-start; background: color-mix(in srgb, var(--danger) 8%, #fff); border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent); border-radius: 12px; color: var(--danger); display: flex; font-size: .86rem; font-weight: 600; gap: 8px; margin-bottom: 14px; padding: 10px 12px; }
         .submit { align-items: center; background: var(--ink); border: 0; border-radius: 999px; box-shadow: 0 16px 30px -16px rgba(0, 0, 0, .6); color: #fff; cursor: pointer; display: flex; font: inherit; font-size: .95rem; font-weight: 600; gap: 10px; height: 50px; justify-content: center; overflow: hidden; position: relative; transition: transform .45s var(--ease), box-shadow .45s var(--ease); width: 100%; }
-        .submit::before { background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .22), transparent 70%); content: ""; inset: 0; position: absolute; transform: translateX(-100%); }
+        .submit::before { background: none; content: ""; inset: 0; position: absolute; transform: translateX(-100%); }
         .submit:hover { box-shadow: 0 20px 36px -16px rgba(0, 0, 0, .65); transform: translateY(-2px); }
         .submit:hover::before { transform: translateX(100%); transition: transform .9s var(--ease); }
         .submit i { transition: transform .45s var(--ease); }
@@ -177,7 +167,6 @@
     </style>
 </head>
 <body>
-<div class="ambient" aria-hidden="true"><span class="grid-lines"></span><span class="blob blob-a" data-blob></span><span class="blob blob-b" data-blob></span></div>
 
 <div class="shell">
     <nav class="nav" aria-label="Navigation principale">
@@ -292,7 +281,7 @@
 
         // Pointer parallax on the visual (desktop only)
         if (matchMedia('(hover: hover)').matches) {
-            const layers = [['[data-device]', 14], ['[data-disc]', -10], ['[data-blob]', 30]].concat($$('[data-chip]').map((c) => [c, parseFloat(c.dataset.depth) || 16]));
+            const layers = [['[data-device]', 14], ['[data-disc]', -10]].concat($$('[data-chip]').map((c) => [c, parseFloat(c.dataset.depth) || 16]));
             const movers = layers.map(([target, depth]) => ({ depth, x: gsap.quickTo(target, 'xPercent', { duration: 1.2, ease: 'power3.out' }) }));
             addEventListener('pointermove', (e) => { const nx = e.clientX / innerWidth - .5; movers.forEach((m) => m.x(nx * m.depth * .2)); });
         }

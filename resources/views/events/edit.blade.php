@@ -306,8 +306,10 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="capacite_maximale" class="form-label">Capacité maximale</label>
-                                <input type="number" min="1" class="form-control @error('capacite_maximale') is-invalid @enderror" id="capacite_maximale" name="capacite_maximale" value="{{ old('capacite_maximale', $event->capacite_maximale) }}" placeholder="Illimitée si vide">
+                                @php $occupiedPlaces = \App\Support\EventCapacity::occupied($event); @endphp
+                                <input type="number" min="{{ max(1, $occupiedPlaces) }}" class="form-control @error('capacite_maximale') is-invalid @enderror" id="capacite_maximale" name="capacite_maximale" value="{{ old('capacite_maximale', $event->capacite_maximale) }}" placeholder="Illimitée si vide">
                                 @error('capacite_maximale')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                @if($occupiedPlaces)<div class="form-text">{{ $occupiedPlaces }} place(s) déjà attribuée(s) : la capacité ne peut pas être inférieure.</div>@endif
                             </div>
                             <div class="col-md-6">
                                 <label for="date_limite_inscription" class="form-label">Date limite d'inscription</label>

@@ -79,12 +79,15 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => ['required', Rule::in(['admin', 'manager', 'moderateur'])],
+            // Le rôle du super admin est figé : il n'est ni envoyé ni modifiable
+            'role' => [Rule::requiredIf(!$user->isSuperAdmin()), Rule::in(['admin', 'manager', 'moderateur'])],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        $user->role = $validated['role'];
+        if (!$user->isSuperAdmin()) {
+            $user->role = $validated['role'];
+        }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);

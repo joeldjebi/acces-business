@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
-<body style="margin:0;background:#f5f3ee;font-family:Arial,sans-serif;color:#171713;">
+<body style="margin:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Helvetica,Arial,sans-serif;color:#171713;">
 <div style="max-width:640px;margin:0 auto;padding:32px 18px;">
     <div style="background:#fff;border:1px solid #ded8cc;border-radius:8px;padding:34px;">
         <p style="margin:0 0 18px;">Bonjour {{ $name }},</p>

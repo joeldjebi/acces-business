@@ -212,7 +212,7 @@ class PlatformAdminController extends Controller
         ]);
 
         return redirect()->route('platform.organizations')
-            ->with('success', 'Client créé. Lien register: ' . route('client.register', $organization->onboarding_token));
+            ->with('success', 'Client créé. Lien d’inscription : ' . route('client.register', $organization->onboarding_token));
     }
 
     public function purgeOrganizations(Request $request)
@@ -351,7 +351,7 @@ class PlatformAdminController extends Controller
             'onboarding_token_expires_at' => now()->addDays(14),
         ]);
 
-        return back()->with('success', 'Nouveau lien register client: ' . route('client.register', $organization->onboarding_token));
+        return back()->with('success', 'Nouveau lien d’inscription : ' . route('client.register', $organization->onboarding_token));
     }
 
     public function updateUserRole(Request $request, Organization $organization, User $user)

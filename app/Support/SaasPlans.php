@@ -48,7 +48,7 @@ class SaasPlans
                 'features' => [
                     'Événements publics et privés',
                     'Invitations par lien',
-                    'OTP et cartes PDF',
+                    'Vérification par code et cartes PDF',
                     'Branding léger',
                 ],
             ],
@@ -87,7 +87,6 @@ class SaasPlans
                     'Tout Business',
                     'Volumes illimités',
                     'Accompagnement dédié',
-                    'Préparation intégration paiement',
                 ],
             ],
         ];

@@ -53,7 +53,7 @@
     .step-item.active .step-label { color: var(--app-ink); font-weight: 650; }
     .step-item.completed .step-label { color: var(--app-text); }
     .progress-line { background: rgba(23, 23, 19, .06); bottom: 0; height: 3px; left: 0; position: absolute; right: 0; border-radius: 0 0 var(--app-radius) var(--app-radius); overflow: hidden; }
-    .progress-line-fill { background: linear-gradient(90deg, var(--app-gold), #d8b978); height: 100%; transition: width .6s var(--app-ease); width: 0; }
+    .progress-line-fill { background: #d8b978; height: 100%; transition: width .6s var(--app-ease); width: 0; }
 
     /* Shell */
     .create-shell { align-items: start; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 330px; }
@@ -73,7 +73,7 @@
     .btn-nav, .btn-nav-secondary { align-items: center; border-radius: 999px; display: inline-flex; font-size: .9rem; font-weight: 600; gap: 6px; height: 44px; justify-content: center; padding: 0 22px; transition: transform .35s var(--app-ease), box-shadow .35s var(--app-ease), background .2s; }
     .btn-nav { background: var(--app-ink); border: 1px solid var(--app-ink); color: #fff; }
     .btn-nav:hover { box-shadow: 0 14px 28px -12px rgba(23, 23, 19, .6); color: #fff; transform: translateY(-1px); }
-    .btn-nav.is-final { background: linear-gradient(135deg, #d8b978, #b98943 50%, #8a6128); border-color: transparent; }
+    .btn-nav.is-final { background: #b98943; border-color: transparent; }
     .btn-nav:disabled, .btn-nav:disabled:hover { box-shadow: none; cursor: not-allowed; opacity: .38; transform: none; }
     .step-missing { align-items: center; color: var(--app-muted); display: flex; flex: 1; font-size: .78rem; gap: 6px; justify-content: flex-end; line-height: 1.35; text-align: right; }
     .step-missing i { color: var(--app-gold); }
@@ -86,7 +86,7 @@
     .preview { position: sticky; top: 84px; }
     .preview-label { align-items: center; color: var(--app-muted); display: flex; font-size: .74rem; font-weight: 600; gap: 6px; letter-spacing: .06em; margin: 0 4px 10px; text-transform: uppercase; }
     .preview-card { background: var(--app-panel); border: 1px solid var(--app-line); border-radius: 22px; box-shadow: 0 1px 2px rgba(23, 23, 19, .04), 0 30px 60px -30px rgba(23, 23, 19, .35); overflow: hidden; }
-    .pv-cover { aspect-ratio: 16 / 10; background: radial-gradient(90% 90% at 0% 0%, rgba(185, 137, 67, .45), transparent 60%), #171713; position: relative; }
+    .pv-cover { aspect-ratio: 16 / 10; background: #171713; position: relative; }
     .pv-cover img { height: 100%; inset: 0; object-fit: cover; position: absolute; width: 100%; }
     .pv-cover .pv-empty { color: rgba(216, 185, 120, .35); display: grid; font-size: 3rem; inset: 0; place-items: center; position: absolute; }
     .pv-badges { display: flex; gap: 6px; left: 12px; position: absolute; top: 12px; }

@@ -44,7 +44,7 @@
     <section class="grid metrics">
         <article class="metric"><span>Inscriptions</span><strong>{{ $registrationsCount }}</strong></article>
         <article class="metric"><span>Liens envoyés</span><strong>{{ $accessLinksCount }}</strong></article>
-        <article class="metric"><span>OTP</span><strong>{{ $otpCount }}</strong></article>
+        <article class="metric"><span>Codes de vérification</span><strong>{{ $otpCount }}</strong></article>
         <article class="metric"><span>Vues</span><strong>{{ $event->vues ?? 0 }}</strong></article>
     </section>
 
@@ -131,7 +131,7 @@
             </section>
 
             <section class="panel">
-                <h2 class="section-title">OTP</h2>
+                <h2 class="section-title">Codes de vérification</h2>
                 @forelse($otpVerifications as $otp)
                     <div class="d-flex justify-content-between gap-3 py-2 border-top">
                         <div>
@@ -141,7 +141,7 @@
                         <span class="status-pill {{ $otp->is_verified ? 'status-verified' : 'status-pending' }}">{{ $otp->is_verified ? 'Vérifié' : 'En attente' }}</span>
                     </div>
                 @empty
-                    <div class="muted">Aucun OTP.</div>
+                    <div class="muted">Aucun code de vérification.</div>
                 @endforelse
             </section>
         </aside>

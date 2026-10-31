@@ -44,7 +44,7 @@ class MailjetService
             Log::error('Mailjet Service: Clés API non configurées');
             return [
                 'success' => false,
-                'message' => 'Configuration Mailjet manquante',
+                'message' => 'L’email n’a pas pu être envoyé. Réessayez plus tard.',
             ];
         }
 
@@ -56,7 +56,7 @@ class MailjetService
             Log::error('Mailjet Service: Email expéditeur non configuré');
             return [
                 'success' => false,
-                'message' => 'Email expéditeur non configuré',
+                'message' => 'L’email n’a pas pu être envoyé. Réessayez plus tard.',
             ];
         }
 
@@ -130,7 +130,7 @@ class MailjetService
 
                 return [
                     'success' => false,
-                    'message' => 'Erreur cURL: ' . $curlError,
+                    'message' => 'L’email n’a pas pu être envoyé. Réessayez plus tard.',
                 ];
             }
 
@@ -167,7 +167,7 @@ class MailjetService
 
                         return [
                             'success' => false,
-                            'message' => 'Erreur Mailjet: ' . $errorMessage . ($errorCode ? ' (Code: ' . $errorCode . ')' : ''),
+                            'message' => 'L’email n’a pas pu être envoyé. Réessayez plus tard.',
                             'error' => $responseData,
                             'http_code' => $httpCode,
                         ];
@@ -224,7 +224,7 @@ class MailjetService
 
                 return [
                     'success' => false,
-                    'message' => 'Erreur lors de l\'envoi de l\'email: ' . $errorMessage,
+                    'message' => 'L’email n’a pas pu être envoyé. Réessayez plus tard.',
                     'error' => $responseData,
                     'http_code' => $httpCode,
                 ];
@@ -237,7 +237,7 @@ class MailjetService
 
             return [
                 'success' => false,
-                'message' => 'Erreur lors de l\'envoi de l\'email: ' . $e->getMessage(),
+                'message' => 'L’email n’a pas pu être envoyé. Réessayez plus tard.',
             ];
         }
     }
@@ -290,7 +290,7 @@ class MailjetService
 
             return [
                 'success' => false,
-                'message' => 'Fichier joint introuvable',
+                'message' => 'L’email n’a pas pu être envoyé. Réessayez plus tard.',
             ];
         }
 

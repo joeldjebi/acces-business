@@ -29,7 +29,7 @@
 @section('content')
 <div class="platform">
     <h1>Supervision plateforme</h1>
-    <p class="platform-copy">Vue globale des organisations, volumes, revenus en attente et activité SaaS.</p>
+    <p class="platform-copy">Vue globale des organisations, volumes, revenus en attente et activité.</p>
 
     <nav class="platform-ref-actions" aria-label="Référentiels plateforme">
         <a href="{{ route('categories.index') }}"><i class="bi bi-tags"></i>Catégories d'événement</a>

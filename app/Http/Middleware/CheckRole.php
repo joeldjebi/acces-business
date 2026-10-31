@@ -51,6 +51,6 @@ class CheckRole
             }
         }
 
-        abort(403, 'Accès non autorisé.');
+        abort(403, 'Vous n’avez pas les droits nécessaires pour accéder à cette page.');
     }
 }

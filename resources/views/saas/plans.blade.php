@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Plans SaaS')
+@section('title', 'Abonnement')
 @section('hide_errors', '1')
 
 @use('App\Support\SaasPlans')
@@ -25,59 +25,46 @@
     .plans-page { margin: 0 auto; max-width: 1240px; }
     .plans-page *, .plans-page *::before, .plans-page *::after { min-width: 0; }
 
-    .current { background: radial-gradient(90% 140% at 0% 0%, rgba(185, 137, 67, .35), transparent 60%), #141412; border-radius: 22px; color: #fff; display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); margin-bottom: 28px; padding: 24px 26px; }
-    .current small { color: #d8b978; display: block; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-    .current h2 { color: #fff; font-size: 1.7rem; font-weight: 700; letter-spacing: -.035em; margin: 6px 0 4px; }
-    .current p { color: rgba(255, 255, 255, .6); font-size: .86rem; margin: 0; }
-    .current .status { align-items: center; background: rgba(48, 209, 88, .14); border-radius: 99px; color: #5fd38a; display: inline-flex; font-size: .74rem; font-weight: 600; gap: 6px; margin-top: 14px; padding: 4px 10px; }
-    .current .status.is-late { background: rgba(255, 159, 10, .16); color: #ffb340; }
-    .current-usage { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .cu { background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08); border-radius: 16px; padding: 14px; }
-    .cu span { align-items: center; color: rgba(255, 255, 255, .6); display: flex; font-size: .76rem; gap: 6px; }
-    .cu strong { display: block; white-space: nowrap; font-size: 1.3rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; margin: 8px 0; }
-    .cu strong small { color: rgba(255, 255, 255, .45); font-size: .85rem; font-weight: 500; }
-    .cu-meter { background: rgba(255, 255, 255, .1); border-radius: 99px; height: 5px; overflow: hidden; }
-    .cu-meter span { background: #d8b978; border-radius: inherit; display: block; height: 100%; }
+    .current { align-items: center; display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); margin-bottom: 28px; padding: 20px 22px; }
+    .current small { color: var(--app-muted); display: block; font-size: .78rem; }
+    .current h2 { color: var(--app-ink); font-size: 1.35rem; font-weight: 700; letter-spacing: -.02em; margin: 4px 0 2px; }
+    .current p { color: var(--app-muted); font-size: .84rem; margin: 0 0 10px; }
+    .current-usage { display: grid; gap: 18px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cu span { color: var(--app-muted); display: block; font-size: .78rem; }
+    .cu strong { color: var(--app-ink); display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; font-weight: 650; margin: 4px 0 8px; white-space: nowrap; }
+    .cu strong small { color: var(--app-muted); display: inline; font-size: .82rem; font-weight: 500; }
+    .cu .ui-meter span { background: var(--accent, var(--app-ink)); }
 
     .cycle { align-items: center; display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
-    .cycle-toggle { background: rgba(23, 23, 19, .06); border-radius: 999px; display: inline-flex; gap: 2px; padding: 4px; }
+    .cycle-toggle { background: var(--app-soft); border-radius: 999px; display: inline-flex; gap: 2px; padding: 4px; }
     .cycle-toggle button { align-items: center; background: transparent; border: 0; border-radius: 999px; color: var(--app-muted); display: inline-flex; font-size: .86rem; font-weight: 600; gap: 8px; padding: 8px 18px; transition: background .25s, color .25s; }
-    .cycle-toggle button.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 12px -4px rgba(23, 23, 19, .16); color: var(--app-ink); }
+    .cycle-toggle button.is-active { background: var(--app-panel); box-shadow: 0 0 0 1px var(--app-line); color: var(--app-ink); }
     .save-badge { background: rgba(31, 138, 95, .12); border-radius: 99px; color: #1f8a5f; font-size: .7rem; font-weight: 700; padding: 2px 8px; }
 
     .plan-grid { align-items: stretch; display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-    .plan { background: var(--app-panel); border: 1px solid var(--app-line); border-radius: 22px; box-shadow: var(--app-shadow); display: flex; flex-direction: column; padding: 26px 24px; position: relative; transition: transform .5s var(--app-ease), box-shadow .5s var(--app-ease); }
-    .plan:hover { box-shadow: 0 1px 2px rgba(23, 23, 19, .04), 0 30px 50px -28px rgba(23, 23, 19, .32); transform: translateY(-3px); }
-    .plan.is-featured { background: #141412; border-color: transparent; color: #fff; }
-    .plan.is-featured::before { background: conic-gradient(from var(--angle), transparent 0 60%, #d8b978, #b98943, transparent 90%); border-radius: inherit; content: ""; inset: -1px; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; padding: 1.5px; pointer-events: none; position: absolute; animation: spin 6s linear infinite; }
-    @property --angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-    @keyframes spin { to { --angle: 360deg; } }
-    .plan.is-current { box-shadow: 0 0 0 2px var(--app-gold), var(--app-shadow); }
+    .plan { background: var(--app-panel); border: 1px solid var(--app-line); border-radius: var(--app-radius); display: flex; flex-direction: column; padding: 24px 22px; position: relative; }
+    .plan.is-featured { border-color: var(--app-ink); }
+    .plan.is-current { border-color: var(--app-gold); box-shadow: 0 0 0 1px var(--app-gold); }
     .plan-tags { display: flex; gap: 6px; position: absolute; right: 18px; top: 18px; }
     .plan-name { color: var(--app-ink); font-size: 1.05rem; font-weight: 650; margin: 0; }
-    .plan.is-featured .plan-name, .plan.is-featured .plan-price { color: #fff; }
     .plan-tagline { color: var(--app-muted); font-size: .86rem; line-height: 1.5; margin: 6px 0 0; min-height: 40px; }
-    .plan.is-featured .plan-tagline, .plan.is-featured .plan-sub { color: rgba(255, 255, 255, .6); }
     .plan-price { align-items: baseline; color: var(--app-ink); display: flex; font-size: 2rem; font-variant-numeric: tabular-nums; font-weight: 700; gap: 6px; letter-spacing: -.045em; margin-top: 22px; }
     .plan-price small { color: var(--app-muted); font-size: .86rem; font-weight: 500; letter-spacing: 0; }
     .plan-sub { color: var(--app-muted); font-size: .78rem; min-height: 18px; }
     .plan ul { border-top: 1px solid var(--app-line); display: grid; gap: 10px; list-style: none; margin: 20px 0 24px; padding: 20px 0 0; }
-    .plan.is-featured ul { border-color: rgba(255, 255, 255, .1); }
     .plan li { align-items: flex-start; display: flex; font-size: .88rem; gap: 10px; line-height: 1.4; }
-    .plan li i { color: var(--app-gold); margin-top: 1px; }
-    .plan.is-featured li i { color: #d8b978; }
+    .plan li i { color: var(--app-muted); margin-top: 1px; }
     .plan li.is-limit strong { font-variant-numeric: tabular-nums; }
     .plan .ui-btn { margin-top: auto; width: 100%; }
-    .plan.is-featured .ui-btn-ghost { background: rgba(255, 255, 255, .1); border-color: transparent; color: #fff; }
     .blocked { color: var(--app-red); font-size: .76rem; line-height: 1.4; margin-top: 8px; text-align: center; }
     .plans-note { color: var(--app-muted); font-size: .8rem; margin-top: 18px; text-align: center; }
 
     /* Payment modal */
     .pay-head { align-items: flex-start; display: flex; gap: 16px; justify-content: space-between; padding: 22px 24px 4px; }
-    .pay-head small { color: var(--app-gold-deep); display: block; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .pay-head small { color: var(--app-muted); display: block; font-size: .78rem; }
     .pay-head h2 { color: var(--app-ink); font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; margin: 4px 0 0; }
     .pay-body { padding: 16px 24px 24px; }
-    .pay-total { align-items: center; background: var(--app-bg); border-radius: 16px; display: flex; justify-content: space-between; margin-bottom: 18px; padding: 14px 16px; }
+    .pay-total { align-items: center; background: var(--app-soft); border-radius: 16px; display: flex; justify-content: space-between; margin-bottom: 18px; padding: 14px 16px; }
     .pay-total span { color: var(--app-muted); font-size: .8rem; }
     .pay-total strong { color: var(--app-ink); font-size: 1.4rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; }
     .seg { background: rgba(23, 23, 19, .06); border-radius: 12px; display: grid; gap: 3px; grid-template-columns: 1fr 1fr; padding: 3px; }
@@ -95,38 +82,36 @@
 
     @media (max-width: 991.98px) { .current { grid-template-columns: 1fr; } }
     @media (max-width: 575.98px) { .current-usage { grid-template-columns: 1fr; } .ops { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (prefers-reduced-motion: reduce) { .plan.is-featured::before { animation: none; } }
 </style>
 @endpush
 
 @section('content')
 <div class="plans-page">
-    <x-app.page-header kicker="Abonnement" title="Choisissez votre forfait" subtitle="Adaptez vos volumes d’événements, d’utilisateurs et d’invitations à votre activité.">
+    <x-app.page-header title="Abonnement">
         <x-slot:actions>
             <a href="{{ route('saas.billing') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-receipt"></i>Facturation</a>
         </x-slot:actions>
     </x-app.page-header>
 
-    @if(session('warning'))<div class="alert alert-warning">{{ session('warning') }}</div>@endif
 
-    <section class="current">
+    <section class="ui-card current">
         <div>
             <small>Forfait actuel</small>
             <h2>{{ $current['name'] }}</h2>
             <p>{{ ($organization->settings['billing_cycle'] ?? 'monthly') === 'yearly' ? 'Facturation annuelle' : 'Facturation mensuelle' }}@if($endsAt) · jusqu’au {{ $endsAt->locale('fr')->translatedFormat('d F Y') }}@endif</p>
             @if($daysLeft !== null)
-                <span @class(['status', 'is-late' => $daysLeft < 7])><i class="bi {{ $daysLeft < 0 ? 'bi-exclamation-triangle' : 'bi-check-circle' }}"></i>{{ $daysLeft < 0 ? 'Expiré depuis ' . abs($daysLeft) . ' jour(s)' : ($daysLeft === 0 ? 'Expire aujourd’hui' : $daysLeft . ' jour(s) restant(s)') }}</span>
+                <span class="ui-pill dot {{ $daysLeft < 0 ? 'danger' : ($daysLeft < 7 ? 'warning' : 'success') }}">{{ $daysLeft < 0 ? 'Expiré depuis ' . abs($daysLeft) . ' jour(s)' : ($daysLeft === 0 ? 'Expire aujourd’hui' : $daysLeft . ' jour(s) restant(s)') }}</span>
             @else
-                <span class="status"><i class="bi bi-check-circle"></i>{{ ucfirst($organization->status ?? 'actif') }}</span>
+                <span class="ui-pill dot success">{{ ucfirst($organization->status ?? 'actif') }}</span>
             @endif
         </div>
         <div class="current-usage">
             @foreach($resources as $key => [$label, $icon])
-                @php $limit = $current['limits'][$key] ?? null; $used = (int) ($usage[$key] ?? 0); $pct = $limit ? min(100, round($used / $limit * 100)) : 100; @endphp
-                <div class="cu">
-                    <span><i class="bi {{ $icon }}"></i>{{ $label }}</span>
+                @php $limit = $current['limits'][$key] ?? null; $used = (int) ($usage[$key] ?? 0); $pct = $limit ? min(100, round($used / $limit * 100)) : 0; @endphp
+                <div class="cu" style="--accent: {{ $pct >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}">
+                    <span>{{ $label }}</span>
                     <strong>{{ number_format($used, 0, ',', ' ') }} <small>/ {{ $limit ? number_format($limit, 0, ',', ' ') : '∞' }}</small></strong>
-                    <div class="cu-meter"><span style="width: {{ $pct }}%; {{ $limit && $pct >= 90 ? 'background:#ff8a7a' : '' }}"></span></div>
+                    <div class="ui-meter"><span style="width: {{ $pct }}%"></span></div>
                 </div>
             @endforeach
         </div>
@@ -149,7 +134,7 @@
             @endphp
             <article @class(['plan', 'is-featured' => $isFeatured, 'is-current' => $isCurrent])>
                 <div class="plan-tags">
-                    @if($isCurrent)<span class="ui-pill gold">Plan actuel</span>@elseif($isFeatured)<span class="ui-pill" style="background: rgba(216,185,120,.18); color: #d8b978">Recommandé</span>@endif
+                    @if($isCurrent)<span class="ui-pill gold">Plan actuel</span>@elseif($isFeatured)<span class="ui-pill">Recommandé</span>@endif
                 </div>
                 <h2 class="plan-name">{{ $plan['name'] }}</h2>
                 <p class="plan-tagline">{{ $plan['tagline'] }}</p>
@@ -172,7 +157,7 @@
                     @endif
                 </ul>
                 @if($canCover)
-                    <button type="button" @class(['ui-btn', 'ui-btn-gold' => $isFeatured, 'ui-btn-primary' => $isCurrent, 'ui-btn-ghost' => !$isFeatured && !$isCurrent]) data-bs-toggle="modal" data-bs-target="#planModal-{{ $key }}">
+                    <button type="button" @class(['ui-btn', 'ui-btn-primary' => $isFeatured || $isCurrent, 'ui-btn-ghost' => !$isFeatured && !$isCurrent]) data-bs-toggle="modal" data-bs-target="#planModal-{{ $key }}">
                         {{ $isCurrent ? 'Renouveler' : 'Choisir ' . $plan['name'] }}
                     </button>
                 @else
@@ -182,7 +167,7 @@
             </article>
         @endforeach
     </div>
-    <p class="plans-note"><i class="bi bi-shield-check me-1"></i>Prix en {{ $current['currency'] }}. Votre nouvelle période démarre à la fin de la période en cours.</p>
+    <p class="plans-note">Prix en {{ $current['currency'] }}. Votre nouvelle période démarre à la fin de la période en cours.</p>
 </div>
 
 @foreach($plans as $key => $plan)

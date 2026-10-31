@@ -80,9 +80,6 @@
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
-            @if(session('warning'))
-                <div class="alert alert-warning">{{ session('warning') }}</div>
-            @endif
 
             <p class="mb-2">Bonjour {{ trim(($registration->representant_prenoms ?? '') . ' ' . ($registration->representant_nom ?? '')) ?: $registration->representant_email }},</p>
             <p class="text-muted mb-0">Vous avez été désigné(e) pour représenter {{ $registration->nom_complet ?: $registration->email }}.</p>

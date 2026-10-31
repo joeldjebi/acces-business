@@ -18,7 +18,7 @@
         return match ($registration->representant_statut) {
             'confirme' => ['Confirmé le ' . ($registration->representant_confirme_le?->format('d/m/Y H:i') ?: '—'), 'success'],
             'mail_envoye' => ['Lien envoyé le ' . ($registration->representant_mail_envoye_le?->format('d/m/Y H:i') ?: '—') . ', en attente', 'warning'],
-            'mail_echec' => ['Envoi échoué · ' . ($registration->representant_mail_erreur ?: 'erreur inconnue'), 'danger'],
+            'mail_echec' => ['Le lien n’a pas pu être envoyé', 'danger'],
             default => ['En attente d’envoi', ''],
         };
     };
@@ -32,7 +32,7 @@
     .reg-page *, .reg-page *::before, .reg-page *::after { min-width: 0; }
 
     .composer { margin-bottom: 20px; overflow: hidden; }
-    .composer-head { align-items: center; background: radial-gradient(80% 140% at 0% 0%, rgba(185, 137, 67, .35), transparent 60%), #171713; color: #fff; cursor: pointer; display: flex; gap: 16px; justify-content: space-between; padding: 18px 22px; }
+    .composer-head { align-items: center; background: #171713; color: #fff; cursor: pointer; display: flex; gap: 16px; justify-content: space-between; padding: 18px 22px; }
     .composer-head h2 { color: #fff; font-size: 1rem; font-weight: 650; margin: 0; }
     .composer-head p { color: rgba(255, 255, 255, .6); font-size: .8rem; margin: 3px 0 0; }
     .composer-credits { text-align: right; }
@@ -52,7 +52,7 @@
     .resp-tabs { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 2px; max-width: 100%; overflow-x: auto; padding: 3px; scrollbar-width: none; }
     .resp-tabs a { border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 7px 12px; text-decoration: none; white-space: nowrap; }
     .resp-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
-    .rep-box { background: var(--app-bg); border-radius: 12px; font-size: .78rem; line-height: 1.5; margin-top: 8px; max-width: 320px; padding: 10px 12px; white-space: normal; }
+    .rep-box { background: var(--app-soft); border-radius: 12px; font-size: .78rem; line-height: 1.5; margin-top: 8px; max-width: 320px; padding: 10px 12px; white-space: normal; }
     .rep-box strong { color: var(--app-ink); display: block; font-size: .82rem; }
     .rep-box .rep-line { align-items: flex-start; color: var(--app-muted); display: flex; gap: 6px; margin-top: 3px; }
     .rep-box .rep-line i { margin-top: 2px; }
@@ -108,7 +108,7 @@
         </div>
         <div @class(['collapse', 'show' => $openComposer]) id="composerBody">
             <div class="ui-card-body pt-4">
-                <form method="POST" action="{{ route('events.registrations.communications.send', $event) }}" enctype="multipart/form-data" id="bulkCommunicationForm">
+                <form method="POST" action="{{ route('events.registrations.communications.send', $event) }}" enctype="multipart/form-data" id="bulkCommunicationForm" data-confirm-title="Envoyer la campagne ?" data-confirm="Le message sera envoyé aux destinataires sélectionnés." data-confirm-button="Envoyer" data-confirm-tone="primary">
                     @csrf
                     <div class="row g-3">
                         <div class="col-lg-4">
@@ -150,7 +150,7 @@
                             @error('attachment')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-lg-4 d-flex align-items-end justify-content-lg-end">
-                            <button type="submit" class="ui-btn ui-btn-primary" onclick="return confirm('Confirmer la création de cette campagne ?');"><i class="bi bi-send"></i>Envoyer la campagne</button>
+                            <button type="submit" class="ui-btn ui-btn-primary"><i class="bi bi-send"></i>Envoyer la campagne</button>
                         </div>
                     </div>
                 </form>
@@ -242,10 +242,10 @@
                                             <div class="rep-line"><i class="bi bi-envelope"></i>{{ $registration->representant_email ?: '—' }}</div>
                                             <div @class(['rep-line', 'rep-ok' => $repTone === 'success', 'rep-ko' => $repTone === 'danger'])><i class="bi bi-link-45deg"></i>{{ $repLabel }}</div>
                                             <div @class(['rep-line', 'rep-ok' => $registration->representant_carte_envoyee, 'rep-ko' => !$registration->representant_carte_envoyee && $registration->representant_carte_erreur])><i class="bi bi-postcard"></i>
-                                                Carte : @if($registration->representant_carte_envoyee) envoyée le {{ $registration->representant_carte_envoyee_le?->format('d/m/Y H:i') ?: '—' }} @elseif($registration->representant_carte_erreur) non envoyée · {{ $registration->representant_carte_erreur }} @else non envoyée @endif
+                                                Carte : @if($registration->representant_carte_envoyee) envoyée le {{ $registration->representant_carte_envoyee_le?->format('d/m/Y H:i') ?: '—' }} @elseif($registration->representant_carte_erreur) échec de l’envoi @else non envoyée @endif
                                             </div>
                                             <div @class(['rep-line', 'rep-ok' => $registration->represente_notification_envoyee, 'rep-ko' => !$registration->represente_notification_envoyee && $registration->represente_notification_erreur])><i class="bi bi-bell"></i>
-                                                Invité notifié : @if($registration->represente_notification_envoyee) le {{ $registration->represente_notification_envoyee_le?->format('d/m/Y H:i') ?: '—' }} @elseif($registration->represente_notification_erreur) non · {{ $registration->represente_notification_erreur }} @else non @endif
+                                                Invité notifié : @if($registration->represente_notification_envoyee) le {{ $registration->represente_notification_envoyee_le?->format('d/m/Y H:i') ?: '—' }} @elseif($registration->represente_notification_erreur) échec de l’envoi @else non @endif
                                             </div>
                                         </div>
                                     @endif

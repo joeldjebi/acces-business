@@ -303,7 +303,7 @@ class InvitationCardService
             $registration->update([
                 'representant_carte_envoyee' => $success,
                 'representant_carte_envoyee_le' => $success ? now() : null,
-                'representant_carte_erreur' => $success ? null : ($result['message'] ?? 'Erreur inconnue lors de l’envoi de la carte.'),
+                'representant_carte_erreur' => $success ? null : 'La carte n’a pas pu être envoyée.',
             ]);
 
             \Log::info('Envoi carte d\'invitation au représentant', [
@@ -317,7 +317,7 @@ class InvitationCardService
         } catch (\Exception $e) {
             $registration->update([
                 'representant_carte_envoyee' => false,
-                'representant_carte_erreur' => $e->getMessage(),
+                'representant_carte_erreur' => 'La carte n’a pas pu être envoyée.',
             ]);
 
             \Log::error('Exception lors de l\'envoi de la carte au représentant', [

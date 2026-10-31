@@ -288,7 +288,7 @@
                         <button form="update-category-{{ $category->id }}" type="submit" class="icon-btn" title="Enregistrer">
                             <i class="bi bi-check2"></i>
                         </button>
-                        <form action="{{ route('categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Supprimer cette catégorie ?');">
+                        <form action="{{ route('categories.destroy', $category) }}" method="POST" data-confirm-title="Supprimer cette catégorie ?" data-confirm="Cette action est définitive.">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="icon-btn danger" title="Supprimer" {{ $category->events_count > 0 ? 'disabled' : '' }}>

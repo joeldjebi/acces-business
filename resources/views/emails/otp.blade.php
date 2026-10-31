@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code de vérification</title>
 </head>
-<body style="margin:0; padding:0; background:#f5f3ee; font-family:Arial, Helvetica, sans-serif; color:#2c2a25;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f3ee; padding:34px 14px;">
+<body style="margin:0; padding:0; background:#ffffff; font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; color:#2c2a25;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff; padding:34px 14px;">
         <tr>
             <td align="center">
                 <table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="max-width:560px; width:100%; background:#fffefa; border:1px solid #ded6c8; border-radius:22px; overflow:hidden;">

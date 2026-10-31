@@ -25,12 +25,15 @@ class EventAccessLink extends Model
         'envoye_le',
         'utilise_le',
         'est_utilise',
+        'last_reminder_sent_at',
+        'reminder_count',
     ];
 
     protected $casts = [
         'est_utilise' => 'boolean',
         'envoye_le' => 'datetime',
         'utilise_le' => 'datetime',
+        'last_reminder_sent_at' => 'datetime',
     ];
 
     /**

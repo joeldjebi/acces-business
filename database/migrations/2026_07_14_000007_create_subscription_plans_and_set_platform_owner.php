@@ -39,7 +39,7 @@ return new class extends Migration
                 'events_limit' => 12,
                 'users_limit' => 3,
                 'invitations_limit' => 500,
-                'features' => json_encode(['Événements publics et privés', 'Invitations par lien', 'OTP et cartes PDF', 'Branding léger']),
+                'features' => json_encode(['Événements publics et privés', 'Invitations par lien', 'Vérification par code et cartes PDF', 'Branding léger']),
                 'sort_order' => 10,
             ],
             [
@@ -65,7 +65,7 @@ return new class extends Migration
                 'events_limit' => null,
                 'users_limit' => null,
                 'invitations_limit' => null,
-                'features' => json_encode(['Tout Business', 'Volumes illimités', 'Accompagnement dédié', 'Préparation intégration paiement']),
+                'features' => json_encode(['Tout Business', 'Volumes illimités', 'Accompagnement dédié']),
                 'sort_order' => 30,
             ],
         ];

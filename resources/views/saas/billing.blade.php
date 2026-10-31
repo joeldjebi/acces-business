@@ -12,7 +12,6 @@
     $yearPaid = $paid->filter(fn ($i) => optional($i->paid_at ?? $i->created_at)->isCurrentYear())->sum('amount');
     $statusLabels = ['paid' => ['Payée', 'success'], 'pending' => ['En attente', 'warning'], 'draft' => ['Brouillon', ''], 'failed' => ['Échouée', 'danger'], 'cancelled' => ['Annulée', '']];
     $typeOf = fn ($invoice) => ($invoice->metadata['type'] ?? 'subscription') === 'communication_credits' ? 'credits' : 'subscription';
-    $counts = $invoices->countBy(fn ($i) => $typeOf($i));
     $billingErrors = $errors->hasAny(['billing_name', 'billing_email', 'billing_address', 'billing_city', 'billing_country', 'tax_number', 'currency']);
 @endphp
 
@@ -21,17 +20,11 @@
     .billing-page { margin: 0 auto; max-width: 1320px; }
     .billing-page *, .billing-page *::before, .billing-page *::after { min-width: 0; }
     .billing-grid { align-items: start; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 360px; }
-    .hero-stat { background: radial-gradient(90% 140% at 0% 0%, rgba(185, 137, 67, .35), transparent 60%), #141412; border: 0; color: #fff; }
-    .hero-stat .ui-stat-top { color: rgba(255, 255, 255, .6); }
-    .hero-stat .ui-stat-top i { background: rgba(255, 255, 255, .1); color: #d8b978; }
-    .hero-stat strong { color: #fff; }
-    .hero-stat small { color: rgba(255, 255, 255, .55); }
-    .type-tabs { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
+    .type-tabs { background: var(--app-soft); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
     .type-tabs button { background: transparent; border: 0; border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 6px 12px; }
-    .type-tabs button.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
+    .type-tabs button.is-active { background: var(--app-panel); box-shadow: 0 0 0 1px var(--app-line); color: var(--app-ink); }
     .inv-icon { align-items: center; border-radius: 10px; display: flex; flex: 0 0 36px; font-size: .95rem; height: 36px; justify-content: center; width: 36px; }
-    .inv-icon.subscription { background: var(--app-gold-soft); color: var(--app-gold-deep); }
-    .inv-icon.credits { background: rgba(47, 109, 181, .1); color: #2f6db5; }
+    .inv-icon { background: var(--app-soft); color: var(--app-ink); }
     .amount { color: var(--app-ink); font-variant-numeric: tabular-nums; font-weight: 650; white-space: nowrap; }
     .ref { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .74rem; }
     .side { display: grid; gap: 20px; position: sticky; top: 84px; }
@@ -51,41 +44,35 @@
 
 @section('content')
 <div class="billing-page">
-    <x-app.page-header kicker="Abonnement" title="Facturation" subtitle="Vos paiements, votre échéance et les informations qui figurent sur vos factures.">
+    <x-app.page-header title="Facturation">
         <x-slot:actions>
-            <a href="{{ route('saas.plans') }}" class="ui-btn ui-btn-primary"><i class="bi bi-gem"></i>Changer de forfait</a>
+            <a href="{{ route('saas.plans') }}" class="ui-btn ui-btn-ghost">Changer de forfait</a>
         </x-slot:actions>
     </x-app.page-header>
 
-    @if(session('warning'))<div class="alert alert-warning">{{ session('warning') }}</div>@endif
 
     <section class="ui-stats">
-        <article class="ui-stat hero-stat">
+        <article class="ui-stat">
             <div class="ui-stat-top">Forfait actuel<i class="bi bi-gem"></i></div>
             <strong>{{ $plan['name'] }}</strong>
             <small>{{ $cycle === 'yearly' ? 'Cycle annuel' : 'Cycle mensuel' }} · {{ SaasPlans::formatPrice(SaasPlans::price($plan, $cycle), $plan['currency']) }}</small>
         </article>
-        <article class="ui-stat" style="--accent: {{ $daysLeft !== null && $daysLeft < 7 ? 'var(--app-red)' : 'var(--app-green)' }}">
+        <article class="ui-stat">
             <div class="ui-stat-top">Prochaine échéance<i class="bi bi-calendar-check"></i></div>
             <strong>{{ $endsAt ? $endsAt->locale('fr')->translatedFormat('d M Y') : '—' }}</strong>
-            <small>{{ $daysLeft === null ? 'Aucune période active' : ($daysLeft < 0 ? 'Expirée depuis ' . abs($daysLeft) . ' jour(s)' : $daysLeft . ' jour(s) restant(s)') }}</small>
+            <small @class(['text-danger' => $daysLeft !== null && $daysLeft < 7])>{{ $daysLeft === null ? 'Aucune période active' : ($daysLeft < 0 ? 'Expirée depuis ' . abs($daysLeft) . ' jour(s)' : $daysLeft . ' jour(s) restant(s)') }}</small>
         </article>
-        <article class="ui-stat" style="--accent: var(--app-gold)">
+        <article class="ui-stat">
             <div class="ui-stat-top">Payé cette année<i class="bi bi-cash-stack"></i></div>
             <strong>{{ number_format($yearPaid, 0, ',', ' ') }} <span style="font-size: .9rem; color: var(--app-muted)">{{ $plan['currency'] }}</span></strong>
             <small>{{ $paid->count() }} paiement(s) dans l’historique</small>
-        </article>
-        <article class="ui-stat" style="--accent: var(--app-blue)">
-            <div class="ui-stat-top">Opérations<i class="bi bi-receipt"></i></div>
-            <strong>{{ $invoices->count() }}</strong>
-            <small>{{ $counts['subscription'] ?? 0 }} abonnement(s) · {{ $counts['credits'] ?? 0 }} achat(s) de crédits</small>
         </article>
     </section>
 
     <div class="billing-grid">
         <section class="ui-card" style="overflow: hidden">
             <div class="ui-card-head">
-                <div><h2>Historique des paiements</h2><p>Les 12 dernières opérations de votre organisation.</p></div>
+                <div><h2>Historique des paiements</h2><p>12 dernières opérations</p></div>
                 @if($invoices->isNotEmpty())
                     <div class="type-tabs" role="group" aria-label="Type d’opération">
                         <button type="button" class="is-active" data-type="">Tout</button>
@@ -139,7 +126,7 @@
         <aside class="side">
             <section class="ui-card">
                 <div class="ui-card-head has-border">
-                    <div><h2>Informations de facturation</h2><p>Elles apparaissent sur vos factures.</p></div>
+                    <div><h2>Informations de facturation</h2><p>Affichées sur vos factures.</p></div>
                     @if(!empty($billing['billing_name']) && !$billingErrors)<span class="info-saved"><i class="bi bi-check-circle-fill"></i>Enregistrées</span>@endif
                 </div>
                 <form method="POST" action="{{ route('saas.billing.update') }}" class="ui-card-body" novalidate>
@@ -186,7 +173,7 @@
                             @error('currency')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="ui-btn ui-btn-primary w-100"><i class="bi bi-check2"></i>Enregistrer</button>
+                            <button type="submit" class="ui-btn ui-btn-primary w-100">Enregistrer</button>
                         </div>
                     </div>
                 </form>

@@ -28,7 +28,7 @@ class EventOtpController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Saisissez une adresse email valide.',
                 'errors' => $e->errors(),
             ], 422);
         }
@@ -40,7 +40,7 @@ class EventOtpController extends Controller
         if (!in_array($event->visibilite->libelle, ['Privé', 'Sur invitation'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cet événement ne nécessite pas de vérification OTP.',
+                'message' => 'Cet événement ne nécessite pas de vérification.',
             ], 400);
         }
 
@@ -114,7 +114,7 @@ class EventOtpController extends Controller
         if (!$otp) {
             return response()->json([
                 'success' => false,
-                'message' => 'Code OTP introuvable ou déjà utilisé.',
+                'message' => 'Ce code n’est plus valide. Demandez-en un nouveau.',
             ], 400);
         }
 
@@ -122,7 +122,7 @@ class EventOtpController extends Controller
         if (!$otp->verify($validated['otp_code'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Code OTP incorrect ou expiré.',
+                'message' => 'Code incorrect ou expiré.',
             ], 400);
         }
 

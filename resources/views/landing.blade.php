@@ -56,19 +56,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $settings['brand']['meta_title'] ?? $brandName }}</title>
     <meta name="description" content="{{ $settings['brand']['meta_description'] ?? '' }}">
-    <meta name="theme-color" content="{{ $settings['theme']['background'] ?? '#fbf8f1' }}">
+    <meta name="theme-color" content="#ffffff">
     <meta property="og:title" content="{{ $settings['brand']['meta_title'] ?? $brandName }}">
     <meta property="og:description" content="{{ $settings['brand']['meta_description'] ?? '' }}">
     @if($heroImage)<meta property="og:image" content="{{ $heroImage }}">@endif
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
             --ink: {{ $settings['theme']['ink'] ?? '#171713' }};
             --gold: {{ $settings['theme']['gold'] ?? '#b98943' }};
-            --bg: {{ $settings['theme']['background'] ?? '#fbf8f1' }};
+            --bg: #ffffff;
             --text: color-mix(in srgb, var(--ink) 88%, #fff);
             --muted: color-mix(in srgb, var(--ink) 55%, #fff);
             --line: color-mix(in srgb, var(--ink) 9%, transparent);
@@ -79,8 +76,8 @@
             --green: #2e7b65;
             --ease: cubic-bezier(.16, 1, .3, 1);
             --radius: 28px;
-            --display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-            --font: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
             interpolate-size: allow-keywords;
         }
         *, *::before, *::after { box-sizing: border-box; min-width: 0; }
@@ -161,7 +158,7 @@
         .trust span i { align-items: center; background: var(--gold-soft); border-radius: 7px; color: var(--gold-deep); display: inline-flex; height: 22px; justify-content: center; width: 22px; }
         .hero-visual { align-items: center; display: grid; height: min(680px, 80vh); justify-items: center; min-height: 560px; position: relative; }
         .hero-visual > * { grid-area: 1 / 1; }
-        .hero-disc { aspect-ratio: 1; background: radial-gradient(circle at 32% 28%, var(--gold-light), var(--gold) 58%, var(--gold-deep)); border-radius: 50%; width: min(470px, 92%); }
+        .hero-disc { aspect-ratio: 1; background: var(--gold); border-radius: 50%; width: min(470px, 92%); }
         .hero-orbit { animation: spin 70s linear infinite; aspect-ratio: 1; border: 1.5px dashed color-mix(in srgb, var(--gold) 55%, transparent); border-radius: 50%; position: relative; width: min(590px, 112%); }
         .hero-orbit::before { background: var(--gold); border-radius: 50%; box-shadow: 0 0 0 6px var(--gold-soft); content: ""; height: 12px; left: 50%; position: absolute; top: -6px; width: 12px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -188,7 +185,7 @@
         @keyframes cue { 0% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 
         /* Ticker */
-        .ticker { border-block: 1px solid var(--page-line); -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); overflow: hidden; padding: 20px 0; }
+        .ticker { border-block: 1px solid var(--page-line); overflow: hidden; padding: 20px 0; }
         .ticker-track { animation: marquee 50s linear infinite; display: flex; gap: 36px; width: max-content; }
         .ticker-item { align-items: center; display: flex; font-family: var(--display); font-size: 1.35rem; font-weight: 700; gap: 12px; letter-spacing: -.02em; white-space: nowrap; }
         .ticker-item i { color: var(--gold); font-size: 1.2rem; }
@@ -216,16 +213,16 @@
         .card.is-inview .stage, .card.is-inview .stage * { animation-play-state: running; }
         .m-scan { background: #fff; border-radius: 14px; box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .4); padding: 8px; position: relative; width: 110px; }
         .m-scan svg { display: block; height: auto; width: 100%; }
-        .m-scan .laser { animation: laser 2.2s ease-in-out infinite; background: linear-gradient(90deg, transparent, var(--gold), transparent); box-shadow: 0 0 14px 2px var(--gold); height: 2px; left: 4px; position: absolute; right: 4px; top: 10%; }
+        .m-scan .laser { animation: laser 2.2s ease-in-out infinite; background: var(--gold); box-shadow: 0 0 14px 2px var(--gold); height: 2px; left: 4px; position: absolute; right: 4px; top: 10%; }
         @keyframes laser { 0%, 100% { top: 10%; } 50% { top: 88%; } }
         .m-scan .ok { align-items: center; animation: pop 2.2s var(--ease) infinite; background: var(--green); border-radius: 50%; color: #fff; display: flex; height: 30px; justify-content: center; position: absolute; right: -12px; top: -12px; width: 30px; }
         @keyframes pop { 0%, 40% { transform: scale(0); } 55% { transform: scale(1.15); } 65%, 100% { transform: scale(1); } }
         .m-wallet { height: 120px; position: relative; width: 180px; }
         .m-wallet span { animation: shuffle 4.5s var(--ease) infinite; border-radius: 14px; box-shadow: 0 12px 24px -14px rgba(0, 0, 0, .5); height: 92px; left: 0; position: absolute; top: 14px; width: 180px; }
         .m-wallet span::after { background: rgba(255, 255, 255, .5); border-radius: 4px; content: ""; height: 6px; left: 14px; position: absolute; top: 14px; width: 60px; }
-        .m-wallet span:nth-child(1) { background: linear-gradient(135deg, var(--ink), color-mix(in srgb, var(--ink) 70%, var(--gold))); }
-        .m-wallet span:nth-child(2) { animation-delay: -1.5s; background: linear-gradient(135deg, var(--gold-light), var(--gold)); }
-        .m-wallet span:nth-child(3) { animation-delay: -3s; background: linear-gradient(135deg, #2f6db5, #5b8fd6); }
+        .m-wallet span:nth-child(1) { background: var(--ink); }
+        .m-wallet span:nth-child(2) { animation-delay: -1.5s; background: var(--gold); }
+        .m-wallet span:nth-child(3) { animation-delay: -3s; background: #5b8fd6; }
         @keyframes shuffle { 0%, 30% { transform: translateY(0) scale(1); z-index: 3; } 40% { transform: translateY(-34px) rotate(-4deg) scale(.96); z-index: 3; } 50% { transform: translateY(16px) scale(.9); z-index: 1; } 70% { transform: translateY(8px) scale(.95); z-index: 2; } 100% { transform: translateY(0) scale(1); z-index: 3; } }
         .m-bell { color: var(--gold); font-size: 3.2rem; position: relative; }
         .card.is-gold .m-bell { color: #fff; }
@@ -286,7 +283,7 @@
         /* Showcase */
         .showcase-frame, .wallet-media { border-radius: 36px; box-shadow: 0 60px 120px -50px rgba(0, 0, 0, .5); overflow: hidden; position: relative; transform-origin: 50% 0; }
         .showcase-frame img, .wallet-media img { aspect-ratio: 16 / 9; object-fit: cover; width: 100%; }
-        .showcase-frame::after { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, .35)); content: ""; inset: 0; position: absolute; }
+        .showcase-frame::after { background: none; content: ""; inset: 0; position: absolute; }
 
         /* Journey */
         .journey-grid { display: grid; gap: clamp(30px, 6vw, 80px); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -294,7 +291,7 @@
         .journey-sticky { align-items: center; display: flex; height: 100vh; justify-content: center; position: sticky; top: 0; }
         .journey-num { color: transparent; font-family: var(--display); font-size: clamp(14rem, 28vw, 24rem); font-weight: 800; left: 50%; letter-spacing: -.06em; line-height: 1; pointer-events: none; position: absolute; top: 50%; translate: -62% -54%; -webkit-text-stroke: 2px color-mix(in srgb, var(--gold) 50%, transparent); user-select: none; }
         .journey-num span { display: block; }
-        .journey-glow { background: radial-gradient(circle, color-mix(in srgb, var(--gold) 34%, transparent), transparent 62%); height: 600px; left: 50%; position: absolute; top: 50%; transform: translate(-50%, -50%); width: 600px; }
+        .journey-glow { background: none; height: 600px; left: 50%; position: absolute; top: 50%; transform: translate(-50%, -50%); width: 600px; }
         .journey-sticky .phone { position: relative; }
         /* --jh: height of one step; the track padding centres the first/last step on the sticky phone. */
         .journey-track { --jh: 30vh; --jpad: calc(50vh - var(--jh) / 2); padding: var(--jpad) 0 var(--jpad) 34px; position: relative; }
@@ -320,7 +317,7 @@
         .flow-line { background: var(--page-line); bottom: 40px; left: 38px; position: absolute; top: 40px; width: 2px; }
         .flow-line span { background: var(--gold); display: block; height: 100%; transform: scaleY(0); transform-origin: top; width: 100%; }
         .flow-card { align-items: center; background: var(--page-card); border: 1px solid var(--page-line); border-radius: 22px; display: flex; gap: 16px; padding: 18px; position: relative; }
-        .avatar { align-items: center; background: linear-gradient(135deg, var(--gold-light), var(--gold-deep)); border-radius: 50%; color: #fff; display: flex; flex-shrink: 0; font-size: .9rem; font-weight: 700; height: 40px; justify-content: center; position: relative; width: 40px; z-index: 1; }
+        .avatar { align-items: center; background: var(--gold-deep); border-radius: 50%; color: #fff; display: flex; flex-shrink: 0; font-size: .9rem; font-weight: 700; height: 40px; justify-content: center; position: relative; width: 40px; z-index: 1; }
         .avatar.alt { background: #3a3a36; }
         .flow-card strong, .feed-row strong { display: block; font-size: .96rem; }
         .flow-card small { color: var(--page-muted); display: block; font-size: .84rem; margin-top: 2px; }
@@ -330,15 +327,15 @@
 
         /* Check-in */
         .split { align-items: center; display: grid; gap: clamp(40px, 7vw, 96px); grid-template-columns: 1fr 1fr; }
-        .device { background: linear-gradient(160deg, color-mix(in srgb, var(--ink) 90%, #fff), var(--ink)); border-radius: 40px; box-shadow: 0 60px 100px -40px rgba(0, 0, 0, .55); margin: 0 auto; max-width: 440px; padding: 22px; width: 100%; }
-        .viewfinder { aspect-ratio: 16 / 10; background: radial-gradient(circle, rgba(255, 255, 255, .06), transparent 70%); border-radius: 24px; display: grid; overflow: hidden; place-items: center; position: relative; }
+        .device { background: var(--ink); border-radius: 40px; box-shadow: 0 60px 100px -40px rgba(0, 0, 0, .55); margin: 0 auto; max-width: 440px; padding: 22px; width: 100%; }
+        .viewfinder { aspect-ratio: 16 / 10; background: none; border-radius: 24px; display: grid; overflow: hidden; place-items: center; position: relative; }
         .corner { border: 3px solid var(--gold); height: 34px; position: absolute; width: 34px; }
         .corner.tl { border-radius: 14px 0 0 0; border-width: 3px 0 0 3px; left: 24%; top: 14%; }
         .corner.tr { border-radius: 0 14px 0 0; border-width: 3px 3px 0 0; right: 24%; top: 14%; }
         .corner.bl { border-radius: 0 0 0 14px; border-width: 0 0 3px 3px; bottom: 14%; left: 24%; }
         .corner.br { border-radius: 0 0 14px 0; border-width: 0 3px 3px 0; bottom: 14%; right: 24%; }
         .viewfinder .qr { color: rgba(255, 255, 255, .85); font-size: clamp(3.4rem, 7vw, 4.6rem); }
-        .viewfinder .laser { animation: laser2 2.6s ease-in-out infinite; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); box-shadow: 0 0 18px 2px var(--gold); height: 2px; left: 22%; position: absolute; right: 22%; top: 16%; }
+        .viewfinder .laser { animation: laser2 2.6s ease-in-out infinite; background: var(--gold-light); box-shadow: 0 0 18px 2px var(--gold); height: 2px; left: 22%; position: absolute; right: 22%; top: 16%; }
         @keyframes laser2 { 0%, 100% { top: 16%; } 50% { top: 82%; } }
         .feed { display: grid; gap: 10px; margin-top: 18px; }
         .feed-row { align-items: center; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .07); border-radius: 18px; color: #fff; display: flex; gap: 12px; padding: 13px 14px; }
@@ -370,8 +367,8 @@
 
         /* Wallet passes */
         .pass { border-radius: 22px; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(255, 255, 255, .08); color: #fff; padding: 18px 18px 20px; width: 280px; }
-        .pass-apple { background: linear-gradient(165deg, color-mix(in srgb, var(--ink) 78%, var(--gold)), var(--ink) 55%); }
-        .pass-google { background: linear-gradient(165deg, var(--gold-light), var(--gold) 45%, var(--gold-deep)); border-radius: 26px; }
+        .pass-apple { background: var(--ink); }
+        .pass-google { background: var(--gold); border-radius: 26px; }
         .pass-top { align-items: center; display: flex; gap: 9px; }
         .pass-logo { align-items: center; background: rgba(255, 255, 255, .14); border-radius: 9px; display: flex; font-size: .9rem; height: 30px; justify-content: center; overflow: hidden; width: 30px; }
         .pass-google .pass-logo { border-radius: 50%; }
@@ -474,7 +471,7 @@
         @media (max-width: 900px) {
             .nav-links { display: none; }
             .journey-grid { gap: 0; grid-template-columns: 1fr; }
-            .journey-device { align-self: start; background: linear-gradient(180deg, var(--page-bg) 84%, transparent); margin: 0 calc(-1 * clamp(16px, 4vw, 40px)); order: 0; padding: 74px 0 18px; position: sticky; top: 0; z-index: 3; }
+            .journey-device { align-self: start; background: var(--page-bg); margin: 0 calc(-1 * clamp(16px, 4vw, 40px)); order: 0; padding: 74px 0 18px; position: sticky; top: 0; z-index: 3; }
             .journey-sticky { height: auto; position: static; }
             .journey-device .phone { zoom: .56; }
             .journey-num { font-size: 10rem; translate: -50% -52%; }

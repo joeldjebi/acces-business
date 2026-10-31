@@ -13,7 +13,7 @@
     .checkin-page { margin: 0 auto; max-width: 1400px; }
     .checkin-page *, .checkin-page *::before, .checkin-page *::after { min-width: 0; }
 
-    .scanner { align-items: center; background: radial-gradient(90% 140% at 0% 0%, rgba(185, 137, 67, .38), transparent 60%), #141412; border-radius: 22px; color: #fff; display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr) auto; margin-bottom: 20px; overflow: hidden; padding: 26px 28px; position: relative; }
+    .scanner { align-items: center; background: #141412; border-radius: 22px; color: #fff; display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr) auto; margin-bottom: 20px; overflow: hidden; padding: 26px 28px; position: relative; }
     .scanner h2 { color: #fff; font-size: 1.3rem; font-weight: 700; letter-spacing: -.025em; margin: 0; }
     .scanner p { color: rgba(255, 255, 255, .6); font-size: .88rem; margin: 4px 0 18px; }
     .scan-form { display: flex; gap: 10px; }
@@ -34,7 +34,6 @@
     .status-tabs { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
     .status-tabs a { border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 7px 13px; text-decoration: none; white-space: nowrap; }
     .status-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
-    .token { color: var(--app-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .72rem; }
     tr.is-checked { background: rgba(46, 123, 101, .035); }
 
     .feed { display: grid; padding: 4px 22px 18px; position: relative; }
@@ -70,18 +69,17 @@
         </x-slot:actions>
     </x-app.event-header>
 
-    @if(session('warning'))<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}</div>@endif
 
     <section class="scanner">
         <div>
             <span class="scan-live">Accueil en direct</span>
             <h2>Scanner un QR code</h2>
-            <p>Placez le curseur dans le champ puis scannez la carte, ou collez le token de l’invité.</p>
+            <p>Placez le curseur dans le champ puis scannez la carte, ou saisissez le code inscrit sous le QR code.</p>
             <form method="POST" action="{{ route('events.check-in.token', $event) }}" class="scan-form">
                 @csrf
                 <label class="scan-input mb-0">
                     <i class="bi bi-qr-code-scan"></i>
-                    <input type="text" name="token" placeholder="Scanner ou coller le token…" autocomplete="off" autofocus required aria-label="Token QR">
+                    <input type="text" name="token" placeholder="Scanner ou saisir le code…" autocomplete="off" autofocus required aria-label="Code de l’invitation">
                 </label>
                 <button type="submit" class="ui-btn ui-btn-gold"><i class="bi bi-check2-circle"></i>Valider l’entrée</button>
             </form>
@@ -108,7 +106,7 @@
                     @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
                     <label class="ui-search mb-0" style="max-width: 320px">
                         <i class="bi bi-search"></i>
-                        <input type="search" name="search" value="{{ request('search') }}" class="form-control" placeholder="Nom, email, représentant, token…" aria-label="Rechercher un participant">
+                        <input type="search" name="search" value="{{ request('search') }}" class="form-control" placeholder="Nom, email, représentant…" aria-label="Rechercher un participant">
                     </label>
                 </form>
             </div>
@@ -125,7 +123,6 @@
                                             <div>
                                                 <strong>{{ $registration->checkInDisplayName() }}</strong>
                                                 <small>{{ $registration->isRepresented() ? $registration->representant_email : $registration->email }}</small>
-                                                <span class="token">{{ \Illuminate\Support\Str::limit($registration->token_unique, 18) }}</span>
                                             </div>
                                         </div>
                                     </td>

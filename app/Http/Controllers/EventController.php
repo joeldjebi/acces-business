@@ -11,6 +11,7 @@ use App\Models\EventRegistration;
 use App\Models\TypeTarification;
 use App\Models\User;
 use App\Models\Visibilite;
+use App\Support\EventCapacity;
 use App\Support\SaasUsage;
 use App\Support\InvitationExperience;
 use Carbon\Carbon;
@@ -623,7 +624,13 @@ class EventController extends Controller
             'statut' => ['required', Rule::in(['brouillon', 'publie'])],
             'visibilite_id' => 'required|exists:visibilites,id',
             'date_publication' => 'nullable|date',
-            'capacite_maximale' => 'nullable|integer|min:1',
+            // La capacité ne peut pas descendre sous les places déjà attribuées (invités et inscrits non absents)
+            'capacite_maximale' => ['nullable', 'integer', 'min:1', function ($attribute, $value, $fail) use ($event) {
+                $occupied = EventCapacity::occupied($event);
+                if ($value !== null && (int) $value < $occupied) {
+                    $fail("{$occupied} place(s) sont déjà attribuées (invités et inscrits) : la capacité ne peut pas être inférieure.");
+                }
+            }],
             'inscription_requise' => 'boolean',
             'date_limite_inscription' => 'nullable|date',
             'type_tarification_id' => 'required|exists:type_de_tarifications,id',

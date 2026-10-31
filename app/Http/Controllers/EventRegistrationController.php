@@ -13,6 +13,7 @@ use App\Services\EventRegistrationActivityLogger;
 use App\Services\InvitationCardService;
 use App\Services\MailjetService;
 use App\Services\WalletPassService;
+use App\Support\EventCapacity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -71,19 +72,31 @@ class EventRegistrationController extends Controller
             return redirect()->back()->with('error', 'Vous êtes déjà inscrit à cet événement avec cet email.');
         }
 
-        // Créer l'inscription
-        $registration = EventRegistration::create([
-            'organization_id' => $event->organization_id,
-            'event_id' => $event->id,
-            'email' => $validated['email'],
-            'nom' => $validated['nom'],
-            'prenom' => $validated['prenom'],
-            'telephone' => $validated['telephone'] ?? null,
-            'entreprise' => $validated['entreprise'] ?? null,
-            'fonction' => $validated['fonction'] ?? null,
-            'statut_reponse' => 'en_attente',
-            'user_id' => auth()->id(),
-        ]);
+        // Créer l'inscription, sous verrou pour ne jamais dépasser la capacité de l'événement
+        $registration = DB::transaction(function () use ($event, $validated) {
+            Event::whereKey($event->id)->lockForUpdate()->first();
+
+            if (!EventCapacity::canAccept($event)) {
+                return null;
+            }
+
+            return EventRegistration::create([
+                'organization_id' => $event->organization_id,
+                'event_id' => $event->id,
+                'email' => $validated['email'],
+                'nom' => $validated['nom'],
+                'prenom' => $validated['prenom'],
+                'telephone' => $validated['telephone'] ?? null,
+                'entreprise' => $validated['entreprise'] ?? null,
+                'fonction' => $validated['fonction'] ?? null,
+                'statut_reponse' => 'en_attente',
+                'user_id' => auth()->id(),
+            ]);
+        });
+
+        if (!$registration) {
+            return redirect()->back()->withInput()->with('error', 'Désolé, cet événement est complet : il n’y a plus de place disponible.');
+        }
 
         $this->activityLogger->log(
             $registration,
@@ -220,6 +233,11 @@ class EventRegistrationController extends Controller
                 ->with('error', 'Session expirée. Veuillez vous reconnecter.');
         }
 
+        // Un invité qui avait répondu « Absent » a libéré sa place : il faut qu'il en reste une pour revenir.
+        if ($validated['reponse'] !== 'absent' && !EventCapacity::holdsPlace($event, $verifiedEmail) && !EventCapacity::canAccept($event)) {
+            return redirect()->back()->withInput()->with('error', 'Désolé, l’événement est désormais complet : votre place a été libérée quand vous avez répondu « Absent ».');
+        }
+
         // Chercher ou créer l'inscription
         $registration = EventRegistration::firstOrCreate(
             [
@@ -260,7 +278,7 @@ class EventRegistrationController extends Controller
             $registration,
             'response_submitted',
             'Réponse enregistrée',
-            'L’invité a répondu: ' . $validated['reponse'],
+            'Réponse de l’invité : ' . ['present' => 'présent', 'peut_etre' => 'peut-être', 'absent' => 'absent', 'represente' => 'représenté'][$validated['reponse']] . '.',
             [
                 'response' => $validated['reponse'],
                 'representative_email' => $validated['reponse'] === 'represente' ? $registration->representant_email : null,
@@ -454,6 +472,8 @@ class EventRegistrationController extends Controller
             || ($registration->statut_reponse === 'represente' && $registration->representant_statut === 'confirme');
 
         abort_unless($isConfirmed, 404);
+
+        $registration->load(['activities.actor', 'checkedInBy']);
 
         return view('events.confirmed-attendee-detail', compact('event', 'registration'));
     }
@@ -752,7 +772,7 @@ class EventRegistrationController extends Controller
             ->first();
 
         if (!$registration) {
-            return back()->with('error', 'QR code ou token introuvable pour cet événement.');
+            return back()->with('error', 'Ce QR code ne correspond à aucun invité de cet événement.');
         }
 
         return $this->performCheckIn($request, $event, $registration);
@@ -768,20 +788,23 @@ class EventRegistrationController extends Controller
 
     public function sendReminders(Request $request, Event $event)
     {
-        $pending = $this->eventCommunicationService->pendingReminderQuery($event)
-            ->limit(200)
-            ->get();
+        $registrations = $this->eventCommunicationService->pendingReminderQuery($event)->limit(200)->get();
+        $links = $this->eventCommunicationService->pendingLinkReminderQuery($event)->limit(200)->get();
+        $eligible = $registrations->count() + $links->count();
 
-        $sent = 0;
-        foreach ($pending as $registration) {
-            if ($this->eventCommunicationService->sendReminder($registration, $request)) {
-                $sent++;
-            }
+        if ($eligible === 0) {
+            return back()->with('warning', 'Aucun invité à relancer : tout le monde a répondu, ou une relance a déjà été envoyée il y a moins de 24 h.');
         }
 
-        return back()->with($sent > 0 ? 'success' : 'warning', $sent > 0
-            ? "{$sent} relance(s) envoyée(s)."
-            : 'Aucune relance envoyée: aucun invité en attente éligible ou erreur d’envoi.');
+        $sent = $registrations->filter(fn ($registration) => $this->eventCommunicationService->sendReminder($registration, $request))->count()
+            + $links->filter(fn ($link) => $this->eventCommunicationService->sendLinkReminder($link))->count();
+        $failed = $eligible - $sent;
+
+        if ($sent === 0) {
+            return back()->with('error', 'Les relances n’ont pas pu être envoyées. Réessayez plus tard.');
+        }
+
+        return back()->with('success', "{$sent} relance(s) envoyée(s)" . ($failed ? ", {$failed} échec(s)." : '.'));
     }
 
     public function sendThankYouSms(Request $request, Event $event)
@@ -823,7 +846,7 @@ class EventRegistrationController extends Controller
             $registration,
             'qr_scanned',
             'QR code scanné',
-            $canCheckIn ? 'QR scanné depuis une session organisateur.' : 'QR scanné hors session organisateur.',
+            $canCheckIn ? 'QR code scanné par l’équipe organisatrice.' : 'QR code consulté par un visiteur.',
             ['can_check_in' => $canCheckIn],
             $request,
             $canCheckIn ? null : 'public'
@@ -849,7 +872,7 @@ class EventRegistrationController extends Controller
                 $registration,
                 'checkin_rejected',
                 'Check-in refusé',
-                'Le statut de réponse ne permet pas le check-in.',
+                'La réponse de l’invité ne permet pas l’entrée.',
                 ['status' => $registration->statut_reponse, 'representative_status' => $registration->representant_statut],
                 $request
             );
@@ -906,7 +929,13 @@ class EventRegistrationController extends Controller
             ->with('event.organization')
             ->firstOrFail();
 
-        $path = $this->walletPassService->generateApplePass($registration);
+        try {
+            $path = $this->walletPassService->generateApplePass($registration);
+        } catch (\Throwable $e) {
+            \Log::error('Génération du pass Apple Wallet impossible', ['registration_id' => $registration->id, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'La carte Apple Wallet n’est pas disponible pour le moment. Téléchargez la carte PDF.');
+        }
         $filename = 'Invitation_' . \Illuminate\Support\Str::slug($registration->event->titre) . '.pkpass';
 
         return response()->download($path, $filename, [
@@ -933,7 +962,7 @@ class EventRegistrationController extends Controller
             // Vérifier si DomPDF est disponible
             if (!class_exists('\Dompdf\Dompdf')) {
                 return redirect()->back()
-                    ->with('error', 'La génération PDF n\'est pas disponible. Veuillez contacter l\'administrateur.');
+                    ->with('error', 'La carte n’est pas disponible pour le moment. Réessayez plus tard.');
             }
 
             // Générer le PDF
@@ -941,7 +970,7 @@ class EventRegistrationController extends Controller
 
             if (!file_exists($pdfPath)) {
                 return redirect()->back()
-                    ->with('error', 'Erreur lors de la génération du PDF.');
+                    ->with('error', 'La carte n’a pas pu être générée. Réessayez plus tard.');
             }
 
             $event = $registration->event;
@@ -1065,7 +1094,7 @@ class EventRegistrationController extends Controller
         $registration->update([
             'represente_notification_envoyee' => $success,
             'represente_notification_envoyee_le' => $success ? now() : null,
-            'represente_notification_erreur' => $success ? null : ($result['message'] ?? 'Erreur inconnue lors de la notification.'),
+            'represente_notification_erreur' => $success ? null : 'La notification n’a pas pu être envoyée.',
         ]);
 
         \Log::info('Notification envoyée à l’invité représenté', [
@@ -1125,7 +1154,7 @@ class EventRegistrationController extends Controller
             'representant_statut' => $success ? 'mail_envoye' : 'mail_echec',
             'representant_mail_envoye' => $success,
             'representant_mail_envoye_le' => $success ? now() : null,
-            'representant_mail_erreur' => $success ? null : ($result['message'] ?? 'Erreur inconnue lors de l’envoi.'),
+            'representant_mail_erreur' => $success ? null : 'Le lien n’a pas pu être envoyé.',
         ]);
 
         $this->activityLogger->log(

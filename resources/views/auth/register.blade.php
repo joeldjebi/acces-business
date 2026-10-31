@@ -24,7 +24,7 @@
 @section('perks')
     <li><i class="bi bi-building-lock"></i>Données isolées par organisation</li>
     <li><i class="bi bi-gift"></i>14 jours d’essai inclus</li>
-    <li><i class="bi bi-envelope-paper-heart"></i>Invitations, OTP, cartes et Wallet</li>
+    <li><i class="bi bi-envelope-paper-heart"></i>Invitations, vérification par code, cartes et Wallet</li>
 @endsection
 
 @section('form')

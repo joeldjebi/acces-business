@@ -21,16 +21,16 @@
     .tpl-thumb--prestige { background: #0d0d0c; }
     .tpl-thumb--modern { background: #f6f4ef; }
     .tpl-thumb span { aspect-ratio: 1.45; border-radius: 4px; position: relative; width: 62%; }
-    .tpl-thumb--classic span { background: linear-gradient(160deg, #efe4cf, #e4d4b6); box-shadow: 0 8px 16px -8px rgba(40, 30, 15, .45); }
+    .tpl-thumb--classic span { background: #e4d4b6; box-shadow: 0 8px 16px -8px rgba(40, 30, 15, .45); }
     .tpl-thumb--classic span::before, .tpl-thumb--prestige span::before { clip-path: polygon(0 0, 100% 0, 50% 58%); content: ""; inset: 0; position: absolute; }
     .tpl-thumb--classic span::before { background: #e9dcc2; }
     .tpl-thumb--prestige span { background: #1b1a17; box-shadow: inset 0 0 0 1px rgba(216, 185, 120, .5); }
     .tpl-thumb--prestige span::before { background: #23211d; }
     .tpl-thumb--classic span::after, .tpl-thumb--prestige span::after { background: #b98943; border-radius: 50%; content: ""; height: 16px; left: 50%; position: absolute; top: 58%; transform: translate(-50%, -50%); width: 16px; }
-    .tpl-thumb--modern span { aspect-ratio: .74; background: radial-gradient(120% 90% at 0% 0%, rgba(185, 137, 67, .55), transparent 60%), #171713; border-radius: 2px 6px 6px 2px; box-shadow: 0 8px 16px -8px rgba(0, 0, 0, .45); width: 28%; }
+    .tpl-thumb--modern span { aspect-ratio: .74; background: #171713; border-radius: 2px 6px 6px 2px; box-shadow: 0 8px 16px -8px rgba(0, 0, 0, .45); width: 28%; }
     .tpl-side { align-items: flex-end; display: flex; flex-direction: column; gap: 10px; }
     .default-pick { align-items: center; display: inline-flex; font-size: .8rem; gap: 6px; white-space: nowrap; }
-    .music-now { align-items: center; background: var(--app-bg); border-radius: 14px; display: flex; gap: 14px; padding: 14px 16px; }
+    .music-now { align-items: center; background: var(--app-soft); border-radius: 14px; display: flex; gap: 14px; padding: 14px 16px; }
     .music-now > i { align-items: center; background: #171713; border-radius: 12px; color: #d8b978; display: flex; flex: 0 0 44px; font-size: 1.2rem; height: 44px; justify-content: center; }
     .music-now strong { color: var(--app-ink); display: block; font-size: .9rem; }
     .music-now small { color: var(--app-muted); font-size: .78rem; }

@@ -25,9 +25,9 @@
 
     /* Invitation card */
     .invite { background: #141412; border-radius: 26px; box-shadow: 0 30px 60px -30px rgba(23, 23, 19, .55); color: #fff; overflow: hidden; position: relative; }
-    .invite-cover { aspect-ratio: 16 / 9; background: radial-gradient(100% 120% at 0% 0%, rgba(185, 137, 67, .5), transparent 60%), #141412; position: relative; }
+    .invite-cover { aspect-ratio: 16 / 9; background: #141412; position: relative; }
     .invite-cover img { height: 100%; inset: 0; object-fit: cover; position: absolute; width: 100%; }
-    .invite-cover::after { background: linear-gradient(180deg, rgba(20, 20, 18, .1) 30%, #141412); content: ""; inset: 0; position: absolute; }
+    .invite-cover::after { background: rgba(20, 20, 18, .5); content: ""; inset: 0; position: absolute; }
     .invite-cover.is-empty { aspect-ratio: auto; height: 36px; }
     .invite-body { margin-top: -64px; padding: 0 22px 22px; position: relative; z-index: 1; }
     .invite-cover.is-empty + .invite-body { margin-top: 0; }

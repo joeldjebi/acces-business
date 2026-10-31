@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\EventAccessLink;
+use App\Models\Organization;
 use App\Services\InvitationCardService;
 use App\Services\MailjetService;
+use App\Support\EventCapacity;
 use App\Support\SaasUsage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class EventAccessController extends Controller
@@ -119,55 +122,57 @@ class EventAccessController extends Controller
             return redirect()->back()->with('error', 'Aucun email valide fourni.');
         }
 
-        if ($event->capacite_maximale) {
-            $alreadyInvited = EventAccessLink::forOrganization($event->organization_id)
-                ->where('event_id', $event->id)
-                ->pluck('email_destinataire')
-                ->map(fn ($email) => strtolower($email))
-                ->unique();
+        // Un email déjà invité reçoit à nouveau son lien : ni place ni quota consommé.
+        $existingLinks = EventAccessLink::forOrganization($event->organization_id)
+            ->where('event_id', $event->id)
+            ->get()
+            ->keyBy(fn ($link) => mb_strtolower($link->email_destinataire));
+        [$resends, $newContacts] = $contacts->partition(fn ($contact) => $existingLinks->has(mb_strtolower($contact['email'])));
 
-            $newInvitationCount = $contacts
-                ->reject(fn ($contact) => $alreadyInvited->contains(strtolower($contact['email'])))
-                ->count();
-            $remainingCapacity = max(0, $event->capacite_maximale - $alreadyInvited->count());
+        // Verrou sur l'organisation et l'événement : deux envois simultanés ne peuvent pas dépasser les limites.
+        $limitError = null;
+        $createdLinks = DB::transaction(function () use ($event, $newContacts, &$limitError) {
+            Organization::whereKey($event->organization_id)->lockForUpdate()->first();
+            Event::whereKey($event->id)->lockForUpdate()->first();
 
-            if ($newInvitationCount > $remainingCapacity) {
-                return redirect()->back()->with(
-                    'error',
-                    "Capacité maximale atteinte : il reste {$remainingCapacity} place(s), mais l’envoi contient {$newInvitationCount} nouvelle(s) invitation(s)."
-                );
-            }
-        }
-
-        if (!SaasUsage::canAdd($event->organization, 'invitations', $contacts->count())) {
-            $remaining = SaasUsage::remaining($event->organization, 'invitations');
-            $message = SaasUsage::limitMessage($event->organization, 'invitations');
-
-            if ($remaining !== null) {
-                $message .= ' Il reste ' . $remaining . ' invitation(s), votre envoi en contient ' . $contacts->count() . '.';
+            if (!EventCapacity::canAccept($event, $newContacts->count())) {
+                $limitError = EventCapacity::fullMessage($event, $newContacts->count())
+                    . ' Augmentez la capacité de l’événement, ou attendez que des invités répondent « Absent ».';
+                return collect();
             }
 
-            return redirect()->back()->with('error', $message);
+            if (!SaasUsage::canAdd($event->organization, 'invitations', $newContacts->count())) {
+                $remaining = SaasUsage::remaining($event->organization, 'invitations');
+                $limitError = SaasUsage::limitMessage($event->organization, 'invitations')
+                    . ($remaining !== null ? ' Il reste ' . $remaining . ' invitation(s), votre envoi en contient ' . $newContacts->count() . ' nouvelle(s).' : '');
+                return collect();
+            }
+
+            return $newContacts->map(fn ($contact) => EventAccessLink::create([
+                'organization_id' => $event->organization_id,
+                'event_id' => $event->id,
+                'email_destinataire' => $contact['email'],
+                'nom' => $contact['nom'] ?? null,
+                'prenom' => $contact['prenom'] ?? null,
+                'telephone' => $contact['telephone'] ?? null,
+                'entreprise' => $contact['entreprise'] ?? null,
+                'fonction' => $contact['fonction'] ?? null,
+                'envoye_par' => auth()->id(),
+            ]));
+        });
+
+        if ($limitError) {
+            return redirect()->back()->withInput()->with('error', $limitError);
         }
+
+        $linksToSend = $createdLinks->merge($resends->map(fn ($contact) => $existingLinks->get(mb_strtolower($contact['email']))));
 
         $sentCount = 0;
         $errors = [];
 
-        foreach ($contacts as $contact) {
+        foreach ($linksToSend as $accessLink) {
+            $contact = ['email' => $accessLink->email_destinataire];
             try {
-                // Créer le lien d'accès
-                $accessLink = EventAccessLink::create([
-                    'organization_id' => $event->organization_id,
-                    'event_id' => $event->id,
-                    'email_destinataire' => $contact['email'],
-                    'nom' => $contact['nom'] ?? null,
-                    'prenom' => $contact['prenom'] ?? null,
-                    'telephone' => $contact['telephone'] ?? null,
-                    'entreprise' => $contact['entreprise'] ?? null,
-                    'fonction' => $contact['fonction'] ?? null,
-                    'envoye_par' => auth()->id(),
-                ]);
-
                 // Envoyer l'email avec le lien
                 $subject = "Invitation à l'événement : " . $event->titre;
 
@@ -185,7 +190,7 @@ class EventAccessController extends Controller
                 if ($event->date_limite_inscription) {
                     $text .= 'Ce lien est valable jusqu’au ' . $event->date_limite_inscription->format('d/m/Y') . " inclus.\n\n";
                 }
-                if ($validated['message']) {
+                if (!empty($validated['message'])) {
                     $text .= $validated['message'] . "\n\n";
                 }
                 $text .= "Cordialement,\n" . auth()->user()->name;
@@ -201,16 +206,18 @@ class EventAccessController extends Controller
                 if ($result['success']) {
                     $sentCount++;
                 } else {
-                    $errors[] = $contact['email'] . ': ' . ($result['message'] ?? 'Erreur inconnue');
+                    $errors[] = $contact['email'];
                 }
             } catch (\Exception $e) {
-                $errors[] = $contact['email'] . ': ' . $e->getMessage();
+                \Log::error('Envoi d’invitation impossible', ['email' => $contact['email'], 'error' => $e->getMessage()]);
+                $errors[] = $contact['email'];
             }
         }
 
-        $message = $sentCount . ' lien(s) envoyé(s) avec succès.';
+        $message = $sentCount . ' invitation(s) envoyée(s)'
+            . ($resends->isNotEmpty() ? ', dont ' . $resends->count() . ' renvoi(s) à des invités déjà invités' : '') . '.';
         if (!empty($errors)) {
-            $message .= ' Erreurs : ' . implode(', ', $errors);
+            $message .= ' Envoi impossible pour : ' . implode(', ', $errors) . '. Réessayez plus tard.';
         }
 
         return redirect()->back()->with(

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Rappel de réponse</title>
 </head>
-<body style="margin:0; background:#f8f4ec; font-family:Arial, sans-serif; color:#171713;">
+<body style="margin:0; background:#f8f4ec; font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; color:#171713;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f8f4ec; padding:28px 12px;">
         <tr>
             <td align="center">

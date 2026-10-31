@@ -26,34 +26,21 @@
     .color-field input[type=text] { background: none; border: 0; color: var(--app-ink); flex: 1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .86rem; outline: 0; text-transform: uppercase; width: 100%; }
     .presets { display: flex; flex-wrap: wrap; gap: 8px; }
     .preset { background: none; border: 1px solid rgba(23, 23, 19, .13); border-radius: 999px; display: inline-flex; padding: 3px; transition: border-color .2s, transform .2s; }
-    .preset:hover { border-color: var(--app-ink); transform: translateY(-1px); }
+    .preset:hover { border-color: var(--app-ink); }
     .preset span { border-radius: 50%; display: block; height: 20px; width: 20px; }
     .preset span + span { margin-left: -6px; box-shadow: 0 0 0 2px #fff; }
     .logo-drop { align-items: center; background: #fff; border: 1.5px dashed rgba(23, 23, 19, .18); border-radius: 14px; cursor: pointer; display: flex; gap: 14px; margin: 0; padding: 12px; position: relative; transition: border-color .2s; }
     .logo-drop:hover, .logo-drop.is-over { border-color: var(--app-gold); }
     .logo-drop input { cursor: pointer; inset: 0; opacity: 0; position: absolute; }
-    .logo-thumb { align-items: center; background: var(--app-bg); border-radius: 12px; color: var(--app-muted); display: flex; flex: 0 0 56px; font-size: 1.3rem; height: 56px; justify-content: center; overflow: hidden; width: 56px; }
+    .logo-thumb { align-items: center; background: var(--app-soft); border-radius: 12px; color: var(--app-muted); display: flex; flex: 0 0 56px; font-size: 1.3rem; height: 56px; justify-content: center; overflow: hidden; width: 56px; }
     .logo-thumb img { height: 100%; object-fit: cover; width: 100%; }
     .logo-drop strong { color: var(--app-ink); display: block; font-size: .86rem; }
     .logo-drop small { color: var(--app-muted); font-size: .76rem; }
 
     .preview-wrap { display: grid; gap: 16px; position: sticky; top: 84px; }
     .pv-label { color: var(--app-muted); font-size: .72rem; font-weight: 600; letter-spacing: .06em; margin: 0 4px 8px; text-transform: uppercase; }
-    .pv-console { background: #141412; border-radius: 18px; box-shadow: 0 24px 48px -28px rgba(23, 23, 19, .6); display: grid; grid-template-columns: 150px 1fr; overflow: hidden; }
-    .pv-side { background: radial-gradient(120% 60% at 0% 0%, rgba(185, 137, 67, .16), transparent 60%), #141412; color: #fff; padding: 14px 12px; }
-    .pv-brand { align-items: center; display: flex; gap: 8px; margin-bottom: 14px; }
-    .pv-logo { align-items: center; background: linear-gradient(140deg, #d8b978, #b98943 55%, #8a6128); border-radius: 8px; color: #171713; display: flex; flex: 0 0 26px; font-size: .8rem; height: 26px; justify-content: center; overflow: hidden; width: 26px; }
-    .pv-logo img { height: 100%; object-fit: cover; width: 100%; }
-    .pv-brand strong { font-size: .76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pv-nav { display: grid; gap: 4px; }
-    .pv-nav span { background: rgba(255, 255, 255, .06); border-radius: 6px; height: 16px; }
-    .pv-nav span:first-child { background: rgba(255, 255, 255, .14); }
-    .pv-main { background: #f6f4ef; display: grid; gap: 8px; align-content: start; padding: 14px; }
-    .pv-main span { background: #fff; border-radius: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, .05); height: 30px; }
-    .pv-main span:first-child { background: none; box-shadow: none; height: 12px; width: 60%; background: rgba(23, 23, 19, .12); border-radius: 4px; }
-
-    .pv-card { border-radius: 18px; box-shadow: 0 24px 48px -28px rgba(23, 23, 19, .5); overflow: hidden; }
-    .pv-card-top { background: radial-gradient(100% 120% at 0% 0%, color-mix(in srgb, var(--pv-accent) 45%, transparent), transparent 60%), var(--pv-primary); color: #fff; padding: 18px; transition: background .3s; }
+    .pv-card { border: 1px solid var(--app-line); border-radius: var(--app-radius); overflow: hidden; }
+    .pv-card-top { background: var(--pv-primary); color: #fff; padding: 18px; transition: background .3s; }
     .pv-card-top small { color: var(--pv-accent); display: block; font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
     .pv-card-top strong { display: block; font-size: 1.05rem; font-weight: 700; letter-spacing: -.02em; margin-top: 6px; }
     .pv-card-body { align-items: center; background: #fff; display: flex; gap: 12px; justify-content: space-between; padding: 14px 18px; }
@@ -66,7 +53,7 @@
 
     /* Invitation experience */
     .exp { margin-top: 20px; scroll-margin-top: 84px; }
-    .switch-line { align-items: center; background: var(--app-bg); border-radius: 14px; display: flex; gap: 16px; justify-content: space-between; padding: 12px 16px; }
+    .switch-line { align-items: center; background: var(--app-soft); border-radius: 14px; display: flex; gap: 16px; justify-content: space-between; padding: 12px 16px; }
     .switch-line strong { color: var(--app-ink); display: block; font-size: .9rem; }
     .switch-line small { color: var(--app-muted); font-size: .78rem; }
     .tpl-grid, .music-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -79,28 +66,28 @@
     .tpl.is-locked .tpl-body { background: #f7f6f2; opacity: .75; }
     .tpl-body strong { color: var(--app-ink); font-size: .88rem; font-weight: 650; }
     .tpl-body small { color: var(--app-muted); font-size: .76rem; line-height: 1.4; }
-    .music-body i { color: var(--app-gold-deep); font-size: 1.05rem; margin-bottom: 4px; }
-    .tpl-preview { align-items: center; align-self: flex-start; background: rgba(23, 23, 19, .05); border: 0; border-radius: 99px; color: var(--app-ink); display: inline-flex; font-size: .74rem; font-weight: 600; gap: 5px; margin-top: 8px; padding: 5px 11px; }
+    .music-body i { color: var(--app-muted); font-size: 1.05rem; margin-bottom: 4px; }
+    .tpl-preview { align-items: center; align-self: flex-start; background: var(--app-soft); border: 0; border-radius: 99px; color: var(--app-ink); display: inline-flex; font-size: .74rem; font-weight: 600; gap: 5px; margin-top: 8px; padding: 5px 11px; }
     .tpl-preview:hover { background: rgba(23, 23, 19, .1); }
     .tpl-thumb { align-items: center; border-radius: 10px; display: flex; height: 86px; justify-content: center; margin-bottom: 8px; overflow: hidden; position: relative; }
     .tpl-thumb--classic { background: #f4efe6; }
     .tpl-thumb--prestige { background: #0d0d0c; }
     .tpl-thumb--modern { background: #f6f4ef; }
     .tpl-thumb span { aspect-ratio: 1.45; border-radius: 4px; position: relative; width: 58%; }
-    .tpl-thumb--classic span { background: linear-gradient(160deg, #efe4cf, #e4d4b6); box-shadow: 0 8px 16px -8px rgba(40, 30, 15, .45); }
+    .tpl-thumb--classic span { background: #e4d4b6; box-shadow: 0 8px 16px -8px rgba(40, 30, 15, .45); }
     .tpl-thumb--classic span::before { background: #e9dcc2; clip-path: polygon(0 0, 100% 0, 50% 58%); content: ""; inset: 0; position: absolute; }
     .tpl-thumb--classic span::after, .tpl-thumb--prestige span::after { background: var(--ie-accent); border-radius: 50%; content: ""; height: 16px; left: 50%; position: absolute; top: 58%; transform: translate(-50%, -50%); width: 16px; }
     .tpl-thumb--prestige span { background: #1b1a17; box-shadow: inset 0 0 0 1px rgba(216, 185, 120, .5); }
     .tpl-thumb--prestige span::before { background: #23211d; clip-path: polygon(0 0, 100% 0, 50% 58%); content: ""; inset: 0; position: absolute; }
     .tpl-thumb--prestige span::after { background: #b98943; }
-    .tpl-thumb--modern span { aspect-ratio: .74; background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--ie-accent) 55%, transparent), transparent 60%), var(--ie-primary); border-radius: 2px 6px 6px 2px; box-shadow: 0 8px 16px -8px rgba(0, 0, 0, .45); width: 26%; }
-    .custom-music { background: var(--app-bg); border-radius: 14px; margin-top: 14px; padding: 14px 16px; }
+    .tpl-thumb--modern span { aspect-ratio: .74; background: var(--ie-primary); border-radius: 2px 6px 6px 2px; box-shadow: 0 8px 16px -8px rgba(0, 0, 0, .45); width: 26%; }
+    .custom-music { background: var(--app-soft); border-radius: 14px; margin-top: 14px; padding: 14px 16px; }
     .current-track { align-items: center; display: flex; gap: 12px; }
     .current-track > i { color: var(--app-gold-deep); font-size: 1.3rem; }
     .current-track > div { flex: 1; }
     .current-track strong { color: var(--app-ink); display: block; font-size: .86rem; margin-bottom: 4px; }
     .current-track audio { height: 32px; max-width: 100%; width: 100%; }
-    .upsell { align-items: center; background: linear-gradient(120deg, rgba(185, 137, 67, .12), rgba(185, 137, 67, .04)); border: 1px solid rgba(185, 137, 67, .25); border-radius: 14px; color: #6b5126; display: flex; flex-wrap: wrap; font-size: .82rem; gap: 10px 14px; margin-top: 14px; padding: 12px 14px; }
+    .upsell { align-items: center; background: rgba(185, 137, 67, .08); border: 1px solid rgba(185, 137, 67, .25); border-radius: 14px; color: #6b5126; display: flex; flex-wrap: wrap; font-size: .82rem; gap: 10px 14px; margin-top: 14px; padding: 12px 14px; }
     .upsell > i { color: var(--app-gold-deep); font-size: 1.1rem; }
     .upsell > span { flex: 1 1 260px; }
     .preview-stage { background: #f4efe6; height: min(560px, 72vh); position: relative; }
@@ -112,7 +99,7 @@
 
 @section('content')
 <div class="brand-page">
-    <x-app.page-header kicker="Identité" title="Branding" subtitle="Le nom et le logo de votre espace, et les couleurs de vos cartes d’invitation." />
+    <x-app.page-header title="Branding" subtitle="Nom, logo et couleurs de votre espace et de vos cartes d’invitation." />
 
     <div class="brand-grid">
         <section class="ui-card">
@@ -163,26 +150,13 @@
                     </div>
                     <div class="col-12 d-flex gap-2 justify-content-end border-top pt-4">
                         <button type="reset" class="ui-btn ui-btn-soft">Réinitialiser</button>
-                        <button type="submit" class="ui-btn ui-btn-primary"><i class="bi bi-check2"></i>Enregistrer le branding</button>
+                        <button type="submit" class="ui-btn ui-btn-primary">Enregistrer</button>
                     </div>
                 </div>
             </form>
         </section>
 
         <aside class="preview-wrap" style="--pv-primary: {{ $primary }}; --pv-accent: {{ $accent }}" data-preview>
-            <div>
-                <div class="pv-label">Console</div>
-                <div class="pv-console">
-                    <div class="pv-side">
-                        <div class="pv-brand">
-                            <span class="pv-logo" data-pv-logo>@if($logoUrl)<img src="{{ $logoUrl }}" alt="">@else<i class="bi bi-shield-check"></i>@endif</span>
-                            <strong data-pv-name>{{ $brandName }}</strong>
-                        </div>
-                        <div class="pv-nav"><span></span><span></span><span></span><span></span></div>
-                    </div>
-                    <div class="pv-main"><span></span><span></span><span></span></div>
-                </div>
-            </div>
             <div>
                 <div class="pv-label">Carte d’invitation</div>
                 <div class="pv-card">
@@ -285,11 +259,11 @@
                     </div>
                 </div>
             @else
-                <div class="upsell"><i class="bi bi-stars"></i><span>{{ $customMusicDeniedReason }} Avec un forfait payant actif, vous pouvez accueillir vos invités avec votre propre musique.</span><a href="{{ route('saas.plans') }}" class="ui-btn ui-btn-gold ui-btn-sm">Voir les forfaits</a></div>
+                <div class="upsell"><i class="bi bi-stars"></i><span>{{ $customMusicDeniedReason }} Avec un forfait payant actif, vous pouvez accueillir vos invités avec votre propre musique.</span><a href="{{ route('saas.plans') }}" class="ui-btn ui-btn-ghost ui-btn-sm">Voir les forfaits</a></div>
             @endif
 
             <div class="d-flex justify-content-end gap-2 border-top pt-4 mt-4">
-                <button type="submit" class="ui-btn ui-btn-primary"><i class="bi bi-check2"></i>Enregistrer l’expérience</button>
+                <button type="submit" class="ui-btn ui-btn-primary">Enregistrer</button>
             </div>
         </form>
     </section>
@@ -353,7 +327,6 @@
             if (!file) return;
             const url = URL.createObjectURL(file);
             form.querySelector('[data-logo-thumb]').innerHTML = `<img src="${url}" alt="">`;
-            document.querySelector('[data-pv-logo]').innerHTML = `<img src="${url}" alt="">`;
             form.querySelector('[data-logo-name]').textContent = file.name;
         });
 

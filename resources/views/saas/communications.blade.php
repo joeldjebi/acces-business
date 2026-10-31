@@ -21,10 +21,11 @@
     .balance { padding: 18px 20px; }
     .balance-top { align-items: center; display: flex; justify-content: space-between; }
     .balance-top span { align-items: center; color: var(--app-muted); display: flex; font-size: .82rem; font-weight: 500; gap: 8px; }
-    .balance-top span i { align-items: center; background: rgba(23, 23, 19, .05); border-radius: 8px; color: var(--app-ink); display: inline-flex; height: 28px; justify-content: center; width: 28px; }
-    .balance strong { color: var(--app-ink); display: block; font-size: 2rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.045em; line-height: 1; margin-top: 14px; }
+    .balance-top span i { color: var(--app-muted); }
+    .balance strong { color: var(--app-ink); display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.045em; line-height: 1; margin-top: 14px; }
     .balance strong small { color: var(--app-muted); font-size: .85rem; font-weight: 500; letter-spacing: 0; margin-left: 4px; }
     .balance .ui-meter { margin-top: 12px; }
+    .balance .ui-meter span { background: var(--accent); }
     .balance-foot { color: var(--app-muted); display: flex; font-size: .76rem; justify-content: space-between; margin-top: 8px; }
     .balance.is-empty strong { color: rgba(23, 23, 19, .3); }
 
@@ -32,7 +33,6 @@
     .stack { display: grid; gap: 20px; }
 
     .reminder { align-items: center; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) auto; }
-    .reminder-icon { align-items: center; background: var(--app-gold-soft); border-radius: 12px; color: var(--app-gold-deep); display: flex; flex: 0 0 42px; font-size: 1.1rem; height: 42px; justify-content: center; width: 42px; }
     .reminder-controls { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
     .reminder-controls .form-control { width: 120px; }
     .reminder-state { font-size: .78rem; font-weight: 600; }
@@ -43,7 +43,7 @@
     .pkg-body { align-items: center; border: 1px solid rgba(23, 23, 19, .13); border-radius: 14px; display: flex; gap: 14px; padding: 14px 16px; transition: border-color .2s, box-shadow .2s; }
     .pkg input:checked + .pkg-body { border-color: var(--app-ink); box-shadow: 0 0 0 3px rgba(23, 23, 19, .06); }
     .pkg input:focus-visible + .pkg-body { box-shadow: 0 0 0 3px var(--app-gold-soft); }
-    .pkg-icon { align-items: center; background: rgba(23, 23, 19, .05); border-radius: 10px; color: var(--app-ink); display: flex; flex: 0 0 38px; font-size: 1rem; height: 38px; justify-content: center; width: 38px; }
+    .pkg-icon { color: var(--app-muted); font-size: 1.1rem; }
     .pkg-body strong { color: var(--app-ink); display: block; font-size: .92rem; font-weight: 650; }
     .pkg-body small { color: var(--app-muted); font-size: .78rem; }
     .pkg-price { margin-left: auto; text-align: right; white-space: nowrap; }
@@ -55,17 +55,17 @@
     .qty button:last-child { border-radius: 0 10px 10px 0; }
     .qty .form-control { border-left: 0; border-radius: 0; border-right: 0; font-variant-numeric: tabular-nums; text-align: center; }
     .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .presets button { background: rgba(23, 23, 19, .05); border: 0; border-radius: 99px; color: var(--app-ink); font-size: .74rem; font-weight: 600; padding: 4px 10px; }
+    .presets button { background: var(--app-soft); border: 0; border-radius: 99px; color: var(--app-ink); font-size: .74rem; font-weight: 600; padding: 4px 10px; }
     .presets button:hover { background: rgba(23, 23, 19, .1); }
     .ops { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .op { cursor: pointer; margin: 0; position: relative; }
     .op input { opacity: 0; pointer-events: none; position: absolute; }
     .op span { align-items: center; border: 1px solid rgba(23, 23, 19, .13); border-radius: 10px; color: var(--app-text); display: flex; flex-direction: column; font-size: .74rem; font-weight: 600; gap: 4px; padding: 9px 6px; text-align: center; transition: border-color .2s, box-shadow .2s; }
-    .op span i { color: var(--app-gold-deep); font-size: .95rem; }
+    .op span i { color: var(--app-muted); font-size: .95rem; }
     .op input:checked + span { border-color: var(--app-ink); box-shadow: 0 0 0 3px rgba(23, 23, 19, .06); color: var(--app-ink); }
-    .total { align-items: center; background: #141412; border-radius: 14px; color: #fff; display: flex; justify-content: space-between; margin-top: 18px; padding: 14px 16px; }
-    .total span { color: rgba(255, 255, 255, .6); font-size: .8rem; }
-    .total strong { font-size: 1.35rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; }
+    .total { align-items: center; border-top: 1px solid var(--app-line); display: flex; justify-content: space-between; margin-top: 18px; padding-top: 16px; }
+    .total span { color: var(--app-muted); font-size: .84rem; }
+    .total strong { color: var(--app-ink); font-size: 1.35rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; }
     .pay-note { color: var(--app-muted); font-size: .74rem; line-height: 1.45; margin-top: 10px; }
 
     @media (max-width: 1099.98px) { .comm-grid { grid-template-columns: 1fr; } }
@@ -75,9 +75,8 @@
 
 @section('content')
 <div class="comm-page">
-    <x-app.page-header kicker="Communications" title="Crédits messages" subtitle="Rechargez vos crédits et planifiez les relances automatiques de vos invités." />
+    <x-app.page-header title="Crédits messages" />
 
-    @if(session('warning'))<div class="alert alert-warning">{{ session('warning') }}</div>@endif
 
     <section class="balances">
         @foreach($channels as $channel => $label)
@@ -104,8 +103,7 @@
                     <form method="POST" action="{{ route('saas.communications.reminders.update') }}" class="reminder" novalidate>
                         @csrf
                         @method('PUT')
-                        <div class="d-flex gap-3 align-items-start">
-                            <span class="reminder-icon"><i class="bi bi-bell"></i></span>
+                        <div>
                             <div>
                                 <h2 class="h6 mb-1" style="font-weight: 650">Relances automatiques</h2>
                                 <p class="text-muted small mb-1">Chaque jour à l’heure choisie, les invités qui n’ont pas encore répondu reçoivent un rappel.</p>
@@ -125,7 +123,7 @@
             </section>
 
             <section class="ui-card" style="overflow: hidden">
-                <div class="ui-card-head"><div><h2>Historique des achats</h2><p>Les 10 derniers rechargements.</p></div></div>
+                <div class="ui-card-head"><div><h2>Historique des achats</h2><p>10 derniers rechargements</p></div></div>
                 @if($invoices->isNotEmpty())
                     <div class="table-responsive">
                         <table class="ui-table">
@@ -135,7 +133,7 @@
                                     @php $meta = $invoice->metadata ?? []; @endphp
                                     <tr>
                                         <td>{{ optional($invoice->paid_at ?? $invoice->created_at)->format('d/m/Y') }}<span class="ui-sub">{{ optional($invoice->paid_at ?? $invoice->created_at)->format('H:i') }}</span></td>
-                                        <td><span class="ui-pill"><i class="bi {{ $channelIcons[$meta['channel'] ?? ''] ?? 'bi-chat' }}"></i>{{ $channels[$meta['channel'] ?? ''] ?? '—' }}</span></td>
+                                        <td>{{ $channels[$meta['channel'] ?? ''] ?? '—' }}</td>
                                         <td style="font-variant-numeric: tabular-nums">{{ number_format((int) ($meta['quantity'] ?? 0), 0, ',', ' ') }}</td>
                                         <td>{{ $meta['payment_operator_label'] ?? '—' }}</td>
                                         <td class="text-end fw-semibold" style="font-variant-numeric: tabular-nums">{{ number_format($invoice->amount, 0, ',', ' ') }} {{ $invoice->currency }}</td>
@@ -151,7 +149,7 @@
         </div>
 
         <aside class="ui-card">
-            <div class="ui-card-head has-border"><div><h2>Recharger des crédits</h2><p>Choisissez un package et une quantité.</p></div></div>
+            <div class="ui-card-head has-border"><div><h2>Recharger des crédits</h2></div></div>
             @if($packages->isNotEmpty())
                 <form method="POST" action="{{ route('saas.communications.purchase') }}" class="ui-card-body" id="purchaseForm" novalidate>
                     @csrf
@@ -191,8 +189,8 @@
                         <input class="form-control @error('payment_phone') is-invalid @enderror" id="payment_phone" name="payment_phone" value="{{ old('payment_phone') }}" placeholder="+225 07 00 00 00 00" inputmode="tel" required>
                     </div>
                     <div class="total"><span>Total à régler</span><strong data-total>—</strong></div>
-                    <button type="submit" class="ui-btn ui-btn-gold w-100 mt-3"><i class="bi bi-lightning-charge"></i>Acheter les crédits</button>
-                    <p class="pay-note"><i class="bi bi-info-circle me-1"></i>Le règlement est enregistré manuellement : aucune somme n’est débitée automatiquement depuis cette page. Les crédits sont ajoutés immédiatement à votre solde.</p>
+                    <button type="submit" class="ui-btn ui-btn-primary w-100 mt-3">Acheter les crédits</button>
+                    <p class="pay-note">Le règlement est enregistré manuellement : aucune somme n’est débitée automatiquement depuis cette page. Les crédits sont ajoutés immédiatement à votre solde.</p>
                 </form>
             @else
                 <div class="ui-empty"><i class="bi bi-box"></i><strong>Aucun package disponible</strong>Contactez l’administration de la plateforme.</div>
@@ -256,7 +254,9 @@
             refresh();
         }));
         qty.addEventListener('input', refresh);
-        form.addEventListener('submit', (event) => {
+        let purchaseConfirmed = false;
+        form.addEventListener('submit', async (event) => {
+            if (purchaseConfirmed) return;
             const phone = form.querySelector('#payment_phone');
             const operator = form.querySelector('input[name="payment_operator"]:checked');
             const tooFew = Number(qty.value) < Number(qty.min);
@@ -267,8 +267,12 @@
                 if (!operator) form.querySelector('.ops').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
-            if (!confirm(`Confirmer l’achat de ${fmt.format(qty.value)} crédits pour ${totalEl.textContent} ?`)) { event.preventDefault(); return; }
+            event.preventDefault();
+            const ok = await window.appConfirm({ title: 'Confirmer l’achat ?', message: `${fmt.format(qty.value)} crédits pour ${totalEl.textContent}.`, confirmLabel: 'Acheter', tone: 'primary' });
+            if (!ok) return;
+            purchaseConfirmed = true;
             form.querySelector('[type="submit"]').disabled = true;
+            form.submit();
         });
         refresh();
     })();

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CommunicationCreditBalance;
 use App\Models\Event;
+use App\Models\EventAccessLink;
 use App\Models\EventRegistration;
 use App\Models\Organization;
 use Illuminate\Http\Request;
@@ -73,6 +74,47 @@ class EventCommunicationService
         return $success;
     }
 
+    /**
+     * Relance un invité qui n'a pas encore ouvert son lien d'invitation (aucune inscription).
+     */
+    public function sendLinkReminder(EventAccessLink $link, bool $automatic = false): bool
+    {
+        $link->loadMissing('event');
+        $event = $link->event;
+
+        if (!$event || !$link->email_destinataire || $link->est_utilise) {
+            return false;
+        }
+
+        $name = trim(($link->prenom ?? '') . ' ' . ($link->nom ?? '')) ?: $link->email_destinataire;
+        $accessUrl = $link->access_url;
+        $subject = 'Rappel de réponse - ' . $event->titre;
+        $text = "Bonjour {$name},\n\nNous attendons encore votre réponse pour l'événement : {$event->titre}.\nRépondre à l'invitation : {$accessUrl}\n\nMerci.\n";
+        $html = view('emails.event-reminder', [
+            'event' => $event,
+            'name' => $name,
+            'responseUrl' => $accessUrl,
+        ])->render();
+
+        $result = $this->mailjetService->sendSimpleEmail($link->email_destinataire, $name, $subject, $text, $html);
+        $success = (bool) ($result['success'] ?? false);
+
+        if ($success) {
+            $link->forceFill([
+                'last_reminder_sent_at' => now(),
+                'reminder_count' => ((int) $link->reminder_count) + 1,
+            ])->save();
+        } else {
+            \Illuminate\Support\Facades\Log::warning('Relance d’invitation échouée', [
+                'access_link_id' => $link->id,
+                'automatic' => $automatic,
+                'message' => $result['message'] ?? null,
+            ]);
+        }
+
+        return $success;
+    }
+
     public function sendThankYouSms(EventRegistration $registration, ?Request $request = null): array
     {
         $registration->loadMissing('event');
@@ -128,6 +170,42 @@ class EventCommunicationService
             ->whereHas('event', function ($eventQuery) {
                 $eventQuery->where('statut', 'publie')
                     ->whereDate('date_debut', '>=', now()->toDateString());
+            });
+
+        if ($event) {
+            $query->where('event_id', $event->id)
+                ->where('organization_id', $event->organization_id);
+        }
+
+        if ($organization) {
+            $query->where('organization_id', $organization->id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Invitations envoyées mais jamais ouvertes : pas encore d'inscription pour cet email sur l'événement.
+     */
+    public function pendingLinkReminderQuery(?Event $event = null, ?Organization $organization = null)
+    {
+        $query = EventAccessLink::query()
+            ->with('event')
+            ->where('est_utilise', false)
+            ->whereNotNull('email_destinataire')
+            ->where(function ($q) {
+                $q->whereNull('last_reminder_sent_at')
+                    ->orWhere('last_reminder_sent_at', '<=', now()->subDay());
+            })
+            ->whereHas('event', function ($eventQuery) {
+                $eventQuery->where('statut', 'publie')
+                    ->whereDate('date_debut', '>=', now()->toDateString());
+            })
+            ->whereNotExists(function ($registration) {
+                $registration->selectRaw(1)
+                    ->from('event_registrations')
+                    ->whereColumn('event_registrations.event_id', 'event_access_links.event_id')
+                    ->whereColumn('event_registrations.email', 'event_access_links.email_destinataire');
             });
 
         if ($event) {

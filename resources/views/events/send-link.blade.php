@@ -9,6 +9,11 @@
     $remainingInvitations = $invitationLimit === null ? null : max(0, (int) $invitationLimit - (int) $invitationsUsed);
     $canSendInvitations = $remainingInvitations === null || $remainingInvitations > 0;
     $quotaPct = $invitationLimit ? min(100, round($invitationsUsed / $invitationLimit * 100)) : 0;
+    $places = \App\Support\EventCapacity::summary($event);
+    $placesPct = $places['capacity'] ? min(100, round($places['occupied'] / $places['capacity'] * 100)) : 0;
+    $isFull = $places['remaining'] === 0;
+    // Nouvelles invitations possibles : le plus petit des deux plafonds (places de l'événement, quota du forfait)
+    $canInviteNew = collect([$places['remaining'], $remainingInvitations])->filter(fn ($v) => $v !== null)->min();
     $statusFilters = ['' => 'Tous', 'envoye' => 'Envoyés', 'utilise' => 'Utilisés'];
     $hasFilters = collect(request()->only(['search', 'statut', 'date_from', 'date_to']))->filter()->isNotEmpty();
     $approvals = collect([
@@ -38,7 +43,7 @@
 
     /* Invitation card preview */
     .card-preview { border-radius: 22px; box-shadow: 0 30px 60px -30px rgba(23, 23, 19, .45); overflow: hidden; }
-    .cp-cover { background: radial-gradient(100% 120% at 0% 0%, color-mix(in srgb, var(--preview-accent) 45%, transparent), transparent 60%), var(--preview-primary); color: #fff; padding: 20px; }
+    .cp-cover { background: var(--preview-primary); color: #fff; padding: 20px; }
     .cp-brand { align-items: center; display: flex; font-size: .78rem; gap: 10px; justify-content: space-between; opacity: .92; }
     .cp-logo { align-items: center; background: #fff; border-radius: 10px; display: flex; height: 36px; justify-content: center; overflow: hidden; width: 64px; }
     .cp-logo img { max-height: 100%; max-width: 100%; object-fit: contain; padding: 5px; }
@@ -49,7 +54,7 @@
     .cp-rows span { color: var(--app-muted); display: block; font-size: .64rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
     .cp-rows div { color: var(--app-ink); font-size: .84rem; font-weight: 500; }
     .cp-qr { align-items: center; border-top: 1px dashed var(--app-line); display: flex; gap: 14px; margin-top: 16px; padding-top: 16px; }
-    .cp-qr-box { align-items: center; background: var(--app-bg); border-radius: 12px; color: var(--app-ink); display: flex; flex: 0 0 64px; font-size: 2rem; height: 64px; justify-content: center; }
+    .cp-qr-box { align-items: center; background: var(--app-soft); border-radius: 12px; color: var(--app-ink); display: flex; flex: 0 0 64px; font-size: 2rem; height: 64px; justify-content: center; }
     .cp-qr small { color: var(--app-muted); display: block; font-size: .7rem; }
     .cp-qr strong { color: var(--app-ink); font-size: .82rem; letter-spacing: .04em; }
     .cp-signature { align-items: center; border-top: 1px solid var(--app-line); color: var(--app-muted); display: flex; font-size: .76rem; gap: 10px; justify-content: space-between; margin-top: 14px; padding-top: 12px; }
@@ -94,15 +99,12 @@
 <div class="invite-page">
     <x-app.event-header :event="$event" active="send-link">
         <x-slot:actions>
-            <button type="button" class="ui-btn ui-btn-primary" data-bs-toggle="modal" data-bs-target="#sendLinkModal" @disabled(!$canSendInvitations)>
+            <button type="button" class="ui-btn ui-btn-primary" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
                 <i class="bi bi-send"></i>Nouvelle invitation
             </button>
         </x-slot:actions>
     </x-app.event-header>
 
-    @if(session('warning'))
-        <div class="alert alert-warning">{{ session('warning') }}</div>
-    @endif
 
     <div class="invite-grid">
         <section class="ui-card" style="overflow: hidden">
@@ -157,7 +159,7 @@
                                         <div class="ui-actions">
                                             <button type="button" class="ui-icon-btn" title="Copier le lien" data-copy="{{ $link->access_url }}"><i class="bi bi-copy"></i></button>
                                             <a href="{{ $link->access_url }}" target="_blank" rel="noopener" class="ui-icon-btn" title="Ouvrir le lien"><i class="bi bi-box-arrow-up-right"></i></a>
-                                            <form method="POST" action="{{ route('events.send-link.destroy', [$event, $link]) }}" onsubmit="return confirm('Supprimer cette invitation ?');">
+                                            <form method="POST" action="{{ route('events.send-link.destroy', [$event, $link]) }}" data-confirm-title="Supprimer cette invitation ?" data-confirm="Le lien d’accès envoyé à l’invité ne fonctionnera plus.">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="ui-icon-btn danger" title="Supprimer l'invitation"><i class="bi bi-trash"></i></button>
@@ -179,7 +181,7 @@
                         <strong>Aucun résultat</strong>Aucune invitation ne correspond à ces critères.
                     @else
                         <strong>Aucune invitation envoyée</strong>Invitez vos premiers convives par email ou en important un fichier CSV.
-                        @if($canSendInvitations)<div class="mt-3"><button type="button" class="ui-btn ui-btn-primary" data-bs-toggle="modal" data-bs-target="#sendLinkModal"><i class="bi bi-send"></i>Nouvelle invitation</button></div>@endif
+                        @if($canInviteNew !== 0)<div class="mt-3"><button type="button" class="ui-btn ui-btn-primary" data-bs-toggle="modal" data-bs-target="#sendLinkModal"><i class="bi bi-send"></i>Nouvelle invitation</button></div>@endif
                     @endif
                 </div>
             @endif
@@ -187,15 +189,24 @@
 
         <aside class="side">
             <section class="ui-card">
-                <div class="ui-card-head"><div><h2>Forfait invitations</h2><p>Consommation de votre organisation.</p></div></div>
-                <div class="ui-card-body pt-0">
-                    @if($invitationLimit === null)
-                        <div class="quota-big"><strong>∞</strong><span>Invitations illimitées</span></div>
-                    @else
-                        <div class="quota-big"><strong>{{ number_format((int) $remainingInvitations, 0, ',', ' ') }}</strong><span>restante(s) sur {{ number_format((int) $invitationLimit, 0, ',', ' ') }}</span></div>
-                        <div class="ui-meter mt-2" style="--accent: {{ $quotaPct >= 90 ? 'var(--app-red)' : ($quotaPct >= 70 ? 'var(--app-gold)' : 'var(--app-ink)') }}"><span style="width: {{ $quotaPct }}%"></span></div>
-                        @unless($canSendInvitations)<p class="text-danger small mt-2 mb-0">Limite atteinte : passez à un forfait supérieur pour continuer.</p>@endunless
-                    @endif
+                <div class="ui-card-head"><div><h2>Places et quota</h2><p>{{ $canInviteNew === null ? 'Aucune limite pour les nouvelles invitations.' : ($canInviteNew > 0 ? number_format($canInviteNew, 0, ',', ' ') . ' nouvelle(s) invitation(s) possible(s).' : 'Plus aucune nouvelle invitation possible.') }}</p></div></div>
+                <div class="ui-card-body pt-0 d-grid gap-3">
+                    <div>
+                        <div class="d-flex justify-content-between small mb-1"><strong>Places de l’événement</strong><span class="text-muted">{{ $places['capacity'] ? $places['occupied'] . ' / ' . $places['capacity'] : $places['occupied'] . ' · illimitées' }}</span></div>
+                        @if($places['capacity'])
+                            <div class="ui-meter" style="--accent: {{ $placesPct >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}"><span style="width: {{ $placesPct }}%"></span></div>
+                            <div class="form-text">{{ $isFull ? 'Complet. Un invité qui répond « Absent » libère sa place.' : $places['remaining'] . ' place(s) disponible(s). Les absents libèrent leur place.' }}</div>
+                        @else
+                            <div class="form-text"><a href="{{ route('events.edit', $event) }}">Définir une capacité</a> pour limiter le nombre de places.</div>
+                        @endif
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between small mb-1"><strong>Invitations du forfait</strong><span class="text-muted">{{ $invitationLimit === null ? 'illimitées' : number_format($invitationsUsed, 0, ',', ' ') . ' / ' . number_format((int) $invitationLimit, 0, ',', ' ') }}</span></div>
+                        @if($invitationLimit !== null)
+                            <div class="ui-meter" style="--accent: {{ $quotaPct >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}"><span style="width: {{ $quotaPct }}%"></span></div>
+                            <div class="form-text">{{ $canSendInvitations ? number_format((int) $remainingInvitations, 0, ',', ' ') . ' restante(s), tous événements confondus.' : 'Limite atteinte.' }} @unless($canSendInvitations)<a href="{{ route('saas.plans') }}">Changer de forfait</a>@endunless</div>
+                        @endif
+                    </div>
                 </div>
             </section>
 
@@ -315,12 +326,18 @@
                             @error('message')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <button type="submit" class="ui-btn ui-btn-primary w-100 mt-4" @disabled(!$canSendInvitations)>
+                        @if($canInviteNew !== null)
+                            <div @class(['alert mt-4 mb-0 small', 'alert-warning' => $canInviteNew === 0, 'alert-light border' => $canInviteNew > 0])>
+                                @if($canInviteNew === 0)
+                                    {{ $isFull ? 'L’événement est complet' : 'La limite d’invitations du forfait est atteinte' }} : seuls les renvois à des personnes déjà invitées sont possibles.
+                                @else
+                                    Vous pouvez encore inviter <strong>{{ number_format($canInviteNew, 0, ',', ' ') }}</strong> nouvelle(s) personne(s). Une personne déjà invitée reçoit à nouveau son lien, sans consommer de place.
+                                @endif
+                            </div>
+                        @endif
+                        <button type="submit" class="ui-btn ui-btn-primary w-100 mt-3">
                             <i class="bi bi-send"></i>Envoyer l’invitation
                         </button>
-                        @if(!$canSendInvitations)
-                            <div class="alert alert-warning mt-3 mb-0">Limite d’invitations atteinte. Passez à un forfait supérieur pour continuer.</div>
-                        @endif
                     </form>
                 </div>
             </div>

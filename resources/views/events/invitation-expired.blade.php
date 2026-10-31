@@ -6,7 +6,7 @@
     <title>Invitation expirée</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f4f2ed; color: #171713; font-family: Arial, sans-serif; }
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #ffffff; color: #171713; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif; }
         main { width: min(620px, 100%); background: #fff; border: 1px solid #ddd7ca; border-radius: 8px; padding: clamp(28px, 6vw, 52px); box-shadow: 0 24px 60px rgba(23, 23, 19, .1); }
         .label { margin: 0 0 14px; color: #9a6b2f; font-size: 12px; font-weight: 700; text-transform: uppercase; }
         h1 { margin: 0 0 16px; font-size: clamp(28px, 5vw, 42px); }

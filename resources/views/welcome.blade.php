@@ -7,9 +7,6 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -21,13 +18,13 @@
         @endif
         <style>
             :root {
-                --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
+                --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
                 --default-font-family: var(--font-sans);
             }
 
             html,
             body {
-                font-family: 'Jost', ui-sans-serif, system-ui, sans-serif;
+                font-family: var(--font-sans);
             }
         </style>
     </head>

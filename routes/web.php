@@ -12,6 +12,7 @@ use App\Http\Controllers\PlatformAdminController;
 use App\Http\Controllers\PlatformLandingController;
 use App\Http\Controllers\PlatformInvitationExperienceController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques
@@ -95,6 +96,10 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profil/mot-de-passe', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Gestion des utilisateurs (seulement pour super admin)
     Route::middleware('role:super_admin')->group(function () {

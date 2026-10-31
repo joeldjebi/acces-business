@@ -14,15 +14,15 @@ class EnsureTenantAccess
         $user = $request->user();
 
         if ($user?->isPlatformAdmin()) {
-            abort(403, 'Utilisez la console plateforme.');
+            abort(403, 'Cette page est réservée aux organisations. Utilisez la console plateforme.');
         }
 
         if (!$user || !$user->organization_id) {
-            abort(403, 'Organisation manquante.');
+            abort(403, 'Votre compte n’est rattaché à aucune organisation. Contactez votre administrateur.');
         }
 
         if (!$user->organization || !in_array($user->organization->status, ['active', 'trialing'], true)) {
-            abort(403, 'Organisation suspendue ou inactive.');
+            abort(403, 'Votre espace est suspendu. Contactez le support de la plateforme.');
         }
 
         foreach ($request->route()?->parameters() ?? [] as $parameter) {

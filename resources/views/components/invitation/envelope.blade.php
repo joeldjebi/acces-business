@@ -24,14 +24,14 @@
     .ie.is-preview { --ie-w: min(280px, 70vw); border-radius: 20px; position: absolute; z-index: 5; }
     .ie[hidden] { display: none; }
     .ie-bg { inset: 0; position: absolute; }
-    .ie--classic .ie-bg { background: radial-gradient(90% 60% at 50% 35%, #fffaf0 0%, #f1e8d8 55%, #e3d6bf 100%); }
-    .ie--prestige .ie-bg { background: radial-gradient(70% 55% at 50% 30%, #2a241b 0%, #12110f 55%, #070706 100%); }
-    .ie--modern .ie-bg { background: radial-gradient(90% 70% at 50% 40%, #ffffff 0%, #f3f1ec 60%, #e9e5dc 100%); }
-    .ie-vignette { background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, .18)); inset: 0; pointer-events: none; position: absolute; }
-    .ie--prestige .ie-vignette { background: radial-gradient(100% 80% at 50% 40%, transparent 40%, rgba(0, 0, 0, .6)); }
+    .ie--classic .ie-bg { background: #f1e8d8; }
+    .ie--prestige .ie-bg { background: #12110f; }
+    .ie--modern .ie-bg { background: #ffffff; }
+    .ie-vignette { background: none; inset: 0; pointer-events: none; position: absolute; }
+    .ie--prestige .ie-vignette { background: none; }
     .ie-canvas { height: 100%; inset: 0; pointer-events: none; position: absolute; width: 100%; z-index: 1; }
-    .ie-flash { background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0) 60%); inset: 0; opacity: 0; pointer-events: none; position: absolute; z-index: 8; }
-    .ie--prestige .ie-flash { background: radial-gradient(circle at 50% 50%, rgba(255, 226, 160, .85), rgba(255, 226, 160, 0) 60%); }
+    .ie-flash { background: rgba(255, 255, 255, .95); inset: 0; opacity: 0; pointer-events: none; position: absolute; z-index: 8; }
+    .ie--prestige .ie-flash { background: rgba(255, 226, 160, .85); }
     .ie-rays { aspect-ratio: 1; background: repeating-conic-gradient(from 0deg, rgba(216, 185, 120, .22) 0deg 6deg, transparent 6deg 18deg); border-radius: 50%; left: 50%; mask-image: radial-gradient(circle, #000 15%, transparent 68%); -webkit-mask-image: radial-gradient(circle, #000 15%, transparent 68%); opacity: 0; pointer-events: none; position: absolute; top: 50%; transform: translate(-50%, -50%); width: 160vmax; z-index: 0; }
     .ie-shapes { inset: 0; pointer-events: none; position: absolute; z-index: 0; }
     .ie-shapes i { border-radius: 50%; position: absolute; }
@@ -49,27 +49,27 @@
     .ie-skip { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); background: rgba(255, 255, 255, .7); border: 1px solid rgba(23, 23, 19, .1); border-radius: 999px; color: #2c2a25; font-size: .78rem; font-weight: 600; padding: 7px 14px; }
     .ie--prestige .ie-skip { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .15); color: #fff; }
     .ie-continue { background: #171713; border: 0; border-radius: 999px; bottom: calc(38px + env(safe-area-inset-bottom)); box-shadow: 0 16px 36px -14px rgba(0, 0, 0, .6); color: #fff; font-size: .9rem; font-weight: 600; left: 50%; opacity: 0; padding: 14px 26px; position: absolute; transform: translateX(-50%); visibility: hidden; white-space: nowrap; z-index: 10; }
-    .ie--prestige .ie-continue { background: linear-gradient(135deg, #e8cf94, #b98943 55%, #8a6128); color: #141412; }
+    .ie--prestige .ie-continue { background: #b98943; color: #141412; }
     .ie-continue i { margin-left: 6px; }
 
     /* Envelope */
     .ie-scene { aspect-ratio: 1.45; perspective: 1600px; position: relative; width: var(--ie-w); }
     .ie-env { cursor: pointer; inset: 0; position: absolute; transform-style: preserve-3d; }
-    .ie-shadow { background: radial-gradient(closest-side, rgba(40, 28, 10, .35), transparent); bottom: -22%; height: 26%; left: 8%; position: absolute; right: 8%; z-index: -1; }
-    .ie--prestige .ie-shadow { background: radial-gradient(closest-side, rgba(0, 0, 0, .8), transparent); }
+    .ie-shadow { background: none; bottom: -22%; height: 26%; left: 8%; position: absolute; right: 8%; z-index: -1; }
+    .ie--prestige .ie-shadow { background: none; }
     .ie-env-back { background: var(--ie-env-inner); border-radius: 12px; inset: 0; position: absolute; }
     .ie-env-back::after { background: repeating-linear-gradient(135deg, rgba(0, 0, 0, .025) 0 2px, transparent 2px 7px); border-radius: inherit; content: ""; inset: 0; position: absolute; }
     .ie-fold { inset: 0; position: absolute; z-index: 3; }
-    .ie-fold-l { background: linear-gradient(90deg, var(--ie-env-side), var(--ie-env)); border-radius: 12px 0 0 12px; clip-path: polygon(0 0, 52% 54%, 0 100%); }
-    .ie-fold-r { background: linear-gradient(270deg, var(--ie-env-side), var(--ie-env)); border-radius: 0 12px 12px 0; clip-path: polygon(100% 0, 48% 54%, 100% 100%); }
-    .ie-fold-b { background: linear-gradient(0deg, var(--ie-env-side), var(--ie-env)); border-radius: 0 0 12px 12px; clip-path: polygon(0 100%, 50% 44%, 100% 100%); filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, .08)); }
+    .ie-fold-l { background: var(--ie-env-side); border-radius: 12px 0 0 12px; clip-path: polygon(0 0, 52% 54%, 0 100%); }
+    .ie-fold-r { background: var(--ie-env-side); border-radius: 0 12px 12px 0; clip-path: polygon(100% 0, 48% 54%, 100% 100%); }
+    .ie-fold-b { background: var(--ie-env-side); border-radius: 0 0 12px 12px; clip-path: polygon(0 100%, 50% 44%, 100% 100%); filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, .08)); }
     .ie-flap { height: 58%; left: 0; position: absolute; right: 0; top: 0; transform-origin: 50% 0; transform-style: preserve-3d; z-index: 4; }
     .ie-flap-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; clip-path: polygon(0 0, 100% 0, 50% 100%); inset: 0; position: absolute; }
-    .ie-flap-out { background: linear-gradient(180deg, var(--ie-env-flap), var(--ie-env)); border-radius: 12px 12px 0 0; }
-    .ie-flap-out::after { background: linear-gradient(165deg, rgba(255, 255, 255, .35), transparent 45%); content: ""; inset: 0; position: absolute; }
+    .ie-flap-out { background: var(--ie-env-flap); border-radius: 12px 12px 0 0; }
+    .ie-flap-out::after { background: none; content: ""; inset: 0; position: absolute; }
     .ie-flap-in { background: var(--ie-env-inner); transform: rotateX(180deg); }
     .ie-seal { height: 66px; left: 50%; margin: -33px 0 0 -33px; position: absolute; top: 58%; width: 66px; z-index: 5; }
-    .ie-seal-half { align-items: center; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--ie-seal) 65%, #fff), var(--ie-seal) 45%, color-mix(in srgb, var(--ie-seal) 65%, #000)); border-radius: 50%; box-shadow: 0 6px 14px rgba(0, 0, 0, .3), inset 0 -3px 6px rgba(0, 0, 0, .25), inset 0 2px 3px rgba(255, 255, 255, .3); color: rgba(255, 255, 255, .92); display: flex; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.4rem; font-weight: 600; inset: 0; justify-content: center; overflow: hidden; position: absolute; }
+    .ie-seal-half { align-items: center; background: var(--ie-seal); border-radius: 50%; box-shadow: 0 6px 14px rgba(0, 0, 0, .3), inset 0 -3px 6px rgba(0, 0, 0, .25), inset 0 2px 3px rgba(255, 255, 255, .3); color: rgba(255, 255, 255, .92); display: flex; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.4rem; font-weight: 600; inset: 0; justify-content: center; overflow: hidden; position: absolute; }
     .ie-seal-half::before { border: 1.5px dashed rgba(255, 255, 255, .35); border-radius: 50%; content: ""; inset: 7px; position: absolute; }
     .ie-seal-half img { border-radius: 50%; height: 60%; object-fit: cover; opacity: .92; width: 60%; }
     .ie-seal-l { clip-path: polygon(0 0, 54% 0, 46% 22%, 57% 40%, 44% 62%, 55% 80%, 48% 100%, 0 100%); }
@@ -88,17 +88,17 @@
     .ie-card strong { display: -webkit-box; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(.85rem, 7.8cqi, 1.5rem); font-weight: 600; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-height: 1.1; margin: 3px 0 4px; overflow: hidden; }
     .ie-card .ie-meta { font-size: clamp(.5rem, 3.6cqi, .66rem); letter-spacing: .02em; line-height: 1.4; opacity: .72; }
     .ie-card .ie-rule { background: var(--ie-accent); flex-shrink: 0; height: 1px; margin: 4% auto 3%; opacity: .7; transform-origin: center; width: 40px; }
-    .ie-glare { background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .75) 48%, rgba(255, 255, 255, 0) 62%); inset: 0; pointer-events: none; position: absolute; transform: translateX(-130%); }
+    .ie-glare { background: none; inset: 0; pointer-events: none; position: absolute; transform: translateX(-130%); }
     .ie.has-js .ie-card .ie-ci { opacity: 0; }
 
     .ie--classic { --ie-env: #f0e5cf; --ie-env-side: #e6d7b9; --ie-env-inner: #d9c7a3; --ie-env-flap: #ecdfc4; --ie-seal: var(--ie-accent); }
     .ie--prestige { --ie-env: #1d1b18; --ie-env-side: #161512; --ie-env-inner: #0c0c0a; --ie-env-flap: #2a2722; --ie-seal: #c79b52; }
     .ie--prestige .ie-fold, .ie--prestige .ie-flap-out { box-shadow: inset 0 0 0 1px rgba(216, 185, 120, .4); }
-    .ie--prestige .ie-fold-b::after { background: linear-gradient(105deg, transparent 35%, rgba(216, 185, 120, .4) 50%, transparent 65%); background-size: 260% 100%; content: ""; inset: 0; position: absolute; animation: ieFoil 3.4s ease-in-out infinite; }
-    .ie--prestige .ie-card { background: radial-gradient(120% 80% at 50% 0%, #26221b, #12110f); box-shadow: 0 0 0 1px rgba(216, 185, 120, .5), 0 24px 50px -16px rgba(0, 0, 0, .8); color: #f5ecd8; }
-    .ie--prestige .ie-card strong { background: linear-gradient(100deg, #b98943, #f3dfa8 45%, #b98943 60%, #f3dfa8); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ieFoil 4s linear infinite; }
+    .ie--prestige .ie-fold-b::after { background: none; background-size: 260% 100%; content: ""; inset: 0; position: absolute; animation: ieFoil 3.4s ease-in-out infinite; }
+    .ie--prestige .ie-card { background: #12110f; box-shadow: 0 0 0 1px rgba(216, 185, 120, .5), 0 24px 50px -16px rgba(0, 0, 0, .8); color: #f5ecd8; }
+    .ie--prestige .ie-card strong { background: #d8b978; background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ieFoil 4s linear infinite; }
     .ie--prestige .ie-card small { color: #d8b978; }
-    .ie--prestige .ie-glare { background: linear-gradient(105deg, transparent 30%, rgba(255, 226, 160, .45) 48%, transparent 62%); }
+    .ie--prestige .ie-glare { background: none; }
     @keyframes ieFoil { from { background-position: 160% 0; } to { background-position: -60% 0; } }
 
     /* Modern booklet */
@@ -107,12 +107,12 @@
     .ie-book .ie-card strong { -webkit-line-clamp: 3; }
     .ie-cover { inset: 0; position: absolute; transform-origin: 0 50%; transform-style: preserve-3d; z-index: 3; }
     .ie-cover-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 4px 14px 14px 4px; inset: 0; position: absolute; }
-    .ie-cover-front { align-items: center; background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--ie-accent) 60%, transparent), transparent 60%), var(--ie-primary); box-shadow: 0 30px 50px -20px rgba(0, 0, 0, .5), inset 7px 0 12px -6px rgba(0, 0, 0, .45); color: #fff; display: flex; flex-direction: column; justify-content: center; padding: 14%; text-align: center; }
+    .ie-cover-front { align-items: center; background: var(--ie-primary); box-shadow: 0 30px 50px -20px rgba(0, 0, 0, .5), inset 7px 0 12px -6px rgba(0, 0, 0, .45); color: #fff; display: flex; flex-direction: column; justify-content: center; padding: 14%; text-align: center; }
     .ie-cover-front .ie-card-logo { background: rgba(255, 255, 255, .14); height: 42px; margin-bottom: 16%; width: 42px; }
     .ie-cover-front small { color: color-mix(in srgb, var(--ie-accent) 65%, #fff); font-size: .6rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
     .ie-cover-front em { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.55rem; line-height: 1.12; margin-top: 8px; }
     .ie-cover-front .ie-cta { border: 1px solid rgba(255, 255, 255, .35); border-radius: 99px; font-size: .62rem; letter-spacing: .12em; margin-top: 16%; padding: 6px 13px; text-transform: uppercase; }
-    .ie-cover-back { backface-visibility: visible; -webkit-backface-visibility: visible; background: linear-gradient(90deg, color-mix(in srgb, var(--ie-primary) 82%, #fff), color-mix(in srgb, var(--ie-primary) 92%, #fff)); border-radius: 14px 4px 4px 14px; transform: rotateY(180deg); }
+    .ie-cover-back { backface-visibility: visible; -webkit-backface-visibility: visible; background: color-mix(in srgb, var(--ie-primary) 88%, #fff); border-radius: 14px 4px 4px 14px; transform: rotateY(180deg); }
 
     /* Sound toggle (stays after the animation) */
     .ie-sound { align-items: center; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); background: rgba(20, 20, 18, .85); border: 0; border-radius: 999px; box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .5); color: #fff; display: inline-flex; font-size: .76rem; font-weight: 600; gap: 8px; height: 36px; left: 16px; padding: 0 13px; position: fixed; top: calc(14px + env(safe-area-inset-top)); z-index: 2001; }

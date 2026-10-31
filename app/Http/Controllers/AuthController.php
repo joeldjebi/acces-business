@@ -171,7 +171,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect('/dashboard')->with('success', 'Bienvenue ! Votre espace SaaS est prêt.');
+        return redirect('/dashboard')->with('success', 'Bienvenue ! Votre espace est prêt.');
     }
 
     private function registerClientAdmin(Request $request)

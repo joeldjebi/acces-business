@@ -10,9 +10,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -24,17 +21,18 @@
             --app-muted: #7a746a;
             --app-line: rgba(23, 23, 19, .08);
             --app-panel: #ffffff;
-            --app-bg: #f6f4ef;
+            --app-bg: #ffffff;
+            --app-soft: #f5f5f7;
             --app-gold: #b98943;
             --app-gold-soft: rgba(185, 137, 67, .12);
             --app-gold-deep: #8a6128;
             --app-green: #2e7b65;
             --app-red: #a4514a;
             --app-blue: #315f83;
-            --app-radius: 18px;
-            --app-shadow: 0 1px 2px rgba(23, 23, 19, .04), 0 12px 32px -12px rgba(23, 23, 19, .10);
+            --app-radius: 14px;
+            --app-shadow: none;
             --app-ease: cubic-bezier(.16, 1, .3, 1);
-            --bs-body-font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+            --bs-body-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
             --bs-border-radius: 12px;
             --bs-link-color-rgb: 138, 97, 40;
         }
@@ -53,7 +51,7 @@
 
         /* Sidebar */
         .sidebar {
-            background: radial-gradient(120% 60% at 0% 0%, rgba(185, 137, 67, .16), transparent 60%), var(--sidebar-bg);
+            background: var(--sidebar-bg);
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -76,9 +74,8 @@
         .sidebar-logo > span:last-child { min-width: 0; }
         .sidebar-logo-icon {
             align-items: center;
-            background: linear-gradient(140deg, #d8b978, #b98943 55%, #8a6128);
+            background: #b98943;
             border-radius: 11px;
-            box-shadow: 0 8px 20px -8px rgba(185, 137, 67, .7), inset 0 1px 0 rgba(255, 255, 255, .35);
             color: #171713;
             display: flex;
             flex: 0 0 38px;
@@ -108,12 +105,14 @@
         }
         .sidebar-menu a i { font-size: 1.02rem; opacity: .85; text-align: center; width: 18px; }
         .sidebar-menu a:hover { background: rgba(255, 255, 255, .06); color: #fff; }
-        .sidebar-menu a.active { background: rgba(255, 255, 255, .09); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06); color: #fff; }
+        .sidebar-menu a.active { background: rgba(255, 255, 255, .09); color: #fff; }
         .sidebar-menu a.active i { color: #d8b978; opacity: 1; }
-        .sidebar-menu a.active::after { background: #d8b978; border-radius: 99px; box-shadow: 0 0 10px #d8b978; content: ""; height: 6px; position: absolute; right: 12px; width: 6px; }
 
         .sidebar-footer { border-top: 1px solid rgba(255, 255, 255, .07); padding: 12px; }
         .user-info { align-items: center; border-radius: 12px; display: flex; gap: 10px; padding: 6px; }
+        .user-link { align-items: center; border-radius: 10px; color: inherit; display: flex; flex: 1; gap: 10px; min-width: 0; text-decoration: none; transition: background .2s; }
+        .user-link:hover { color: inherit; }
+        .user-link:hover .user-name { text-decoration: underline; }
         .user-avatar {
             align-items: center;
             background: rgba(255, 255, 255, .1);
@@ -180,14 +179,15 @@
             height: 36px;
             padding: 0 14px;
             text-decoration: none;
-            transition: transform .3s var(--app-ease), box-shadow .3s;
+            transition: background .2s;
         }
-        .topbar-btn:hover { box-shadow: 0 10px 22px -10px rgba(23, 23, 19, .6); color: #fff; transform: translateY(-1px); }
+        .topbar-btn:hover { background: #2c2a25; color: #fff; }
         .topbar-avatar {
             align-items: center;
-            background: linear-gradient(140deg, #d8b978, #b98943 60%, #8a6128);
+            background: var(--app-soft);
+            border: 0;
             border-radius: 50%;
-            color: #171713;
+            color: var(--app-ink);
             display: flex;
             flex: 0 0 36px;
             font-size: .84rem;
@@ -210,8 +210,6 @@
             width: 38px;
         }
         .sidebar-backdrop { backdrop-filter: blur(2px); background: rgba(10, 10, 9, .45); inset: 0; opacity: 0; pointer-events: none; position: fixed; transition: opacity .3s; z-index: 1035; }
-        .app-content { animation: appIn .5s var(--app-ease) backwards; }
-        @keyframes appIn { from { opacity: 0; transform: translateY(8px); } }
 
         /* Bootstrap polish (global, safe) */
         .btn { border-radius: 12px; font-weight: 500; }
@@ -254,13 +252,12 @@
         .badge-moderateur { background-color: #6c757d; color: #fff; }
 
         /* UI kit (shared by console pages) */
-        .ui-btn { align-items: center; border: 1px solid transparent; border-radius: 999px; cursor: pointer; display: inline-flex; font-size: .875rem; font-weight: 600; gap: 8px; height: 42px; justify-content: center; letter-spacing: -.01em; padding: 0 18px; text-decoration: none; transition: transform .35s var(--app-ease), box-shadow .35s var(--app-ease), background .2s, border-color .2s, color .2s; white-space: nowrap; }
-        .ui-btn:active { transform: scale(.97); }
+        .ui-btn { align-items: center; border: 1px solid transparent; border-radius: 999px; cursor: pointer; display: inline-flex; font-size: .875rem; font-weight: 600; gap: 8px; height: 42px; justify-content: center; letter-spacing: -.01em; padding: 0 18px; text-decoration: none; transition: background .2s, border-color .2s, color .2s; white-space: nowrap; }
         .ui-btn-sm { font-size: .8rem; height: 34px; padding: 0 13px; }
-        .ui-btn-primary { background: var(--app-ink); box-shadow: 0 8px 20px -10px rgba(23, 23, 19, .55); color: #fff; }
-        .ui-btn-primary:hover { box-shadow: 0 14px 28px -12px rgba(23, 23, 19, .6); color: #fff; transform: translateY(-1px); }
-        .ui-btn-gold { background: linear-gradient(135deg, #d8b978, #b98943 50%, #8a6128); box-shadow: 0 10px 24px -12px rgba(185, 137, 67, .9); color: #fff; }
-        .ui-btn-gold:hover { color: #fff; transform: translateY(-1px); }
+        .ui-btn-primary { background: var(--app-ink); color: #fff; }
+        .ui-btn-primary:hover { background: #2c2a25; color: #fff; }
+        .ui-btn-gold { background: #b98943; color: #fff; }
+        .ui-btn-gold:hover { background: var(--app-gold-deep); color: #fff; }
         .ui-btn-success { background: var(--app-green); color: #fff; }
         .ui-btn-success:hover { background: #256a56; color: #fff; }
         .ui-btn-ghost { background: var(--app-panel); border-color: var(--app-line); color: var(--app-ink); }
@@ -281,8 +278,8 @@
         .ui-stats { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-bottom: 20px; }
         .ui-stat { background: var(--app-panel); border: 1px solid var(--app-line); border-radius: var(--app-radius); box-shadow: var(--app-shadow); padding: 16px 18px; position: relative; }
         .ui-stat-top { align-items: center; color: var(--app-muted); display: flex; font-size: .78rem; font-weight: 500; justify-content: space-between; }
-        .ui-stat-top i { align-items: center; background: color-mix(in srgb, var(--accent, var(--app-gold)) 12%, transparent); border-radius: 9px; color: var(--accent, var(--app-gold)); display: flex; font-size: .9rem; height: 30px; justify-content: center; width: 30px; }
-        .ui-stat strong { color: var(--app-ink); display: block; font-size: 1.75rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.04em; line-height: 1; margin-top: 12px; }
+        .ui-stat-top i { color: var(--app-muted); font-size: .95rem; }
+        .ui-stat strong { color: var(--app-ink); display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.04em; line-height: 1; margin-top: 12px; }
         .ui-stat small { color: var(--app-muted); display: block; font-size: .76rem; margin-top: 6px; }
         .ui-stat .ui-meter { margin-top: 10px; }
         .ui-meter { background: rgba(23, 23, 19, .06); border-radius: 99px; height: 5px; overflow: hidden; }
@@ -302,7 +299,7 @@
         .ui-search { flex: 1 1 220px; position: relative; }
         .ui-search i { color: var(--app-muted); left: 14px; pointer-events: none; position: absolute; top: 50%; transform: translateY(-50%); }
         .ui-search input { padding-left: 38px !important; }
-        .ui-toolbar .form-control, .ui-toolbar .form-select { background-color: #fbfaf7; border-radius: 999px; font-size: .86rem; height: 40px; min-height: 40px; }
+        .ui-toolbar .form-control, .ui-toolbar .form-select { background-color: #fff; border-radius: 999px; font-size: .86rem; height: 40px; min-height: 40px; }
         .ui-toolbar .form-select { padding-right: 34px; width: auto; }
         .ui-toolbar input[type=date] { width: auto; }
 
@@ -315,8 +312,8 @@
         .ui-table th:first-child, .ui-table td:first-child { padding-left: 22px; }
         .ui-table th:last-child, .ui-table td:last-child { padding-right: 22px; }
         .ui-person { align-items: center; display: flex; gap: 12px; min-width: 0; }
-        .ui-avatar { align-items: center; background: linear-gradient(140deg, #2c2a25, #171713); border-radius: 50%; color: #d8b978; display: flex; flex: 0 0 38px; font-size: .8rem; font-weight: 600; height: 38px; justify-content: center; width: 38px; }
-        .ui-avatar.gold { background: linear-gradient(140deg, #d8b978, #b98943 60%, #8a6128); color: #171713; }
+        .ui-avatar { align-items: center; background: #171713; border-radius: 50%; color: #d8b978; display: flex; flex: 0 0 38px; font-size: .8rem; font-weight: 600; height: 38px; justify-content: center; width: 38px; }
+        .ui-avatar.gold { background: #b98943; color: #171713; }
         .ui-person strong { color: var(--app-ink); display: block; font-size: .9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .ui-person small, .ui-sub { color: var(--app-muted); display: block; font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .ui-icon-btn { align-items: center; background: transparent; border: 1px solid transparent; border-radius: 10px; color: var(--app-muted); display: inline-flex; height: 34px; justify-content: center; text-decoration: none; transition: background .2s, color .2s; width: 34px; }
@@ -326,7 +323,7 @@
         .ui-actions form { margin: 0; }
 
         .ui-empty { color: var(--app-muted); font-size: .9rem; padding: 48px 20px; text-align: center; }
-        .ui-empty > i { align-items: center; background: var(--app-gold-soft); border-radius: 18px; color: var(--app-gold-deep); display: inline-flex; font-size: 1.5rem; height: 56px; justify-content: center; margin-bottom: 12px; width: 56px; }
+        .ui-empty > i { align-items: center; background: var(--app-soft); border-radius: 14px; color: var(--app-muted); display: inline-flex; font-size: 1.5rem; height: 56px; justify-content: center; margin-bottom: 12px; width: 56px; }
         .ui-empty strong { color: var(--app-ink); display: block; font-size: 1.02rem; margin-bottom: 4px; }
         .ui-pager { display: flex; justify-content: center; padding: 16px; }
         .ui-pager nav { width: 100%; }
@@ -339,7 +336,7 @@
         .dropdown-item i { color: var(--app-muted); width: 16px; }
         .dropdown-item.text-danger i { color: inherit; }
         .dropdown-item:active { background: var(--app-ink); }
-        .modal-content { border: 0; border-radius: 22px; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .45); }
+        .modal-content { border: 0; border-radius: 18px; box-shadow: 0 24px 60px -24px rgba(0, 0, 0, .35); }
         .modal-backdrop.show { opacity: .4; }
 
         @media (max-width: 991.98px) {
@@ -356,8 +353,7 @@
             .topbar-btn { justify-content: center; padding: 0; width: 36px; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .app-content { animation: none; }
-        }
+            }
     </style>
 
     @stack('styles')
@@ -400,7 +396,7 @@
                 ],
                 'Organisation' => auth()->user()->isSuperAdmin() ? [
                     $navItem('users.index', 'bi-people', 'Utilisateurs', 'users.*'),
-                    $navItem('saas.plans', 'bi-gem', 'Plans SaaS', 'saas.plans'),
+                    $navItem('saas.plans', 'bi-gem', 'Abonnement', 'saas.plans'),
                     $navItem('saas.billing', 'bi-receipt', 'Facturation', 'saas.billing'),
                     $navItem('saas.communications', 'bi-chat-dots', 'Crédits messages', 'saas.communications'),
                     $navItem('saas.branding', 'bi-palette', 'Branding', 'saas.branding'),
@@ -440,11 +436,12 @@
 
         <div class="sidebar-footer">
             <div class="user-info">
-                <div class="user-avatar">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</div>
-                <div class="user-details">
-                    <div class="user-name">{{ auth()->user()->name }}</div>
-                    <div class="user-role">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</div>
-                </div>
+                @php $userBlock = '<div class="user-avatar">' . e(strtoupper(mb_substr(auth()->user()->name, 0, 1))) . '</div><div class="user-details"><div class="user-name">' . e(auth()->user()->name) . '</div><div class="user-role">' . e(ucfirst(str_replace('_', ' ', auth()->user()->role))) . '</div></div>'; @endphp
+                @if($isPlatformAdmin)
+                    <div class="user-link">{!! $userBlock !!}</div>
+                @else
+                    <a href="{{ route('profile.edit') }}" class="user-link" title="Mon profil">{!! $userBlock !!}</a>
+                @endif
                 <button type="submit" form="logout-form" class="logout-btn" title="Déconnexion" aria-label="Déconnexion">
                     <i class="bi bi-box-arrow-right"></i>
                 </button>
@@ -469,7 +466,15 @@
                 @if(!$isPlatformAdmin && !request()->routeIs('events.create', 'events.index'))
                     <a href="{{ route('events.create') }}" class="topbar-btn" title="Nouvel événement"><i class="bi bi-plus-lg"></i><span>Nouvel événement</span></a>
                 @endif
-                <span class="topbar-avatar" title="{{ auth()->user()->name }} · {{ auth()->user()->email }}">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
+                <div class="dropdown">
+                    <button type="button" class="topbar-avatar" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu du compte">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li class="px-2 py-1"><strong class="d-block small text-dark">{{ auth()->user()->name }}</strong><span class="small text-muted">{{ auth()->user()->email }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        @unless($isPlatformAdmin)<li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person"></i>Mon profil</a></li>@endunless
+                        <li><button type="submit" form="logout-form" class="dropdown-item"><i class="bi bi-box-arrow-right"></i>Déconnexion</button></li>
+                    </ul>
+                </div>
             </div>
         </header>
     @endauth
@@ -486,6 +491,13 @@
                         </a>
                     </div>
                 @endif
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if(session('warning') && !View::hasSection('hide_flash'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>{{ session('warning') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
@@ -518,6 +530,7 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <x-app.confirm-dialog />
     @auth
     <script>
         (() => {

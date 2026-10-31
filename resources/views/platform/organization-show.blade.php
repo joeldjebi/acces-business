@@ -75,7 +75,7 @@
         <a href="#devises"><i class="bi bi-cash-coin"></i> Devises</a>
         <a href="#localisations"><i class="bi bi-geo-alt"></i> Pays & villes</a>
         <a href="#users"><i class="bi bi-people"></i> Utilisateurs</a>
-        <a href="#plan"><i class="bi bi-gem"></i> Plan SaaS</a>
+        <a href="#plan"><i class="bi bi-gem"></i> Abonnement</a>
         <a href="#billing"><i class="bi bi-receipt"></i> Facturation</a>
         <a href="#branding"><i class="bi bi-palette"></i> Branding</a>
         <a href="#invitation-card"><i class="bi bi-postcard"></i> Carte invitation</a>
@@ -162,7 +162,7 @@
                     <div class="module-card" id="devises"><span class="muted">Devises</span><strong>{{ $devises->count() }}</strong></div>
                     <div class="module-card" id="localisations"><span class="muted">Pays & villes</span><strong>{{ $countries->count() }} / {{ $citiesCount }}</strong></div>
                     <div class="module-card"><span class="muted">Utilisateurs</span><strong>{{ $users->count() }}</strong></div>
-                    <div class="module-card"><span class="muted">Plan SaaS</span><strong>{{ $plan['name'] }}</strong></div>
+                    <div class="module-card"><span class="muted">Abonnement</span><strong>{{ $plan['name'] }}</strong></div>
                     <div class="module-card"><span class="muted">Factures</span><strong>{{ $invoices->count() }}</strong></div>
                 </div>
             </section>

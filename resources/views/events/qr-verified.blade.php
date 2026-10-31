@@ -24,7 +24,6 @@
         <p class="text-muted">{{ $registration->checked_in_at ? 'Participant déjà validé à l’entrée.' : 'Accès autorisé.' }}</p>
 
         @if(session('success'))<div class="alert alert-success text-start"><i class="bi bi-check-circle me-2"></i>{{ session('success') }}</div>@endif
-        @if(session('warning'))<div class="alert alert-warning text-start"><i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}</div>@endif
         @if(session('error'))<div class="alert alert-danger text-start"><i class="bi bi-x-circle me-2"></i>{{ session('error') }}</div>@endif
         
         <div class="participant-info">

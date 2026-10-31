@@ -371,7 +371,7 @@
                             <button form="update-country-{{ $country->id }}" type="submit" class="icon-btn" title="Enregistrer">
                                 <i class="bi bi-check2"></i>
                             </button>
-                            <form action="{{ route('countries.destroy', $country) }}" method="POST" onsubmit="return confirm('Supprimer ce pays ?');">
+                            <form action="{{ route('countries.destroy', $country) }}" method="POST" data-confirm-title="Supprimer ce pays ?" data-confirm="Cette action est définitive.">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="icon-btn danger" title="Supprimer" {{ $country->cities_count > 0 ? 'disabled' : '' }}>
@@ -426,7 +426,7 @@
                             <button form="update-city-{{ $city->id }}" type="submit" class="icon-btn" title="Enregistrer">
                                 <i class="bi bi-check2"></i>
                             </button>
-                            <form action="{{ route('cities.destroy', $city) }}" method="POST" onsubmit="return confirm('Supprimer cette ville ?');">
+                            <form action="{{ route('cities.destroy', $city) }}" method="POST" data-confirm-title="Supprimer cette ville ?" data-confirm="Cette action est définitive.">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="icon-btn danger" title="Supprimer">

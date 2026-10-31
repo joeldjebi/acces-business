@@ -23,7 +23,7 @@
     .confirm-hero h1 { color: var(--app-ink); font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; margin: 0 0 10px; }
     .confirm-hero p { color: var(--app-muted); font-size: 1rem; line-height: 1.55; margin: 0 auto; max-width: 520px; }
 
-    .ticket { background: radial-gradient(100% 140% at 0% 0%, rgba(185, 137, 67, .4), transparent 60%), #141412; border-radius: 24px; box-shadow: 0 30px 60px -30px rgba(23, 23, 19, .6); color: #fff; margin-top: 28px; overflow: hidden; position: relative; }
+    .ticket { background: #141412; border-radius: 24px; box-shadow: 0 30px 60px -30px rgba(23, 23, 19, .6); color: #fff; margin-top: 28px; overflow: hidden; position: relative; }
     .ticket-top { padding: 24px 26px 20px; }
     .ticket-kicker { color: #d8b978; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
     .ticket h2 { color: #fff; font-size: 1.45rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.2; margin: 8px 0 0; }
