@@ -46,11 +46,11 @@
     ];
 
     $responseBreakdown = collect([
-        ['key' => 'present', 'label' => 'Présents', 'color' => '#1f8a5f'],
-        ['key' => 'peut_etre', 'label' => 'Peut-être', 'color' => '#2f6db5'],
-        ['key' => 'represente', 'label' => 'Représentés', 'color' => '#7a5cc2'],
-        ['key' => 'en_attente', 'label' => 'En attente', 'color' => '#c48a2c'],
-        ['key' => 'absent', 'label' => 'Absents', 'color' => '#c2544a'],
+        ['key' => 'present', 'label' => 'Présents', 'color' => '#34c759'],
+        ['key' => 'peut_etre', 'label' => 'Peut-être', 'color' => '#007aff'],
+        ['key' => 'represente', 'label' => 'Représentés', 'color' => '#5856d6'],
+        ['key' => 'en_attente', 'label' => 'En attente', 'color' => '#ff9500'],
+        ['key' => 'absent', 'label' => 'Absents', 'color' => '#ff3b30'],
     ])->map(fn ($r) => $r + ['value' => (int) ($responses[$r['key']] ?? 0)]);
 
     $agenda = Event::forOrganization($organizationId)->withCount('registrations')
@@ -85,9 +85,9 @@
     .card-link { color: var(--app-gold-deep); font-size: .82rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
     .card-link:hover { color: var(--app-ink); }
 
-    .range { background: var(--app-soft); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
-    .range button { background: transparent; border: 0; border-radius: 999px; color: var(--app-muted); font-size: .76rem; font-weight: 600; padding: 4px 11px; }
-    .range button.is-active { background: var(--app-panel); color: var(--app-ink); box-shadow: 0 0 0 1px var(--app-line); }
+    .range { background: var(--app-fill); border-radius: 9px; display: inline-flex; gap: 2px; padding: 2px; }
+    .range button { background: transparent; border: 0; border-radius: 7px; color: var(--app-ink); font-size: .78rem; font-weight: 500; padding: 4px 12px; }
+    .range button.is-active { background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04); color: var(--app-ink); }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0 22px; }
     .legend span { align-items: center; color: var(--app-text); display: inline-flex; font-size: .78rem; gap: 7px; }
     .legend i { border-radius: 2px; height: 3px; width: 14px; }
@@ -108,9 +108,10 @@
     .row-item { align-items: center; border-radius: 10px; color: inherit; display: grid; gap: 12px; grid-template-columns: 44px minmax(0, 1fr) auto; padding: 9px 12px; text-decoration: none; }
     a.row-item:hover { background: var(--app-soft); color: inherit; }
     .row-item + .row-item { border-top: 1px solid var(--app-line); }
-    .date-chip { border: 1px solid var(--app-line); border-radius: 10px; padding: 5px 0; text-align: center; }
-    .date-chip strong { color: var(--app-ink); display: block; font-size: 1rem; font-weight: 700; line-height: 1.1; }
-    .date-chip span { color: var(--app-muted); display: block; font-size: .62rem; font-weight: 600; text-transform: uppercase; }
+    /* Pastille façon icône Calendrier : mois en rouge, jour en grand */
+    .date-chip { background: #fff; border-radius: 10px; box-shadow: 0 0 0 1px var(--app-line), 0 2px 6px rgba(0, 0, 0, .05); display: flex; flex-direction: column-reverse; padding: 4px 0 5px; text-align: center; }
+    .date-chip strong { color: var(--app-ink); display: block; font-size: 1.15rem; font-weight: 400; line-height: 1.05; }
+    .date-chip span { color: #ff3b30; display: block; font-size: .6rem; font-weight: 600; text-transform: capitalize; }
     .row-title { color: var(--app-ink); display: block; font-size: .88rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .row-meta { color: var(--app-muted); display: block; font-size: .78rem; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .row-item .ui-avatar { flex-basis: 36px; font-size: .78rem; height: 36px; justify-self: center; width: 36px; }
@@ -118,7 +119,7 @@
     .usage { display: grid; gap: 14px; }
     .usage-meta { color: var(--app-muted); display: flex; font-size: .82rem; justify-content: space-between; margin-bottom: 6px; }
     .usage-meta strong { color: var(--app-ink); font-weight: 600; }
-    .usage .ui-meter span { background: var(--accent, var(--app-ink)); }
+    .usage .ui-meter span { background: var(--accent, var(--app-gold)); }
 
     @media (max-width: 1199.98px) { .dash-grid, .dash-grid.thirds { grid-template-columns: 1fr; } }
     @media (max-width: 767.98px) { .chart-box { height: 220px; } }
@@ -150,9 +151,9 @@
                 </div>
             </div>
             <div class="legend">
-                <span><i style="background:#2f6db5"></i>Invitations <strong data-total="invitations">0</strong></span>
-                <span><i style="background:#c48a2c"></i>Réponses <strong data-total="responses">0</strong></span>
-                <span><i style="background:#1f8a5f"></i>Confirmations <strong data-total="confirmations">0</strong></span>
+                <span><i style="background:#007aff"></i>Invitations <strong data-total="invitations">0</strong></span>
+                <span><i style="background:#ff9500"></i>Réponses <strong data-total="responses">0</strong></span>
+                <span><i style="background:#34c759"></i>Confirmations <strong data-total="confirmations">0</strong></span>
             </div>
             <div class="chart-box"><canvas id="activityChart" role="img" aria-label="Évolution quotidienne des invitations, réponses et confirmations"></canvas></div>
         </section>
@@ -228,7 +229,7 @@
                 <div class="usage">
                     @foreach($usage as $row)
                         @php $pct = $row['limit'] ? min(100, round($row['used'] / $row['limit'] * 100)) : 0; @endphp
-                        <div style="--accent: {{ $pct >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}">
+                        <div style="--accent: {{ $pct >= 90 ? 'var(--app-red)' : 'var(--app-gold)' }}">
                             <div class="usage-meta"><strong>{{ $row['label'] }}</strong><span>{{ number_format($row['used'], 0, ',', ' ') }} / {{ $row['limit'] ? number_format($row['limit'], 0, ',', ' ') : '∞' }}</span></div>
                             <div class="ui-meter"><span style="width: {{ $row['limit'] ? $pct : 0 }}%"></span></div>
                         </div>
@@ -250,17 +251,17 @@
     const fmt = new Intl.NumberFormat('fr-FR');
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.font.size = 11;
-    Chart.defaults.color = '#7a746a';
+    Chart.defaults.color = '#86868b';
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) Chart.defaults.animation = false;
 
     const ds = (label, key, color) => ({ label, key, data: [], borderColor: color, backgroundColor: color, borderWidth: 2, cubicInterpolationMode: 'monotone',
         pointRadius: 0, pointHoverRadius: 4, pointHoverBorderWidth: 2, pointHoverBorderColor: '#fff' });
     const chart = new Chart(canvas, {
         type: 'line',
-        data: { labels: [], datasets: [ds('Invitations', 'invitations', '#2f6db5'), ds('Réponses', 'responses', '#c48a2c'), ds('Confirmations', 'confirmations', '#1f8a5f')] },
+        data: { labels: [], datasets: [ds('Invitations', 'invitations', '#007aff'), ds('Réponses', 'responses', '#ff9500'), ds('Confirmations', 'confirmations', '#34c759')] },
         options: {
             maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#171713', padding: 10, cornerRadius: 8, boxPadding: 4, usePointStyle: true } },
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(29, 29, 31, .92)', padding: 10, cornerRadius: 10, boxPadding: 4, usePointStyle: true } },
             scales: {
                 x: { grid: { display: false }, border: { display: false }, ticks: { maxTicksLimit: 7, maxRotation: 0 } },
                 y: { beginAtZero: true, grid: { color: 'rgba(23, 23, 19, .07)' }, border: { display: false }, ticks: { precision: 0, maxTicksLimit: 5 } },

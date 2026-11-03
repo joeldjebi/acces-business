@@ -11,6 +11,7 @@ use App\Http\Controllers\SaasSettingsController;
 use App\Http\Controllers\PlatformAdminController;
 use App\Http\Controllers\PlatformLandingController;
 use App\Http\Controllers\PlatformInvitationExperienceController;
+use App\Http\Controllers\PlatformMailSettingsController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +54,9 @@ Route::middleware(['auth', 'role:platform_admin'])->prefix('platform')->name('pl
     Route::put('/landing', [PlatformLandingController::class, 'update'])->name('landing.update');
     Route::get('/invitation-experience', [PlatformInvitationExperienceController::class, 'edit'])->name('invitation-experience.edit');
     Route::put('/invitation-experience', [PlatformInvitationExperienceController::class, 'update'])->name('invitation-experience.update');
+    Route::get('/emails', [PlatformMailSettingsController::class, 'edit'])->name('mail-settings.edit');
+    Route::put('/emails', [PlatformMailSettingsController::class, 'update'])->name('mail-settings.update');
+    Route::post('/emails/test', [PlatformMailSettingsController::class, 'test'])->name('mail-settings.test')->middleware('throttle:6,1');
     Route::get('/organizations', [PlatformAdminController::class, 'organizations'])->name('organizations');
     Route::post('/organizations', [PlatformAdminController::class, 'storeOrganization'])->name('organizations.store');
     Route::delete('/organizations/purge', [PlatformAdminController::class, 'purgeOrganizations'])->name('organizations.purge');

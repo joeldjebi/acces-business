@@ -20,11 +20,11 @@
     .billing-page { margin: 0 auto; max-width: 1320px; }
     .billing-page *, .billing-page *::before, .billing-page *::after { min-width: 0; }
     .billing-grid { align-items: start; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 360px; }
-    .type-tabs { background: var(--app-soft); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
-    .type-tabs button { background: transparent; border: 0; border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 6px 12px; }
-    .type-tabs button.is-active { background: var(--app-panel); box-shadow: 0 0 0 1px var(--app-line); color: var(--app-ink); }
+    .type-tabs { background: var(--app-fill); border-radius: 9px; display: inline-flex; gap: 2px; padding: 2px; }
+    .type-tabs button { background: transparent; border: 0; border-radius: 7px; color: var(--app-ink); font-size: .8rem; font-weight: 500; padding: 5px 12px; }
+    .type-tabs button.is-active { background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04); color: var(--app-ink); }
     .inv-icon { align-items: center; border-radius: 10px; display: flex; flex: 0 0 36px; font-size: .95rem; height: 36px; justify-content: center; width: 36px; }
-    .inv-icon { background: var(--app-soft); color: var(--app-ink); }
+    .inv-icon { background: var(--app-gold-soft); color: var(--app-gold); }
     .amount { color: var(--app-ink); font-variant-numeric: tabular-nums; font-weight: 650; white-space: nowrap; }
     .ref { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .74rem; }
     .side { display: grid; gap: 20px; position: sticky; top: 84px; }

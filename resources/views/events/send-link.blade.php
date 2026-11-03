@@ -37,21 +37,21 @@
     .invite-grid { align-items: start; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 340px; }
     .side { display: grid; gap: 20px; position: sticky; top: 84px; }
 
-    .status-tabs { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
+    .status-tabs { background: rgba(0, 0, 0, .05); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
     .status-tabs a { border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 7px 13px; text-decoration: none; }
-    .status-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
+    .status-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 4px 10px -4px rgba(0, 0, 0, .14); color: var(--app-ink); }
 
     /* Invitation card preview */
-    .card-preview { border-radius: 22px; box-shadow: 0 30px 60px -30px rgba(23, 23, 19, .45); overflow: hidden; }
+    .card-preview { border-radius: 22px; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .45); overflow: hidden; }
     .cp-cover { background: var(--preview-primary); color: #fff; padding: 20px; }
     .cp-brand { align-items: center; display: flex; font-size: .78rem; gap: 10px; justify-content: space-between; opacity: .92; }
     .cp-logo { align-items: center; background: #fff; border-radius: 10px; display: flex; height: 36px; justify-content: center; overflow: hidden; width: 64px; }
     .cp-logo img { max-height: 100%; max-width: 100%; object-fit: contain; padding: 5px; }
-    .cp-kicker { color: var(--preview-accent); font-size: .64rem; font-weight: 700; letter-spacing: .14em; margin-top: 18px; text-transform: uppercase; }
+    .cp-kicker { color: var(--preview-accent); font-size: .64rem; font-weight: 700; margin-top: 18px; text-transform: none; }
     .cp-title { font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; margin: 6px 0 0; }
     .cp-body { background: #fff; padding: 18px 20px; }
     .cp-rows { display: grid; gap: 10px; }
-    .cp-rows span { color: var(--app-muted); display: block; font-size: .64rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .cp-rows span { color: var(--app-muted); display: block; font-size: .64rem; font-weight: 600; text-transform: none; }
     .cp-rows div { color: var(--app-ink); font-size: .84rem; font-weight: 500; }
     .cp-qr { align-items: center; border-top: 1px dashed var(--app-line); display: flex; gap: 14px; margin-top: 16px; padding-top: 16px; }
     .cp-qr-box { align-items: center; background: var(--app-soft); border-radius: 12px; color: var(--app-ink); display: flex; flex: 0 0 64px; font-size: 2rem; height: 64px; justify-content: center; }
@@ -62,7 +62,7 @@
     .approval { align-items: center; display: flex; font-size: .82rem; gap: 10px; padding: 10px 0; }
     .approval + .approval { border-top: 1px solid var(--app-line); }
     .approval i { align-items: center; border-radius: 8px; display: flex; flex: 0 0 26px; height: 26px; justify-content: center; }
-    .approval.ok i { background: rgba(46, 123, 101, .1); color: var(--app-green); }
+    .approval.ok i { background: rgba(52, 199, 89, .1); color: var(--app-green); }
     .approval.ko i { background: var(--app-gold-soft); color: var(--app-gold-deep); }
     .quota-big { align-items: baseline; display: flex; gap: 6px; }
     .quota-big strong { color: var(--app-ink); font-size: 1.6rem; font-weight: 700; letter-spacing: -.04em; }
@@ -73,10 +73,10 @@
     .modal-head h2 { color: var(--app-ink); font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; margin: 0; }
     .modal-head p { color: var(--app-muted); font-size: .86rem; margin: 4px 0 0; }
     .modal-body-x { padding: 16px 24px 24px; }
-    .method-toggle { background: rgba(23, 23, 19, .05); border-radius: 999px; display: grid; gap: 3px; grid-template-columns: 1fr 1fr; margin-bottom: 20px; padding: 4px; }
+    .method-toggle { background: rgba(0, 0, 0, .05); border-radius: 999px; display: grid; gap: 3px; grid-template-columns: 1fr 1fr; margin-bottom: 20px; padding: 4px; }
     .method-toggle .btn { border: 0; border-radius: 999px; color: var(--app-muted); font-size: .86rem; font-weight: 600; height: 38px; }
-    .method-toggle .btn.active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
-    .upload-section { background: #fbfaf7; border: 1.5px dashed rgba(23, 23, 19, .18); border-radius: 18px; cursor: pointer; padding: 28px 20px; text-align: center; transition: border-color .2s, background .2s; }
+    .method-toggle .btn.active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 4px 10px -4px rgba(0, 0, 0, .14); color: var(--app-ink); }
+    .upload-section { background: var(--app-soft); border: 1.5px dashed rgba(0, 0, 0, .18); border-radius: 18px; cursor: pointer; padding: 28px 20px; text-align: center; transition: border-color .2s, background .2s; }
     .upload-section:hover, .upload-section.dragover { background: #fff; border-color: var(--app-gold); }
     .upload-section i { color: var(--app-gold); font-size: 1.8rem; }
     .upload-section strong { color: var(--app-ink); display: block; margin-top: 6px; }
@@ -194,7 +194,7 @@
                     <div>
                         <div class="d-flex justify-content-between small mb-1"><strong>Places de l’événement</strong><span class="text-muted">{{ $places['capacity'] ? $places['occupied'] . ' / ' . $places['capacity'] : $places['occupied'] . ' · illimitées' }}</span></div>
                         @if($places['capacity'])
-                            <div class="ui-meter" style="--accent: {{ $placesPct >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}"><span style="width: {{ $placesPct }}%"></span></div>
+                            <div class="ui-meter" style="--accent: {{ $placesPct >= 90 ? 'var(--app-red)' : 'var(--app-gold)' }}"><span style="width: {{ $placesPct }}%"></span></div>
                             <div class="form-text">{{ $isFull ? 'Complet. Un invité qui répond « Absent » libère sa place.' : $places['remaining'] . ' place(s) disponible(s). Les absents libèrent leur place.' }}</div>
                         @else
                             <div class="form-text"><a href="{{ route('events.edit', $event) }}">Définir une capacité</a> pour limiter le nombre de places.</div>
@@ -203,7 +203,7 @@
                     <div>
                         <div class="d-flex justify-content-between small mb-1"><strong>Invitations du forfait</strong><span class="text-muted">{{ $invitationLimit === null ? 'illimitées' : number_format($invitationsUsed, 0, ',', ' ') . ' / ' . number_format((int) $invitationLimit, 0, ',', ' ') }}</span></div>
                         @if($invitationLimit !== null)
-                            <div class="ui-meter" style="--accent: {{ $quotaPct >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}"><span style="width: {{ $quotaPct }}%"></span></div>
+                            <div class="ui-meter" style="--accent: {{ $quotaPct >= 90 ? 'var(--app-red)' : 'var(--app-gold)' }}"><span style="width: {{ $quotaPct }}%"></span></div>
                             <div class="form-text">{{ $canSendInvitations ? number_format((int) $remainingInvitations, 0, ',', ' ') . ' restante(s), tous événements confondus.' : 'Limite atteinte.' }} @unless($canSendInvitations)<a href="{{ route('saas.plans') }}">Changer de forfait</a>@endunless</div>
                         @endif
                     </div>

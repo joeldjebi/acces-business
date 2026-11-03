@@ -14,13 +14,13 @@
     .confirm-dialog .modal-dialog { max-width: 420px; }
     .confirm-dialog .modal-body { padding: 24px 24px 20px; }
     .confirm-icon { align-items: center; border-radius: 50%; display: inline-flex; font-size: 1.2rem; height: 44px; justify-content: center; margin-bottom: 14px; width: 44px; }
-    .confirm-dialog[data-tone="danger"] .confirm-icon { background: rgba(164, 81, 74, .1); color: var(--app-red); }
+    .confirm-dialog[data-tone="danger"] .confirm-icon { background: rgba(255, 59, 48, .1); color: var(--app-red); }
     .confirm-dialog[data-tone="primary"] .confirm-icon { background: var(--app-soft); color: var(--app-ink); }
     .confirm-dialog h2 { color: var(--app-ink); font-size: 1.05rem; font-weight: 650; margin: 0 0 6px; }
     .confirm-dialog p { color: var(--app-muted); font-size: .9rem; line-height: 1.5; margin: 0; }
     .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
-    .confirm-dialog[data-tone="danger"] [data-confirm-ok] { background: var(--app-red); color: #fff; }
-    .confirm-dialog[data-tone="danger"] [data-confirm-ok]:hover { background: #8a3d36; }
+    .confirm-dialog[data-tone="danger"] [data-confirm-ok] { background: #ff3b30; color: #fff; }
+    .confirm-dialog[data-tone="danger"] [data-confirm-ok]:hover { background: #e0352b; }
 </style>
 
 <div class="modal fade confirm-dialog" id="appConfirm" tabindex="-1" aria-labelledby="appConfirmTitle" aria-describedby="appConfirmMessage" aria-hidden="true" data-tone="danger">

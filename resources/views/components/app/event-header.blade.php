@@ -20,29 +20,31 @@
 @once
     @push('styles')
     <style>
-        .ev-head { margin-bottom: 22px; }
-        .ev-back { align-items: center; color: var(--app-muted); display: inline-flex; font-size: .82rem; font-weight: 500; gap: 6px; margin-bottom: 14px; text-decoration: none; transition: color .2s; }
-        .ev-back:hover { color: var(--app-ink); }
+        .ev-head { margin-bottom: 24px; }
+        .ev-back { align-items: center; color: var(--app-blue); display: inline-flex; font-size: .86rem; gap: 4px; margin-bottom: 14px; text-decoration: none; }
+        .ev-back:hover { color: var(--app-blue); text-decoration: underline; }
         .ev-head-main { align-items: center; display: flex; flex-wrap: wrap; gap: 18px 22px; }
-        .ev-thumb { align-items: center; background: var(--app-panel); border: 1px solid var(--app-line); border-radius: 14px; color: var(--app-ink); display: flex; flex: 0 0 76px; flex-direction: column; height: 76px; justify-content: center; overflow: hidden; position: relative; }
+        /* Vignette façon icône Calendrier d'Apple : mois en rouge, jour en grand */
+        .ev-thumb { align-items: center; background: #fff; border-radius: 16px; box-shadow: 0 0 0 1px var(--app-line), 0 4px 14px rgba(0, 0, 0, .06); color: var(--app-ink); display: flex; flex: 0 0 72px; flex-direction: column-reverse; height: 72px; justify-content: center; overflow: hidden; position: relative; }
         .ev-thumb img { height: 100%; inset: 0; object-fit: cover; position: absolute; width: 100%; }
         .ev-thumb strong, .ev-thumb span { position: relative; z-index: 1; }
-        .ev-thumb strong { font-size: 1.5rem; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
-        .ev-thumb span { color: var(--app-muted); font-size: .66rem; font-weight: 700; letter-spacing: .08em; margin-top: 3px; text-transform: uppercase; }
+        .ev-thumb strong { font-size: 1.85rem; font-weight: 300; letter-spacing: -.04em; line-height: 1; }
+        .ev-thumb span { color: #ff3b30; font-size: .68rem; font-weight: 600; margin-bottom: 2px; text-transform: capitalize; }
         .ev-head-text { flex: 1 1 320px; min-width: 0; }
-        .ev-head-meta { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
-        .ev-head h1 { color: var(--app-ink); font-size: clamp(1.4rem, 2.4vw, 1.9rem); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; margin: 8px 0 6px; overflow-wrap: anywhere; }
-        .ev-facts { color: var(--app-muted); display: flex; flex-wrap: wrap; font-size: .86rem; gap: 4px 18px; }
+        .ev-head-meta { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
+        .ev-head h1 { color: var(--app-ink); font-size: clamp(1.6rem, 2.8vw, 2.1rem); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; margin: 8px 0 6px; overflow-wrap: anywhere; }
+        .ev-facts { color: var(--app-muted); display: flex; flex-wrap: wrap; font-size: .9rem; gap: 4px 18px; }
         .ev-facts i { margin-right: 6px; }
         .ev-head-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
-        .ev-tabs { border-bottom: 1px solid var(--app-line); display: flex; gap: 4px; margin-top: 22px; overflow-x: auto; scrollbar-width: none; }
+        /* Onglets : contrôle segmenté iOS */
+        .ev-tabs { background: var(--app-fill); border-radius: 10px; display: flex; gap: 2px; margin-top: 22px; max-width: 100%; overflow-x: auto; padding: 2px; scrollbar-width: none; width: fit-content; }
         .ev-tabs::-webkit-scrollbar { display: none; }
-        .ev-tabs a { align-items: center; border-bottom: 2px solid transparent; color: var(--app-muted); display: inline-flex; font-size: .875rem; font-weight: 600; gap: 8px; margin-bottom: -1px; padding: 10px 12px 12px; text-decoration: none; transition: color .2s, border-color .2s; white-space: nowrap; }
+        .ev-tabs a { align-items: center; border-radius: 8px; color: var(--app-ink); display: inline-flex; font-size: .84rem; font-weight: 500; gap: 7px; padding: 6px 14px; text-decoration: none; transition: background .15s; white-space: nowrap; }
         .ev-tabs a:hover { color: var(--app-ink); }
-        .ev-tabs a.is-active { border-color: var(--app-ink); color: var(--app-ink); }
-        .ev-tabs a i { font-size: .95rem; }
-        .ev-tabs .count { background: rgba(23, 23, 19, .07); border-radius: 99px; font-size: .7rem; font-variant-numeric: tabular-nums; padding: 1px 7px; }
-        .ev-tabs a.is-active .count { background: var(--app-ink); color: #fff; }
+        .ev-tabs a.is-active { background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04); }
+        .ev-tabs a i { color: var(--app-muted); font-size: .9rem; }
+        .ev-tabs a.is-active i { color: var(--app-gold); }
+        .ev-tabs .count { color: var(--app-muted); font-size: .74rem; font-variant-numeric: tabular-nums; }
         @media (max-width: 575.98px) {
             .ev-thumb { flex-basis: 60px; height: 60px; }
             .ev-head-actions { width: 100%; }

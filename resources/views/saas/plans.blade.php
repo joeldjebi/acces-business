@@ -33,27 +33,27 @@
     .cu span { color: var(--app-muted); display: block; font-size: .78rem; }
     .cu strong { color: var(--app-ink); display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; font-weight: 650; margin: 4px 0 8px; white-space: nowrap; }
     .cu strong small { color: var(--app-muted); display: inline; font-size: .82rem; font-weight: 500; }
-    .cu .ui-meter span { background: var(--accent, var(--app-ink)); }
+    .cu .ui-meter span { background: var(--accent, var(--app-gold)); }
 
     .cycle { align-items: center; display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
-    .cycle-toggle { background: var(--app-soft); border-radius: 999px; display: inline-flex; gap: 2px; padding: 4px; }
-    .cycle-toggle button { align-items: center; background: transparent; border: 0; border-radius: 999px; color: var(--app-muted); display: inline-flex; font-size: .86rem; font-weight: 600; gap: 8px; padding: 8px 18px; transition: background .25s, color .25s; }
-    .cycle-toggle button.is-active { background: var(--app-panel); box-shadow: 0 0 0 1px var(--app-line); color: var(--app-ink); }
-    .save-badge { background: rgba(31, 138, 95, .12); border-radius: 99px; color: #1f8a5f; font-size: .7rem; font-weight: 700; padding: 2px 8px; }
+    .cycle-toggle { background: var(--app-fill); border-radius: 10px; display: inline-flex; gap: 2px; padding: 2px; }
+    .cycle-toggle button { align-items: center; background: transparent; border: 0; border-radius: 8px; color: var(--app-ink); display: inline-flex; font-size: .86rem; font-weight: 500; gap: 8px; padding: 6px 18px; transition: background .25s, color .25s; }
+    .cycle-toggle button.is-active { background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04); color: var(--app-ink); }
+    .save-badge { background: rgba(52, 199, 89, .14); border-radius: 99px; color: var(--app-green); font-size: .7rem; font-weight: 600; padding: 2px 8px; }
 
     .plan-grid { align-items: stretch; display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-    .plan { background: var(--app-panel); border: 1px solid var(--app-line); border-radius: var(--app-radius); display: flex; flex-direction: column; padding: 24px 22px; position: relative; }
-    .plan.is-featured { border-color: var(--app-ink); }
-    .plan.is-current { border-color: var(--app-gold); box-shadow: 0 0 0 1px var(--app-gold); }
+    .plan { background: var(--app-soft); border: 0; border-radius: var(--app-radius); display: flex; flex-direction: column; padding: 28px 24px; position: relative; }
+    .plan.is-featured { background: #fff; box-shadow: 0 0 0 1px var(--app-line), 0 12px 32px rgba(0, 0, 0, .08); }
+    .plan.is-current { background: #fff; box-shadow: 0 0 0 2px var(--app-gold); }
     .plan-tags { display: flex; gap: 6px; position: absolute; right: 18px; top: 18px; }
     .plan-name { color: var(--app-ink); font-size: 1.05rem; font-weight: 650; margin: 0; }
     .plan-tagline { color: var(--app-muted); font-size: .86rem; line-height: 1.5; margin: 6px 0 0; min-height: 40px; }
-    .plan-price { align-items: baseline; color: var(--app-ink); display: flex; font-size: 2rem; font-variant-numeric: tabular-nums; font-weight: 700; gap: 6px; letter-spacing: -.045em; margin-top: 22px; }
+    .plan-price { align-items: baseline; color: var(--app-ink); display: flex; font-size: 2.1rem; font-variant-numeric: tabular-nums; font-weight: 600; gap: 6px; letter-spacing: -.045em; margin-top: 22px; }
     .plan-price small { color: var(--app-muted); font-size: .86rem; font-weight: 500; letter-spacing: 0; }
     .plan-sub { color: var(--app-muted); font-size: .78rem; min-height: 18px; }
     .plan ul { border-top: 1px solid var(--app-line); display: grid; gap: 10px; list-style: none; margin: 20px 0 24px; padding: 20px 0 0; }
     .plan li { align-items: flex-start; display: flex; font-size: .88rem; gap: 10px; line-height: 1.4; }
-    .plan li i { color: var(--app-muted); margin-top: 1px; }
+    .plan li i { color: var(--app-gold); margin-top: 1px; }
     .plan li.is-limit strong { font-variant-numeric: tabular-nums; }
     .plan .ui-btn { margin-top: auto; width: 100%; }
     .blocked { color: var(--app-red); font-size: .76rem; line-height: 1.4; margin-top: 8px; text-align: center; }
@@ -67,16 +67,16 @@
     .pay-total { align-items: center; background: var(--app-soft); border-radius: 16px; display: flex; justify-content: space-between; margin-bottom: 18px; padding: 14px 16px; }
     .pay-total span { color: var(--app-muted); font-size: .8rem; }
     .pay-total strong { color: var(--app-ink); font-size: 1.4rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; }
-    .seg { background: rgba(23, 23, 19, .06); border-radius: 12px; display: grid; gap: 3px; grid-template-columns: 1fr 1fr; padding: 3px; }
+    .seg { background: var(--app-fill); border-radius: 10px; display: grid; gap: 3px; grid-template-columns: 1fr 1fr; padding: 3px; }
     .seg input { opacity: 0; pointer-events: none; position: absolute; }
-    .seg label { border-radius: 9px; color: var(--app-muted); cursor: pointer; font-size: .84rem; font-weight: 600; margin: 0; padding: 8px; text-align: center; }
-    .seg input:checked + label { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .1); color: var(--app-ink); }
+    .seg label { border-radius: 8px; color: var(--app-ink); cursor: pointer; font-size: .84rem; font-weight: 500; margin: 0; padding: 8px; text-align: center; }
+    .seg input:checked + label { background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04); color: var(--app-ink); }
     .ops { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .op { cursor: pointer; margin: 0; position: relative; }
     .op input { opacity: 0; pointer-events: none; position: absolute; }
-    .op span { align-items: center; border: 1px solid rgba(23, 23, 19, .13); border-radius: 10px; color: var(--app-text); display: flex; flex-direction: column; font-size: .76rem; font-weight: 600; gap: 4px; padding: 10px 6px; text-align: center; transition: border-color .2s, box-shadow .2s; }
+    .op span { align-items: center; border: 1px solid var(--app-field-line); border-radius: 10px; color: var(--app-text); display: flex; flex-direction: column; font-size: .76rem; font-weight: 600; gap: 4px; padding: 10px 6px; text-align: center; transition: border-color .2s, box-shadow .2s; }
     .op span i { color: var(--app-gold-deep); font-size: 1rem; }
-    .op input:checked + span { border-color: var(--app-ink); box-shadow: 0 0 0 3px rgba(23, 23, 19, .06); color: var(--app-ink); }
+    .op input:checked + span { border-color: var(--app-gold); box-shadow: 0 0 0 1px var(--app-gold); color: var(--app-ink); }
     .op input:focus-visible + span { box-shadow: 0 0 0 3px var(--app-gold-soft); }
     .pay-note { align-items: flex-start; color: var(--app-muted); display: flex; font-size: .76rem; gap: 8px; line-height: 1.45; margin-top: 14px; }
 
@@ -108,7 +108,7 @@
         <div class="current-usage">
             @foreach($resources as $key => [$label, $icon])
                 @php $limit = $current['limits'][$key] ?? null; $used = (int) ($usage[$key] ?? 0); $pct = $limit ? min(100, round($used / $limit * 100)) : 0; @endphp
-                <div class="cu" style="--accent: {{ $pct >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}">
+                <div class="cu" style="--accent: {{ $pct >= 90 ? 'var(--app-red)' : 'var(--app-gold)' }}">
                     <span>{{ $label }}</span>
                     <strong>{{ number_format($used, 0, ',', ' ') }} <small>/ {{ $limit ? number_format($limit, 0, ',', ' ') : '∞' }}</small></strong>
                     <div class="ui-meter"><span style="width: {{ $pct }}%"></span></div>

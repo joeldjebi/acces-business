@@ -37,7 +37,7 @@
     .description.is-empty { color: var(--app-muted); font-style: italic; }
     .link-chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .link-chip { align-items: center; background: var(--app-soft); border-radius: 999px; color: var(--app-ink); display: inline-flex; font-size: .84rem; font-weight: 500; gap: 7px; padding: 8px 14px; text-decoration: none; transition: background .2s; }
-    .link-chip:hover { background: rgba(23, 23, 19, .09); color: var(--app-ink); }
+    .link-chip:hover { background: rgba(0, 0, 0, .09); color: var(--app-ink); }
     .link-chip i { color: var(--app-muted); }
     .internal-note { background: var(--app-soft); border-radius: 12px; color: var(--app-text); font-size: .92rem; line-height: 1.7; padding: 14px 16px; }
 
@@ -47,10 +47,10 @@
     .fact-label { color: var(--app-muted); font-size: .82rem; }
     .fact-value { color: var(--app-ink); font-size: .88rem; font-weight: 500; line-height: 1.4; margin-top: 1px; overflow-wrap: anywhere; }
     .fact-value small { color: var(--app-muted); display: block; font-weight: 400; }
-    .fact-value a { color: var(--app-ink); text-decoration-color: rgba(185, 137, 67, .5); text-underline-offset: 3px; }
+    .fact-value a { color: var(--app-blue); text-decoration: none; }
     .timeline-dates { align-items: stretch; display: grid; gap: 10px; grid-template-columns: 1fr auto 1fr; padding: 0 22px 18px; }
     .tl-date { background: var(--app-soft); border-radius: 14px; padding: 12px 14px; }
-    .tl-date span { color: var(--app-muted); display: block; font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    .tl-date span { color: var(--app-muted); display: block; font-size: .72rem; font-weight: 600; text-transform: none; }
     .tl-date strong { color: var(--app-ink); display: block; font-size: .95rem; font-weight: 650; margin-top: 4px; }
     .tl-date small { color: var(--app-muted); display: block; font-size: .8rem; }
     .tl-arrow { align-self: center; color: var(--app-muted); }

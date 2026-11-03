@@ -24,10 +24,10 @@
     .member { align-items: center; display: grid; gap: 16px; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 140px 84px; padding: 14px 22px; transition: background .2s; }
     .member + .member { border-top: 1px solid var(--app-line); }
     .member[hidden] { display: none; }
-    .member:hover { background: rgba(23, 23, 19, .02); }
+    .member:hover { background: rgba(0, 0, 0, .02); }
     .you { color: var(--app-muted); font-size: .78rem; font-weight: 500; margin-left: 6px; }
     .member-date { color: var(--app-text); font-size: .84rem; }
-    .list-head { border-bottom: 1px solid var(--app-line); color: var(--app-muted); display: grid; font-size: .7rem; font-weight: 600; gap: 16px; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 140px 84px; letter-spacing: .06em; padding: 10px 22px; text-transform: uppercase; }
+    .list-head { border-bottom: 1px solid var(--app-line); color: var(--app-muted); display: grid; font-size: .7rem; font-weight: 600; gap: 16px; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 140px 84px; padding: 10px 22px; text-transform: none; }
     .list-search { max-width: 300px; }
 
     @media (max-width: 767.98px) {

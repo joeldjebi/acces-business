@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\MailSettings;
 use Illuminate\Support\Facades\Log;
 
 class MailjetService
@@ -40,6 +41,11 @@ class MailjetService
         ?string $fromName = null,
         ?array $attachments = null
     ): array {
+        // Point d'entrée unique de tous les emails : l'administrateur de la plateforme peut basculer sur le SMTP.
+        if (MailSettings::provider() === 'smtp') {
+            return app(SmtpMailService::class)->send($toEmail, $toName, $subject, $textPart, $htmlPart, $fromEmail, $fromName, $attachments);
+        }
+
         if (!$this->apiKeyPublic || !$this->apiKeyPrivate) {
             Log::error('Mailjet Service: Clés API non configurées');
             return [

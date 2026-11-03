@@ -27,7 +27,7 @@
     .balance .ui-meter { margin-top: 12px; }
     .balance .ui-meter span { background: var(--accent); }
     .balance-foot { color: var(--app-muted); display: flex; font-size: .76rem; justify-content: space-between; margin-top: 8px; }
-    .balance.is-empty strong { color: rgba(23, 23, 19, .3); }
+    .balance.is-empty strong { color: rgba(0, 0, 0, .3); }
 
     .comm-grid { align-items: start; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 380px; }
     .stack { display: grid; gap: 20px; }
@@ -40,29 +40,29 @@
     .packages { display: grid; gap: 10px; }
     .pkg { cursor: pointer; margin: 0; position: relative; }
     .pkg input { opacity: 0; pointer-events: none; position: absolute; }
-    .pkg-body { align-items: center; border: 1px solid rgba(23, 23, 19, .13); border-radius: 14px; display: flex; gap: 14px; padding: 14px 16px; transition: border-color .2s, box-shadow .2s; }
-    .pkg input:checked + .pkg-body { border-color: var(--app-ink); box-shadow: 0 0 0 3px rgba(23, 23, 19, .06); }
+    .pkg-body { align-items: center; border: 1px solid var(--app-field-line); border-radius: 14px; display: flex; gap: 14px; padding: 14px 16px; transition: border-color .2s, box-shadow .2s; }
+    .pkg input:checked + .pkg-body { border-color: var(--app-gold); box-shadow: 0 0 0 1px var(--app-gold); }
     .pkg input:focus-visible + .pkg-body { box-shadow: 0 0 0 3px var(--app-gold-soft); }
-    .pkg-icon { color: var(--app-muted); font-size: 1.1rem; }
+    .pkg-icon { color: var(--app-gold); font-size: 1.1rem; }
     .pkg-body strong { color: var(--app-ink); display: block; font-size: .92rem; font-weight: 650; }
     .pkg-body small { color: var(--app-muted); font-size: .78rem; }
     .pkg-price { margin-left: auto; text-align: right; white-space: nowrap; }
     .pkg-price strong { font-variant-numeric: tabular-nums; }
 
     .qty { align-items: stretch; display: flex; }
-    .qty button { background: #fff; border: 1px solid rgba(23, 23, 19, .13); color: var(--app-ink); font-size: 1rem; width: 40px; }
+    .qty button { background: #fff; border: 1px solid var(--app-field-line); color: var(--app-blue); font-size: 1rem; width: 40px; }
     .qty button:first-child { border-radius: 10px 0 0 10px; }
     .qty button:last-child { border-radius: 0 10px 10px 0; }
     .qty .form-control { border-left: 0; border-radius: 0; border-right: 0; font-variant-numeric: tabular-nums; text-align: center; }
     .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .presets button { background: var(--app-soft); border: 0; border-radius: 99px; color: var(--app-ink); font-size: .74rem; font-weight: 600; padding: 4px 10px; }
-    .presets button:hover { background: rgba(23, 23, 19, .1); }
+    .presets button:hover { background: rgba(0, 0, 0, .1); }
     .ops { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .op { cursor: pointer; margin: 0; position: relative; }
     .op input { opacity: 0; pointer-events: none; position: absolute; }
-    .op span { align-items: center; border: 1px solid rgba(23, 23, 19, .13); border-radius: 10px; color: var(--app-text); display: flex; flex-direction: column; font-size: .74rem; font-weight: 600; gap: 4px; padding: 9px 6px; text-align: center; transition: border-color .2s, box-shadow .2s; }
-    .op span i { color: var(--app-muted); font-size: .95rem; }
-    .op input:checked + span { border-color: var(--app-ink); box-shadow: 0 0 0 3px rgba(23, 23, 19, .06); color: var(--app-ink); }
+    .op span { align-items: center; border: 1px solid var(--app-field-line); border-radius: 10px; color: var(--app-text); display: flex; flex-direction: column; font-size: .74rem; font-weight: 600; gap: 4px; padding: 9px 6px; text-align: center; transition: border-color .2s, box-shadow .2s; }
+    .op span i { color: var(--app-gold); font-size: .95rem; }
+    .op input:checked + span { border-color: var(--app-gold); box-shadow: 0 0 0 1px var(--app-gold); color: var(--app-ink); }
     .total { align-items: center; border-top: 1px solid var(--app-line); display: flex; justify-content: space-between; margin-top: 18px; padding-top: 16px; }
     .total span { color: var(--app-muted); font-size: .84rem; }
     .total strong { color: var(--app-ink); font-size: 1.35rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; }
@@ -87,7 +87,7 @@
                 $remaining = (int) ($balance?->remaining ?? 0);
                 $pctUsed = $purchased ? min(100, round($used / $purchased * 100)) : 0;
             @endphp
-            <article @class(['ui-card', 'balance', 'is-empty' => !$remaining]) style="--accent: {{ $pctUsed >= 90 ? 'var(--app-red)' : 'var(--app-ink)' }}">
+            <article @class(['ui-card', 'balance', 'is-empty' => !$remaining]) style="--accent: {{ $pctUsed >= 90 ? 'var(--app-red)' : 'var(--app-gold)' }}">
                 <div class="balance-top"><span><i class="bi {{ $channelIcons[$channel] ?? 'bi-chat' }}"></i>{{ $label }}</span>@if($remaining && $purchased && $remaining / $purchased < .1)<span class="ui-pill danger">Solde bas</span>@endif</div>
                 <strong>{{ number_format($remaining, 0, ',', ' ') }}<small>crédit(s)</small></strong>
                 <div class="ui-meter"><span style="width: {{ $pctUsed }}%"></span></div>

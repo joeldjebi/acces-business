@@ -44,8 +44,8 @@
     .edit-aside { display: grid; gap: 14px; position: sticky; top: 84px; }
     .toc { padding: 8px; }
     .toc a { align-items: center; border-radius: 10px; color: var(--app-muted); display: flex; font-size: .84rem; font-weight: 500; gap: 10px; padding: 8px 10px; text-decoration: none; transition: background .2s, color .2s; }
-    .toc a:hover { background: rgba(23, 23, 19, .04); color: var(--app-ink); }
-    .toc a.is-active { background: rgba(23, 23, 19, .06); color: var(--app-ink); font-weight: 600; }
+    .toc a:hover { background: rgba(0, 0, 0, .04); color: var(--app-ink); }
+    .toc a.is-active { background: rgba(0, 0, 0, .06); color: var(--app-ink); font-weight: 600; }
     .toc a.is-active i { color: var(--app-gold); }
     .toc a .err { background: var(--app-red); border-radius: 50%; height: 7px; margin-left: auto; width: 7px; }
     .save-card { padding: 16px; }

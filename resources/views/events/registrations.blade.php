@@ -32,26 +32,26 @@
     .reg-page *, .reg-page *::before, .reg-page *::after { min-width: 0; }
 
     .composer { margin-bottom: 20px; overflow: hidden; }
-    .composer-head { align-items: center; background: #171713; color: #fff; cursor: pointer; display: flex; gap: 16px; justify-content: space-between; padding: 18px 22px; }
-    .composer-head h2 { color: #fff; font-size: 1rem; font-weight: 650; margin: 0; }
-    .composer-head p { color: rgba(255, 255, 255, .6); font-size: .8rem; margin: 3px 0 0; }
+    .composer-head { align-items: center; background: var(--app-soft); color: var(--app-ink); cursor: pointer; display: flex; gap: 16px; justify-content: space-between; padding: 18px 22px; }
+    .composer-head h2 { color: var(--app-ink); font-size: 1.06rem; font-weight: 600; margin: 0; }
+    .composer-head p { color: var(--app-muted); font-size: .8rem; margin: 3px 0 0; }
     .composer-credits { text-align: right; }
-    .composer-credits small { color: rgba(255, 255, 255, .55); display: block; font-size: .72rem; }
-    .composer-credits strong { color: #d8b978; font-size: 1.3rem; font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.03em; }
-    .composer-toggle { align-items: center; background: rgba(255, 255, 255, .1); border-radius: 50%; display: flex; flex: 0 0 34px; height: 34px; justify-content: center; transition: transform .4s var(--app-ease); }
+    .composer-credits small { color: var(--app-muted); display: block; font-size: .72rem; }
+    .composer-credits strong { color: var(--app-ink); font-size: 1.3rem; font-variant-numeric: tabular-nums; font-weight: 600; letter-spacing: -.03em; }
+    .composer-toggle { align-items: center; background: #fff; color: var(--app-blue); border-radius: 50%; display: flex; flex: 0 0 34px; height: 34px; justify-content: center; transition: transform .4s var(--app-ease); }
     .composer-head[aria-expanded="true"] .composer-toggle { transform: rotate(180deg); }
-    .channel-choice { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 3px; padding: 4px; }
+    .channel-choice { background: var(--app-fill); border-radius: 9px; display: inline-flex; gap: 2px; padding: 2px; }
     .channel-choice input { opacity: 0; pointer-events: none; position: absolute; }
     .channel-choice label { border-radius: 999px; color: var(--app-muted); cursor: pointer; font-size: .86rem; font-weight: 600; margin: 0; padding: 8px 16px; transition: background .2s, color .2s; }
-    .channel-choice input:checked + label { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
+    .channel-choice input:checked + label { background: var(--app-panel); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 4px 10px -4px rgba(0, 0, 0, .14); color: var(--app-ink); }
     .channel-choice input:focus-visible + label { box-shadow: 0 0 0 4px var(--app-gold-soft); }
     .history { border-top: 1px solid var(--app-line); margin-top: 22px; padding-top: 18px; }
     .history h3 { color: var(--app-ink); font-size: .86rem; font-weight: 650; margin-bottom: 8px; }
 
     .filters-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding: 16px 22px; }
-    .resp-tabs { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 2px; max-width: 100%; overflow-x: auto; padding: 3px; scrollbar-width: none; }
+    .resp-tabs { background: rgba(0, 0, 0, .05); border-radius: 999px; display: inline-flex; gap: 2px; max-width: 100%; overflow-x: auto; padding: 3px; scrollbar-width: none; }
     .resp-tabs a { border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 7px 12px; text-decoration: none; white-space: nowrap; }
-    .resp-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
+    .resp-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 4px 10px -4px rgba(0, 0, 0, .14); color: var(--app-ink); }
     .rep-box { background: var(--app-soft); border-radius: 12px; font-size: .78rem; line-height: 1.5; margin-top: 8px; max-width: 320px; padding: 10px 12px; white-space: normal; }
     .rep-box strong { color: var(--app-ink); display: block; font-size: .82rem; }
     .rep-box .rep-line { align-items: flex-start; color: var(--app-muted); display: flex; gap: 6px; margin-top: 3px; }

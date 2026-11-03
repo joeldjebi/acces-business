@@ -11,9 +11,9 @@
 <style>
     .confirmed-page { margin: 0 auto; max-width: 1400px; }
     .confirmed-page *, .confirmed-page *::before, .confirmed-page *::after { min-width: 0; }
-    .type-tabs { background: rgba(23, 23, 19, .05); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
+    .type-tabs { background: rgba(0, 0, 0, .05); border-radius: 999px; display: inline-flex; gap: 2px; padding: 3px; }
     .type-tabs a { border-radius: 999px; color: var(--app-muted); font-size: .8rem; font-weight: 600; padding: 7px 13px; text-decoration: none; white-space: nowrap; }
-    .type-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(23, 23, 19, .08), 0 4px 10px -4px rgba(23, 23, 19, .14); color: var(--app-ink); }
+    .type-tabs a.is-active { background: var(--app-panel); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 4px 10px -4px rgba(0, 0, 0, .14); color: var(--app-ink); }
     @media (max-width: 991.98px) {
         .att-table thead { display: none; }
         .att-table tr { border-bottom: 1px solid var(--app-line); display: grid; gap: 8px; grid-template-columns: 1fr auto; padding: 14px 18px; }
